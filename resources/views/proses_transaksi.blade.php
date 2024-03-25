@@ -88,7 +88,7 @@
                         <td><?= $no++ ?></td>
                         <td>{{ $data-> nama }}</td>
                         <td>@rp($data -> harga)</td>
-                        <td>
+                        <td class="col-3">
                             <form action="/edit_qty" method="POST">
                                 @csrf
                                 <input type="hidden" name="id" value="{{ $data->id }}">
@@ -97,7 +97,7 @@
                                         <input class="form-control" type="number" name="qty" value="{{ $data->qty }}">
                                     </div>
                                     <div class="col-md-4">
-                                        <button class="btn btn-info btn-block" type="submit"><i class="fa-solid fa-save"></i> Simpan</button>
+                                        <button class="btn btn-info btn-block" type="submit"><i class="fa-solid fa-save"></i></button>
                                     </div>
                                 </div>
                             </form>

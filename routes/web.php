@@ -9,6 +9,7 @@ use App\Http\Controllers\NotaController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\TransaksiController;
+use App\Models\Transaksi;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,3 +60,5 @@ Route::get('/nota_{id}', [NotaController::class, 'detail'])->name('detail');
 Route::get('/hapus_nota_{id}', [NotaController::class, 'hapus_nota'])->name('hapus_nota');
 Route::get('/laporan', [LaporanController::class, 'laporan'])->name('laporan');
 Route::POST('/laporan_filter', [LaporanController::class, 'filter'])->name('laporan.filter');
+
+Route::post('/edit_qty', [TransaksiController::class, 'edit_qty'])->name('edit_qty');

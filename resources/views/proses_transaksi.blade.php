@@ -88,7 +88,20 @@
                         <td><?= $no++ ?></td>
                         <td>{{ $data-> nama }}</td>
                         <td>@rp($data -> harga)</td>
-                        <td>{{ $data -> qty }}</td>
+                        <td>
+                            <form action="/edit_qty" method="POST">
+                                @csrf
+                                <input type="hidden" name="id" value="{{ $data->id }}">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input class="form-control" type="number" name="qty" value="{{ $data->qty }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-info btn-block" type="submit"><i class="fa-solid fa-save"></i> Simpan</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </td>
                         <td>@rp($data -> subtotal)</td>
                         <td width="10%" style="text-align: center">
                             <form action="hapus_keranjang_{{ $data->id }}" method="POST">

@@ -10,7 +10,7 @@ use App\Models\Data_barang;
 use App\Models\Keranjang;
 use App\Models\Nota;
 use App\Models\Detail_nota;
-use DataTables;
+use Yajra\DataTables\DataTables;
 
 class TransaksiController extends Controller
 {
@@ -127,6 +127,38 @@ class TransaksiController extends Controller
 
         return redirect()->back()->with('success', 'Keranjang berhasil ditambah dan diperbaharui!');
     }
+    public function edit_qty(Request $request)
+    {
+        // Ambil data dari formulir
+        $id = $request->input('id');
+        $new_qty = $request->input('qty');
+
+        // Temukan item keranjang yang sesuai
+        $item = Keranjang::findOrFail($id);
+
+        // Temukan produk yang terkait
+        $produk = Data_barang::find($item->id_barang);
+
+        // Hitung perbedaan antara qty baru dan qty lama
+        $diff_qty = $new_qty - $item->qty;
+
+        // Update qty pada item keranjang
+        $item->qty = $new_qty;
+        $item->save();
+
+        // Update qty pada data_barang
+        $produk->qty -= $diff_qty; // Mengurangi qty pada data_barang
+        $produk->save();
+
+        // Hitung ulang subtotal
+        $new_subtotal = $item->harga * $new_qty;
+
+        // Update subtotal pada item keranjang
+        $item->subtotal = $new_subtotal;
+        $item->save();
+
+        return redirect()->back()->with('success', 'Qty berhasil diperbarui !');
+    }
 
     public function hapus_keranjang($id)
     {
@@ -175,5 +207,4 @@ class TransaksiController extends Controller
 
         return redirect('transaksi')->with('transaksi_sukses', 'Transaksi Berhasil !');
     }
-
 }

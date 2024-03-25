@@ -126,11 +126,12 @@
                     <table id="table_data_barang" class="table table-bordered table-striped">
                         <thead>
                             <tr style="text-align: center">
-                                <th>No</th>
+                                <th data-orderable="false">No</th>
                                 <th>Nama</th>
                                 <th>Stok</th>
-                                <th>Harga Jual</th>
-                                <th data-orderable="false">Jumlah</th>
+                                <th>Harga Umum</th>
+                                <th data-orderable="false">Harga Grosir</th>
+                                <th data-orderable="false">Action</th>
                             </tr>
                         </thead>
                     </table>
@@ -242,17 +243,42 @@ $(document).ready(function() {
             url: '{{ route('data-barang') }}',
             type: 'GET'
         },
-columns: [
-    { data: null, orderable: false, searchable: false, 
-        render: function (data, type, row, meta) {
-        return meta.row + meta.settings._iDisplayStart + 1;
-    }},
-    { data: 'nama', name: 'nama' },
-    { data: 'qty', name: 'qty' },
-    { data: 'harga_jual1', name: 'harga_jual1' },
-    { data: 'harga_jual2', name: 'harga_jual2' },
-],
+        columns: [
+            { data: null, orderable: false, searchable: false, 
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            { data: 'nama', name: 'nama' },
+            { data: 'qty', name: 'qty' },
+            { data: 'harga_jual1', name: 'harga_jual1' },
+            { data: 'harga_jual2', name: 'harga_jual2' },
+            { 
+                data: 'action', 
+                name: 'action', 
+                orderable: false, 
+                searchable: false,
+                render: function(data, type, full, meta) {
+                    let csrfToken = '{{ csrf_token() }}';
+                    let transaksiId = '{{ $transaksi->id }}';
+                    let transaksiMember = '{{ $transaksi->id_member }}';
+
+                    return `
+                        <form method="post" action="/tambah_keranjang">
+                            <input type="hidden" name="_token" value="${csrfToken}">
+                            <input type="hidden" name="id_transaksi" value="${transaksiId}">
+                            <input type="hidden" name="id_member" value="${transaksiMember}">
+                            <input type="hidden" name="id" value="${full.id}">
+                            <input class="form-control" type="number" name="jumlah" min="1" max="${full.qty}" value="1">
+                            <button class="btn btn-info" type="submit">
+                                <i class="fa-solid fa-cart-plus"></i>
+                            </button>
+                        </form>`;
+                }
+            }
+        ]
     });
 });
 </script>
+
 @endsection

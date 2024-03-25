@@ -223,7 +223,17 @@ class TransaksiController extends Controller
             });
         }
 
+        // Mengembalikan data ke DataTables dengan format yang sesuai
         return DataTables::of($dataBarang)
+            ->addColumn('action', function ($data) {
+                return '<form method="post" action="/tambah_keranjang">' .
+                    '<input type="hidden" name="_token" value="' . csrf_token() . '">' .
+                    '<input type="hidden" name="id" value="' . $data->id . '">' .
+                    '<input class="form-control" type="number" name="jumlah" min="1" max="' . $data->qty . '" value="1">' .
+                    '<button class="btn btn-info" type="submit"><i class="fa-solid fa-cart-plus"></i></button>' .
+                    '</form>';
+            })
+            ->rawColumns(['action'])
             ->make(true);
     }
 }

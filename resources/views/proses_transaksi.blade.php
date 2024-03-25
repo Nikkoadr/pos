@@ -123,45 +123,19 @@
                 <h5 class="m-0">Pilih Barang</h5>
                 </div>
                 <div class="card-body">
-                <table id="table_data_barang" class="table table-bordered table-striped">
-                    <thead>
-                    <tr style="text-align: center">
-                    <th>No</th>
-                    <th>Nama</th>
-                    <th>Stok</th>
-                    <th>Harga Jual</th>
-                    <th data-orderable="false">Jumlah</th>
-                    <th data-orderable="false">Menu</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php $no=1; ?>
-                    @foreach ($data_barang as $data )
-                    <tr>
-                    <td><?= $no++ ?></td>
-                    <td>{{ $data -> nama }}</td>
-                    <td>{{ $data -> qty }}</td>
-                    @if($transaksi->id_member == null)
-                        <td>@rp($data->harga_jual1)</td>
-                    @else
-                        <td>@rp($data->harga_jual2)</td>
-                    @endif
-                    
-                    <td width="15%" style="text-align: center">
-                        <form method="post" action="/tambah_keranjang">
-                            @csrf
-                            <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
-                            <input type="hidden" name="id_member" value="{{ $transaksi->id_member }}">
-                            <input type="hidden" name="id" value="{{ $data->id }}">
-                            <input class="form-control" type="number" name="jumlah" min="1" max="{{ $data->qty }}" value="1">
-                    </td>
-                    <td width="10%" style="text-align: center">
-                            <button class="btn btn-info" type="submit"><i class="fa-solid fa-cart-plus"></i></button>
-                        </form>
-                    </td>
-                    @endforeach
-                    </tbody>
-                </table>
+                    <table id="table_data_barang" class="table table-bordered table-striped">
+                        <thead>
+                            <tr style="text-align: center">
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>Stok</th>
+                                <th>Harga Jual</th>
+                                <th data-orderable="false">Jumlah</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                </div>
                 </div>
             </div>
             </div>
@@ -184,15 +158,7 @@
 <script src="{{ asset('assets/plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/sweetalert2/sweetalert2.all.min.js') }}"></script>
-<script>
-$(function () {
-$("#table_data_barang").DataTable({
-    "responsive": true, 
-    "lengthChange": true, 
-    "autoWidth": true,
-});
-});
-</script>
+
 <script>
 $(function () {
 $("#table_keranjang").DataTable({
@@ -262,5 +228,31 @@ var Toast = Swal.mixin({
     title: '{{ session('success') }}'
     })
 @endif
+</script>
+<script>
+$(document).ready(function() {
+    $('#table_data_barang').DataTable({
+        responsive: true, 
+        lengthChange: true, 
+        autoWidth: true,
+        processing: true,
+        serverSide: true,
+        searching: true,
+        ajax: {
+            url: '{{ route('data-barang') }}',
+            type: 'GET'
+        },
+columns: [
+    { data: null, orderable: false, searchable: false, 
+        render: function (data, type, row, meta) {
+        return meta.row + meta.settings._iDisplayStart + 1;
+    }},
+    { data: 'nama', name: 'nama' },
+    { data: 'qty', name: 'qty' },
+    { data: 'harga_jual1', name: 'harga_jual1' },
+    { data: 'harga_jual2', name: 'harga_jual2' },
+],
+    });
+});
 </script>
 @endsection

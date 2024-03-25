@@ -207,4 +207,23 @@ class TransaksiController extends Controller
 
         return redirect('transaksi')->with('transaksi_sukses', 'Transaksi Berhasil !');
     }
+    public function dataBarang(Request $request)
+    {
+        // Ambil data barang dari database
+        $dataBarang = Data_barang::select('*');
+
+        // Proses pencarian jika ada
+        if ($request->has('search') && !empty($request->search['value'])) {
+            $keyword = $request->search['value'];
+            $dataBarang->where(function ($query) use ($keyword) {
+                $query->where('nama', 'like', "%{$keyword}%")
+                    ->orWhere('qty', 'like', "%{$keyword}%")
+                    ->orWhere('harga_jual1', 'like', "%{$keyword}%")
+                    ->orWhere('harga_jual2', 'like', "%{$keyword}%");
+            });
+        }
+
+        return DataTables::of($dataBarang)
+            ->make(true);
+    }
 }

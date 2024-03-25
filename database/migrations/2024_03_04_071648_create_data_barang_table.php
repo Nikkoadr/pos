@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('id_toko');
             $table->integer('id_supplier');
             $table->string('nama');
-            $table->string('qty');
+            $table->integer('qty');
             $table->integer('harga_modal');
             $table->integer('harga_jual1');
             $table->integer('harga_jual2');

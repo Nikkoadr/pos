@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\data_member;
+use App\Models\Data_member;
 
 class MemberController extends Controller
 {
@@ -26,7 +26,7 @@ class MemberController extends Controller
     public function search(Request $request)
     {
         $keyword = $request->query('keyword');
-        $members = data_member::where('nama_member', 'like', '%' . $keyword . '%')->get();
+        $members = Data_member::where('nama_member', 'like', '%' . $keyword . '%')->get();
 
         return response()->json($members);
     }

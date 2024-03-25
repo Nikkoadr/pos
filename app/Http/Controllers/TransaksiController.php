@@ -10,6 +10,7 @@ use App\Models\Data_barang;
 use App\Models\Keranjang;
 use App\Models\Nota;
 use App\Models\Detail_nota;
+use DataTables;
 
 class TransaksiController extends Controller
 {
@@ -174,4 +175,5 @@ class TransaksiController extends Controller
 
         return redirect('transaksi')->with('transaksi_sukses', 'Transaksi Berhasil !');
     }
+
 }

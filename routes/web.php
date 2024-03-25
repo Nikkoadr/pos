@@ -51,7 +51,7 @@ Route::get('/transaksi', [TransaksiController::class, 'transaksi'])->name('trans
 Route::post('/buat_transaksi', [TransaksiController::class, 'buat_transaksi'])->name('buat_transaksi');
 Route::get('/proses_transaksi_{id}', [TransaksiController::class, 'proses_transaksi'])->name('proses_transaksi');
 Route::post('/tambah_keranjang', [TransaksiController::class, 'tambah_keranjang'])->name('tambah_keranjang');
-Route::delete('hapus_keranjang_umum_{id}', [TransaksiController::class, 'hapus_keranjang_umum']);
+Route::delete('hapus_keranjang_{id}', [TransaksiController::class, 'hapus_keranjang']);
 Route::post('/checkout', [TransaksiController::class, 'checkout'])->name('checkout');
 
 Route::get('/riwayat_transaksi', [NotaController::class, 'riwayat_transaksi'])->name('riwayat_transaksi');

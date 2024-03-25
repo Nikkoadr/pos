@@ -85,7 +85,7 @@
                                     <td>{{ \Carbon\Carbon::parse($data->tanggal_transaksi)->translatedFormat('l, j F Y') }}
                                         Jam {{ \Carbon\Carbon::parse($data->tanggal_transaksi)->translatedFormat('H:i:s') }}</td>
                                     <td style="text-align: center">
-                                        <a href="proses_transaksi_{{ $data->id }}" class="btn btn-primary"><i class="fas fa-eye"></i></a>
+                                        <a href="proses_transaksi_{{ $data->id }}" class="btn btn-success"><i class="fas fa-eye"></i></a>
                                     </td>
                                 </tr>
                                 @endforeach

@@ -129,8 +129,7 @@
                                 <th data-orderable="false">No</th>
                                 <th>Nama</th>
                                 <th>Stok</th>
-                                <th>Harga Umum</th>
-                                <th data-orderable="false">Harga Grosir</th>
+                                <th>Harga</th>
                                 <th data-orderable="false">Tambah Ke Keranjang</th>
                             </tr>
                         </thead>
@@ -243,6 +242,7 @@ $(document).ready(function() {
             url: '{{ route('data-barang') }}',
             type: 'GET'
         },
+        
         columns: [
             { data: null, orderable: false, searchable: false, 
                 render: function (data, type, row, meta) {
@@ -251,8 +251,12 @@ $(document).ready(function() {
             },
             { data: 'nama', name: 'nama' },
             { data: 'qty', name: 'qty' },
-            { data: 'harga_jual1', name: 'harga_jual1' },
-            { data: 'harga_jual2', name: 'harga_jual2' },
+            @if ( $transaksi->id_member == null)
+                { data: 'harga_jual1', name: 'harga_jual1' },  
+            @else
+
+                { data: 'harga_jual2', name: 'harga_jual2' },
+            @endif
             { 
                 data: 'action', 
                 name: 'action', 

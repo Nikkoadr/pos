@@ -226,11 +226,18 @@ class TransaksiController extends Controller
         // Mengembalikan data ke DataTables dengan format yang sesuai
         return DataTables::of($dataBarang)
             ->addColumn('action', function ($data) {
-                return '<form method="post" action="/tambah_keranjang">' .
+                return
+                    '<form method="post" action="/tambah_keranjang">' .
+                    '<div class="row">'.
+                    '<div class="col-md-8">'.
                     '<input type="hidden" name="_token" value="' . csrf_token() . '">' .
                     '<input type="hidden" name="id" value="' . $data->id . '">' .
                     '<input class="form-control" type="number" name="jumlah" min="1" max="' . $data->qty . '" value="1">' .
+                    '</div>'.
+                    '<div class="col-md-4">'.
                     '<button class="btn btn-info" type="submit"><i class="fa-solid fa-cart-plus"></i></button>' .
+                    '</div>'.
+                    '</div>'.
                     '</form>';
             })
             ->rawColumns(['action'])

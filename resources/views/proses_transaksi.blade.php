@@ -131,7 +131,7 @@
                                 <th>Stok</th>
                                 <th>Harga Umum</th>
                                 <th data-orderable="false">Harga Grosir</th>
-                                <th data-orderable="false">Action</th>
+                                <th data-orderable="false">Tambah Ke Keranjang</th>
                             </tr>
                         </thead>
                     </table>
@@ -262,17 +262,22 @@ $(document).ready(function() {
                     let csrfToken = '{{ csrf_token() }}';
                     let transaksiId = '{{ $transaksi->id }}';
                     let transaksiMember = '{{ $transaksi->id_member }}';
-
                     return `
                         <form method="post" action="/tambah_keranjang">
-                            <input type="hidden" name="_token" value="${csrfToken}">
-                            <input type="hidden" name="id_transaksi" value="${transaksiId}">
-                            <input type="hidden" name="id_member" value="${transaksiMember}">
-                            <input type="hidden" name="id" value="${full.id}">
-                            <input class="form-control" type="number" name="jumlah" min="1" max="${full.qty}" value="1">
-                            <button class="btn btn-info" type="submit">
-                                <i class="fa-solid fa-cart-plus"></i>
-                            </button>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <input type="hidden" name="_token" value="${csrfToken}">
+                                    <input type="hidden" name="id_transaksi" value="${transaksiId}">
+                                    <input type="hidden" name="id_member" value="${transaksiMember}">
+                                    <input type="hidden" name="id" value="${full.id}">
+                                    <input class="form-control" type="number" name="jumlah" min="1" max="${full.qty}" value="1">
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="fa-solid fa-cart-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </form>`;
                 }
             }

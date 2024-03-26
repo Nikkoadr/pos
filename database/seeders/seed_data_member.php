@@ -16,6 +16,7 @@ class seed_data_member extends Seeder
     {
         Data_member::create([
 
+            'id_toko' => '1',
             'nama_member' => 'Agus',
             'nomor_hp' => '081290020000',
             'alamat' => 'Losarang',

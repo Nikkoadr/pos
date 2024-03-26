@@ -10,7 +10,6 @@
         <div class="modal-body">
                 <form method="POST" action="/tambah_data_member">
                         @csrf
-                        @method('put')
                         <input type="hidden" name="id_toko" value="1">
                         <div class="row mb-3">
                             <label for="nama_member" class="col-sm-5 col-form-label text-md-end">Nama Member :</label>

@@ -80,8 +80,8 @@ class Data_barangController extends Controller
 
     public function hapus_data_barang($id)
     {
-        $nota = Data_barang::findOrFail($id);
-        $nota->delete();
+        $data = Data_barang::findOrFail($id);
+        $data->delete();
         return redirect()->back()->with(['success' => 'Data Barang Berhasil di Hapus']);
     }
 }

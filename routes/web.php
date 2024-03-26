@@ -47,10 +47,16 @@ Route::get('/hapus_data_barang_{id}', [Data_barangController::class, 'hapus_data
 
 Route::get('/data_member', [MemberController::class, 'data_member'])->name('data_member');
 Route::get('/search/member', [MemberController::class, 'search'])->name('search');
+Route::post('tambah_data_member', [MemberController::class, 'tambah_data_member'])->name('tambah_data_member');
+Route::get('view_edit_data_member_{id}', [MemberController::class, 'view_edit_data_member'])->name('view_edit_data_member');
+Route::put('update_data_member_{id}', [MemberController::class, 'update_data_member'])->name('update_data_member');
+Route::get('hapus_data_member_{id}', [MemberController::class, 'hapus_data_member'])->name('hapus_data_member');
+Route::post('edit_data_member_{id}', [MemberController::class, 'edit_data_member'])->name('edit_data_member');
 
 Route::get('/transaksi', [TransaksiController::class, 'transaksi'])->name('transaksi');
 Route::post('/buat_transaksi', [TransaksiController::class, 'buat_transaksi'])->name('buat_transaksi');
 Route::get('/proses_transaksi_{id}', [TransaksiController::class, 'proses_transaksi'])->name('proses_transaksi');
+Route::get('/data-barang', [TransaksiController::class, 'dataBarang'])->name('data-barang');
 Route::post('/tambah_keranjang', [TransaksiController::class, 'tambah_keranjang'])->name('tambah_keranjang');
 Route::post('/edit_qty', [TransaksiController::class, 'edit_qty'])->name('edit_qty');
 Route::delete('hapus_keranjang_{id}', [TransaksiController::class, 'hapus_keranjang']);
@@ -61,6 +67,3 @@ Route::get('/nota_{id}', [NotaController::class, 'detail'])->name('detail');
 Route::get('/hapus_nota_{id}', [NotaController::class, 'hapus_nota'])->name('hapus_nota');
 Route::get('/laporan', [LaporanController::class, 'laporan'])->name('laporan');
 Route::POST('/laporan_filter', [LaporanController::class, 'filter'])->name('laporan.filter');
-
-
-Route::get('/data-barang', [TransaksiController::class, 'dataBarang'])->name('data-barang');

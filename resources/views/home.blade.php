@@ -1,5 +1,14 @@
 @extends('layouts.app')
+@section('link')
+<!-- Ionicons -->
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+@endsection
 
+@section('preloader')
+<div class="preloader flex-column justify-content-center align-items-center">
+<img class="animation__shake" src="{{ asset('assets/img/logo.png') }}" alt="AdminLTELogo" height="80" width="60">
+</div>
+@endsection
 @section('content')
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
@@ -23,26 +32,23 @@
 <!-- Main content -->
 <section class="content">
 
-    <!-- Default box -->
-    <div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Dashboard</h3>
+    <div class="row">
+        <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-success">
+            <div class="inner">
+            <h3>@rp($pendapatan)</h3>
 
-        <div class="card-tools">
-        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-            <i class="fas fa-minus"></i>
-        </button>
-        <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
-            <i class="fas fa-times"></i>
-        </button>
+            <p>Pendapatan Hari Ini</p>
+            </div>
+            <div class="icon">
+            <i class="ion ion-calculator"></i>
+            </div>
+            <a href="laporan" class="small-box-footer">Lihat lebih <i class="fas fa-arrow-circle-right"></i></a>
         </div>
-    </div>
-    <div class="card-body">
-        Masih Dalam Proses Pengembangan
-    </div>
-    <!-- /.card-body -->
-    </div>
-    <!-- /.card -->
+        </div>
+        
+        </div>
 
 </section>
 <!-- /.content -->

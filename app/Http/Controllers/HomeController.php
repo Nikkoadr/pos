@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Models\Nota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -25,7 +25,8 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $pendapatan = Nota::whereDate('created_at', today())->sum('total_belanja');
+        return view('home', compact('pendapatan'));
     }
     public function data_karyawan()
     {
@@ -35,17 +36,9 @@ class HomeController extends Controller
     {
         return view('data_supplier');
     }
-    public function data_member()
-    {
-        return view('data_member');
-    }
+
     public function pengaturan()
     {
         return view('pengaturan');
     }
-    public function transaksi_member()
-    {
-        return view('transaksi_member');
-    }
-
 }

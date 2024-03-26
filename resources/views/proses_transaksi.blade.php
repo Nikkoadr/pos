@@ -252,10 +252,10 @@ $(document).ready(function() {
             { data: 'nama', name: 'nama' },
             { data: 'qty', name: 'qty' },
             @if ( $transaksi->id_member == null)
-                { data: 'harga_jual1', name: 'harga_jual1' },  
+                { data: 'harga_jual1', name: 'harga_jual1', render: $.fn.dataTable.render.number('.', ',', 0, 'Rp ') },  
             @else
 
-                { data: 'harga_jual2', name: 'harga_jual2' },
+                { data: 'harga_jual2', name: 'harga_jual2', render: $.fn.dataTable.render.number('.', ',', 0, 'Rp ') },
             @endif
             { 
                 data: 'action', 

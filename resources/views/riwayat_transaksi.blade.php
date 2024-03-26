@@ -73,7 +73,7 @@
                 <th>ID Transaksi</th>
                 <th>Jenis Transaksi</th>
                 <th>Nama Member</th>
-                <th>Tanggal Transaksi</th>
+                <th>Tanggal dan Jam Transaksi</th>
                 <th>Total Belanja</th>
                 <th>Customer Bayar</th>
                 <th>Kembalian</th>
@@ -88,7 +88,8 @@
                     <td>{{ $data->id }}</td>
                     <td>{{ $data->jenis_transaksi }}</td>
                     <td>{{ $data->member }}</td>
-                    <td>{{ \Carbon\Carbon::parse($data->tanggal_transaksi)->setTimezone('Asia/Jakarta')->format('d-M-Y H:i') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($data->tanggal_transaksi)->translatedFormat('l, j F Y') }}
+                        Jam {{ \Carbon\Carbon::parse($data->tanggal_transaksi)->translatedFormat('H:i:s') }}</td>
                     <td>@rp($data -> total_belanja)</td>
                     <td>@rp($data -> bayar)</td>
                     <td>@rp($data -> kembalian)</td>

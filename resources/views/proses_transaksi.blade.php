@@ -169,30 +169,19 @@ $("#table_keranjang").DataTable({
 });
 </script>
 <script>
-    // Mendapatkan elemen input bayar dan span kembalian
+
     var inputBayar = document.getElementById('bayar');
     var inputKembalian = document.getElementById('kembalian');
     var spanKembalian = document.getElementById('kembalian');
-
-    // Fungsi untuk memformat nilai uang dengan tanda titik sebagai pemisah ribuan
     function formatUang(angka) {
         return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
-
-    // Menambahkan event listener untuk input bayar
     inputBayar.addEventListener('input', function() {
-        // Mengambil nilai bayar dari elemen input
-        var bayar = parseInt(inputBayar.value.replace(/\D/g, "")); // Menghapus semua karakter kecuali angka
-        inputBayar.value = formatUang(bayar); // Memformat nilai uang di dalam input
-        
-        // Menghitung kembalian
+        var bayar = parseInt(inputBayar.value.replace(/\D/g, ""));
+        inputBayar.value = formatUang(bayar);
         var total = {{ $total }};
         var kembalian = bayar - total;
-        
-        // Menampilkan kembalian dengan format mata uang
         spanKembalian.textContent = 'Rp. ' + formatUang(kembalian);
-        
-        // Update nilai input tersembunyi bayar dan kembalian
         document.getElementById('inputBayar').value = bayar;
         document.getElementById('inputKembalian').value = kembalian;
     });

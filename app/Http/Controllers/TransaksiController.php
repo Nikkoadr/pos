@@ -32,10 +32,8 @@ class TransaksiController extends Controller
             $nama_member = Data_member::find($data->id_member);
             $data->nama_member = $nama_member ? $nama_member->nama_member : "Tidak ada Member";
         }
-
         return view('buat_transaksi', compact('transaksi', 'member'));
     }
-
 
     public function buat_transaksi(Request $request)
     {
@@ -44,119 +42,74 @@ class TransaksiController extends Controller
             'id_member' => $request->id_member,
             'tanggal_transaksi' => Carbon::now(),
         ]);
-
         return redirect('transaksi')->with('sukses', 'transaksi berhasil dibuat');
     }
 
     private function calculateTotal($keranjang)
     {
         $total = 0;
-
         foreach ($keranjang as $item) {
             $total += $item['subtotal'];
         }
-
         return $total;
     }
 
     public function proses_transaksi(Request $request, $id)
     {
-        // Mengambil transaksi berdasarkan ID
         $transaksi = Transaksi::findOrFail($id);
-
-        // Mengambil semua data barang
-        $data_barang = Data_barang::all();
-
-        // Mengambil semua entri keranjang untuk transaksi ini
         $keranjang = Keranjang::where('id_transaksi', $id)->get();
-
-        // Mengambil semua data member
         $member = Data_member::all();
-
-        // Mengambil nama member berdasarkan id_member dari transaksi
         $nama_member = Data_member::find($transaksi->id_member);
-
-        // Menambahkan properti nama_member ke objek transaksi
         $transaksi->nama_member = $nama_member ? $nama_member->nama_member : "Tidak ada Member";
-
-        // Menghitung total
         $total = $this->calculateTotal($keranjang);
-
-        // Mengirimkan data ke tampilan
-        return view('proses_transaksi', compact('transaksi', 'total', 'keranjang', 'data_barang', 'member'));
+        return view('proses_transaksi', compact('transaksi', 'total', 'keranjang', 'member'));
     }
 
     public function tambah_keranjang(Request $request)
     {
         $produk = Data_barang::find($request->input('id'));
         $qty = $request->input('jumlah');
-
         if ($qty > $produk->qty) {
             return redirect()->back()->with('error', 'Stok tidak mencukupi.');
         }
-
         $produk->qty -= $qty;
         $produk->save();
-
         $keranjang = Keranjang::where('id_barang', $produk->id)
             ->where('id_transaksi', $request->id_transaksi)
             ->first();
-
-        $harga = $request->id_member ? $produk->harga_jual2 : $produk->harga_jual1; // Tentukan harga berdasarkan keberadaan id_member
-        $subtotal = $harga * $qty; // Hitung subtotal berdasarkan harga yang sudah ditentukan dan jumlah
-
+        $harga = $request->id_member ? $produk->harga_jual2 : $produk->harga_jual1;
+        $subtotal = $harga * $qty;
         if ($keranjang) {
-            // Jika item dengan id_barang dan id_transaksi yang sama sudah ada,
-            // edit item tersebut
             $keranjang->qty += $qty;
-            $keranjang->subtotal = $harga * $keranjang->qty; // Perbarui subtotal dengan harga yang baru ditentukan
+            $keranjang->subtotal = $harga * $keranjang->qty;
             $keranjang->save();
         } else {
-            // Jika tidak ada item dengan id_barang dan id_transaksi yang sama,
-            // tambahkan item baru ke keranjang
             $keranjangItem = [
                 'id_transaksi' => $request->id_transaksi,
                 'id_barang' => $produk->id,
                 'nama' => $produk->nama,
                 'qty' => $qty,
-                'harga' => $harga, // Gunakan harga yang sudah ditentukan
-                'subtotal' => $subtotal, // Gunakan subtotal yang sudah dihitung
+                'harga' => $harga,
+                'subtotal' => $subtotal,
             ];
             Keranjang::create($keranjangItem);
         }
-
         return redirect()->back()->with('success', 'Keranjang berhasil ditambah dan diperbaharui!');
     }
     public function edit_qty(Request $request)
     {
-        // Ambil data dari formulir
         $id = $request->input('id');
         $new_qty = $request->input('qty');
-
-        // Temukan item keranjang yang sesuai
         $item = Keranjang::findOrFail($id);
-
-        // Temukan produk yang terkait
         $produk = Data_barang::find($item->id_barang);
-
-        // Hitung perbedaan antara qty baru dan qty lama
         $diff_qty = $new_qty - $item->qty;
-
-        // Update qty pada item keranjang
         $item->qty = $new_qty;
         $item->save();
-
-        // Update qty pada data_barang
-        $produk->qty -= $diff_qty; // Mengurangi qty pada data_barang
+        $produk->qty -= $diff_qty;
         $produk->save();
-
-        // Hitung ulang subtotal
         $new_subtotal = $item->harga * $new_qty;
-
-        // Update subtotal pada item keranjang
         $item->subtotal = $new_subtotal;
         $item->save();
-
         return redirect()->back()->with('success', 'Qty berhasil diperbarui !');
     }
 
@@ -197,22 +150,14 @@ class TransaksiController extends Controller
                 'subtotal' => $item->subtotal,
             ]);
         }
-
-        // Hapus keranjang dan transaksi setelah proses checkout
         Keranjang::where('id_transaksi', $id_transaksi)->delete();
         Transaksi::where('id', $id_transaksi)->delete();
-
-        // Simpan id nota dalam session untuk referensi
         session()->put('transaksi_id', $nota->id);
-
         return redirect('transaksi')->with('transaksi_sukses', 'Transaksi Berhasil !');
     }
     public function dataBarang(Request $request)
     {
-        // Ambil data barang dari database
         $dataBarang = Data_barang::select('*');
-
-        // Proses pencarian jika ada
         if ($request->has('search') && !empty($request->search['value'])) {
             $keyword = $request->search['value'];
             $dataBarang->where(function ($query) use ($keyword) {
@@ -222,22 +167,20 @@ class TransaksiController extends Controller
                     ->orWhere('harga_jual2', 'like', "%{$keyword}%");
             });
         }
-
-        // Mengembalikan data ke DataTables dengan format yang sesuai
         return DataTables::of($dataBarang)
             ->addColumn('action', function ($data) {
                 return
                     '<form method="post" action="/tambah_keranjang">' .
-                    '<div class="row">'.
-                    '<div class="col-md-8">'.
+                    '<div class="row">' .
+                    '<div class="col-md-8">' .
                     '<input type="hidden" name="_token" value="' . csrf_token() . '">' .
                     '<input type="hidden" name="id" value="' . $data->id . '">' .
                     '<input class="form-control" type="number" name="jumlah" min="1" max="' . $data->qty . '" value="1">' .
-                    '</div>'.
-                    '<div class="col-md-4">'.
+                    '</div>' .
+                    '<div class="col-md-4">' .
                     '<button class="btn btn-info" type="submit"><i class="fa-solid fa-cart-plus"></i></button>' .
-                    '</div>'.
-                    '</div>'.
+                    '</div>' .
+                    '</div>' .
                     '</form>';
             })
             ->rawColumns(['action'])

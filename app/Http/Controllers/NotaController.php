@@ -36,7 +36,6 @@ class NotaController extends Controller
     public function detail($id)
     {
         $nota = Nota::with('detailNota')->findOrFail($id);
-        dd($nota);
         return view('invoice', compact('nota'));
     }
 

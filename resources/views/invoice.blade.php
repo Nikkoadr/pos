@@ -92,7 +92,6 @@
             <td>{{ $nota->id }}</td>
             <td>{{ $nota->jenis_transaksi }}</td>
             <td>{{ $nota->kasir }}</td>
-            <td>{{ \Carbon\Carbon::parse($nota->tanggal_transaksi)->locale('id_ID')->isoFormat('D MMMM YYYY, HH:mm') }}</td>
         </tr>
     </table>
 

@@ -4,6 +4,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Facades\Storage;
 
 // Membuat objek Spreadsheet baru
 $spreadsheet = new Spreadsheet();
@@ -139,10 +140,14 @@ $sheet->getStyle('A' . $row)->applyFromArray([
     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
 ]);
 
-// Menyimpan file
+// Menyimpan file ke dalam direktori penyimpanan
 $fileName = 'invoice.xlsx';
 $writer = new Xlsx($spreadsheet);
-$writer->save($fileName);
+$fileContents = $writer->writeToString();
+Storage::put('public/' . $fileName, $fileContents);
+
+// Mengambil URL untuk file yang disimpan
+$filePath = Storage::url('public/' . $fileName);
 
 // Membaca kembali file Excel yang sudah disimpan dan mengonversinya menjadi HTML
 $spreadsheet = IOFactory::load($fileName);

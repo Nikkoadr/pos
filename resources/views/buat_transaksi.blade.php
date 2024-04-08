@@ -97,7 +97,6 @@
                 <!-- /.card -->
             </div>
 
-            <!-- Formulir Membuat Transaksi Baru -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
@@ -107,7 +106,6 @@
                     <div class="card-body">
                         <form action="buat_transaksi" method="POST">
                             @csrf
-                            <!-- Tambahkan field-form untuk membuat transaksi baru -->
                             <div class="form-group">
                                 <label for="jenis_transaksi">Jenis Transaksi</label>
                                 <select class="form-control" id="jenis_transaksi" name="jenis_transaksi">
@@ -115,14 +113,12 @@
                                     <option value="member">Member</option>
                                 </select>
                             </div>
-                            <!-- Jika transaksi melibatkan member, tampilkan opsi untuk memilih member -->
                             <div class="form-group" id="nama_member">
                                 <label for="id_member">Pilih Member</label>
                                 <input type="text" class="form-control" id="nama_member_input" name="nama_member" autocomplete="off">
                                 <div id="member_suggestions" class="suggestions-container"></div>
                                 <input type="hidden" id="id_member" name="id_member">
                             </div>
-                            <!-- Tambahkan field-form lainnya sesuai kebutuhan -->
                             <button type="submit" class="btn btn-primary">Buat Transaksi</button>
                         </form>
                     </div>
@@ -139,24 +135,19 @@
 
 @section('script')
     <script>
-// Jalankan saat halaman dimuat pertama kali
 document.addEventListener('DOMContentLoaded', function() {
-    // Ambil nilai jenis transaksi saat halaman dimuat
     var initialTransaksiValue = document.getElementById('jenis_transaksi').value;
     var namaMemberField = document.getElementById('nama_member');
 
-    // Periksa apakah jenis transaksi saat halaman dimuat adalah "member"
     if (initialTransaksiValue === 'member') {
         namaMemberField.style.display = 'block';
     } else {
         namaMemberField.style.display = 'none';
-        // Reset value pilihan member jika jenis transaksi bukan member
         document.getElementById('nama_member_input').value = '';
         document.getElementById('id_member').value = '';
         document.getElementById('member_suggestions').innerHTML = '';
     }
 
-    // Tambahkan event listener untuk perubahan jenis transaksi
     document.getElementById('jenis_transaksi').addEventListener('change', function() {
         var memberValue = this.value;
         var namaMemberField = document.getElementById('nama_member');
@@ -164,7 +155,6 @@ document.addEventListener('DOMContentLoaded', function() {
             namaMemberField.style.display = 'block';
         } else {
             namaMemberField.style.display = 'none';
-            // Reset value pilihan member jika jenis transaksi bukan member
             document.getElementById('nama_member_input').value = '';
             document.getElementById('id_member').value = '';
             document.getElementById('member_suggestions').innerHTML = '';
@@ -172,16 +162,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// AJAX untuk mencari anggota berdasarkan input teks
 document.getElementById('nama_member_input').addEventListener('input', function() {
     var inputText = this.value;
     if (inputText.length > 0) {
-        // Kirim request AJAX untuk mencari anggota
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function() {
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 if (xhr.status === 200) {
-                    // Berhasil menerima respons, tampilkan hasil
                     var suggestions = JSON.parse(xhr.responseText);
                     var suggestionsContainer = document.getElementById('member_suggestions');
                     suggestionsContainer.innerHTML = '';
@@ -198,10 +185,8 @@ document.getElementById('nama_member_input').addEventListener('input', function(
                         });
                         suggestionsContainer.appendChild(option);
                     });
-                    // Tampilkan daftar saran
                     suggestionsContainer.style.display = 'block';
                 } else {
-                    // Gagal menerima respons
                     console.error('Request failed');
                 }
             }
@@ -209,9 +194,7 @@ document.getElementById('nama_member_input').addEventListener('input', function(
         xhr.open('GET', '/search/member?keyword=' + inputText, true);
         xhr.send();
     } else {
-        // Kosongkan sugesti jika input kosong
         document.getElementById('member_suggestions').innerHTML = '';
-        // Sembunyikan daftar saran
         document.getElementById('member_suggestions').style.display = 'none';
     }
 });

@@ -4,12 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Data_barangController;
-use App\Http\Controllers\Keranjang_umumController;
 use App\Http\Controllers\NotaController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\TransaksiController;
-use App\Models\Transaksi;
 
 /*
 |--------------------------------------------------------------------------

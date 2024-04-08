@@ -139,7 +139,6 @@ class TransaksiController extends Controller
         $nota->kembalian = $request->input('kembalian');
         $nota->save();
 
-        // Buat detail nota
         foreach ($keranjang as $item) {
             Detail_nota::create([
                 'id_nota' => $nota->id,

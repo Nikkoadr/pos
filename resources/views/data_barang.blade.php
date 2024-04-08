@@ -27,7 +27,6 @@
     <div class="card-header">
             <button type="button" class="btn btn-primary m-1" data-toggle="modal" data-target="#modal_import"><i class="fa-solid fa-file-import"></i> Import</button>
             @include('layouts.component.modal_impor_data_barang')
-            {{-- <a href="exportuser" class="btn btn-info m-1" target="_blank"><i class="fa-solid fa-file-export"></i> Export</a> --}}
             <button type="button" class="btn btn-success m-1" data-toggle="modal" data-target="#modal_tambah_data_barang"><i class="fa-solid fa-boxes-packing"></i> Tambah</button>
             @include('layouts.component.modal_tambah_data_barang')
         </div>

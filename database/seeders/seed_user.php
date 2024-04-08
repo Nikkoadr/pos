@@ -19,7 +19,7 @@ class seed_user extends Seeder
             'email' => 'admin@POS.net',
             'password' => Hash::make('P4ssw0rd'),
             'nama' => 'Administrator',
-            'nomor_hp' => '081290020000',
+            'nomor_hp' => '081000000000',
             'role' => 'admin',
         ]);
     }

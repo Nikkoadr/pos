@@ -1,0 +1,70 @@
+@page {
+    size: 100mm 140mm;
+    margin: 5mm;
+}
+body {
+    font-family: "Arial", sans-serif;
+    margin: 2mm;
+    padding: 0;
+    color: #333;
+    font-size: 80%; /* Skala font ke 80% */
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+th {
+    border-bottom: 1px solid black; /* Menetapkan garis bawah pada th */
+    padding: 2px;
+    text-align: left;
+    background-color: #f2f2f2;
+}
+td {
+    padding: 2px;
+    text-align: left;
+}
+h1,
+h2 {
+    font-size: 18px;
+    margin: 5px 0;
+    color: #333;
+}
+h2 {
+    margin-top: 15px;
+}
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.header h1 {
+    margin: 0;
+    color: #555;
+}
+.header p {
+    margin: 5px 0;
+    color: #777;
+}
+h5 {
+    font-size: 14px;
+    margin-top: 15px;
+    color: #777;
+}
+/* Style untuk label jumlah */
+.amount-label {
+    font-weight: bold;
+    color: #333;
+    text-align: right;
+}
+/* Style untuk jumlah yang besar */
+.amount {
+    font-weight: bold;
+    color: #333;
+    text-align: right;
+}
+/* Style untuk catatan */
+.note {
+    font-size: 12px;
+    color: #777;
+    margin-top: 10px;
+}

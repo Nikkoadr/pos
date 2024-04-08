@@ -1,90 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Invoice</title>
-    <style>
-        @page {
-            size: 100mm 140mm;
-            margin: 5mm;
-        }
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 2mm;
-            padding: 0;
-            color: #333;
-            font-size: 80%; /* Skala font ke 80% */
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-        th {
-            border-bottom: 1px solid black; /* Menetapkan garis bawah pada th */
-            padding: 8px;
-            text-align: left;
-            background-color: #f2f2f2;
-        }
-        td {
-            padding: 8px;
-            text-align: left;
-        }
-        h1, h2 {
-            font-size: 18px;
-            margin: 5px 0;
-            color: #333;
-        }
-        h2 {
-            margin-top: 15px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .header h1 {
-            margin: 0;
-            color: #555;
-        }
-        .header p {
-            margin: 5px 0;
-            color: #777;
-        }
-        h5 {
-            font-size: 14px;
-            margin-top: 15px;
-            color: #777;
-        }
-        /* Style untuk label jumlah */
-        .amount-label {
-            font-weight: bold;
-            color: #333;
-            text-align: right;
-        }
-        /* Style untuk jumlah yang besar */
-        .amount {
-            font-weight: bold;
-            color: #333;
-            text-align: right;
-        }
-        /* Style untuk catatan */
-        .note {
-            font-size: 12px;
-            color: #777;
-            margin-top: 10px;
-        }
-    </style>
+    <title>Invoice {{ config('app.name', 'Laravel') }} ID : {{ $nota->id }}</title>
+<link rel="stylesheet" href="{{ asset('assets/dist/css/invoice.css') }}">
 </head>
 <body>
     <div class="header">
-        <h1>Invoice Toko Andreas</h1>
+        <h1>Invoice {{ config('app.name', 'Laravel') }}</h1>
         <p>Alamat: Blok Karang Mulya RT 17 RW 05 Desa Jangga Kecamatan Losarang Kabupaten Indramayu 45253</p>
     </div>
 
-    <h2>Informasi Nota</h2>
+    <h2>Informasi Invoice</h2>
     <table>
         <tr>
             <th>Id Invoice</th>
-            <th>Jenis Transaksi</th>
+            <th>Jenis Trx</th>
             <th>Kasir</th>
             <th>Tanggal Transaksi</th>
         </tr>
@@ -107,6 +37,7 @@
             </tr>
         </thead>
         <tbody>
+            @php $count = count($nota->detailNota); @endphp
             @foreach($nota->detailNota as $detail)
                 <tr>
                     <td>{{ $detail->nama_barang }}</td>
@@ -119,6 +50,11 @@
     </table>
 
     <table>
+        <tr>
+            <td class="amount-label">Total Item</td>
+            <td>:</td>
+            <td class="amount">{{ $count }}</td>
+        </tr>
         <tr>
             <td class="amount-label">Total Belanja</td>
             <td>:</td>
@@ -135,7 +71,8 @@
             <td class="amount">@rp($nota->kembalian)</td>
         </tr>
     </table>
-    <h5 class="note">Catatan: Barang yang sudah dibeli tidak bisa dikembalikan</h5>
+    <h5 style="font-size: 8px;" class="note">Catatan: Barang yang sudah dibeli tidak bisa dikembalikan</h5>
+    <h5 style="text-align: center;" class="note">Terima Kasih</h5>
     <script> window.print(); </script>
 </body>
 </html>

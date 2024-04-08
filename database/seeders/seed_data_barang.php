@@ -17,11 +17,11 @@ class seed_data_barang extends Seeder
         Data_barang::create([
             'id_toko' => '1',
             'id_supplier' => '1',
-            'nama' => 'Casing',
-            'qty' => '100',
-            'harga_modal' => '1000',
-            'harga_jual1' => '2000',
-            'harga_jual2' => '3000',
+            'nama' => 'Yakult 1 Botol',
+            'qty' => '1000',
+            'harga_modal' => '2000',
+            'harga_jual1' => '2500',
+            'harga_jual2' => '9500',
 
         ]);
     }

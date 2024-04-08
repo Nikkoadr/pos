@@ -3,11 +3,11 @@
     margin: 5mm;
 }
 body {
-    font-family: "Times New Roman";
+    font-family: "sans-serif";
     margin: 2mm;
     padding: 0;
     color: #333;
-    font-size: 80%; /* Skala font ke 80% */
+    font-size: 100%;
 }
 table {
     width: 100%;
@@ -15,7 +15,7 @@ table {
     margin-bottom: 10px;
 }
 th {
-    border-bottom: 1px solid black; /* Menetapkan garis bawah pada th */
+    border-bottom: 1px solid black;
     padding: 2px;
     text-align: left;
     background-color: #f2f2f2;

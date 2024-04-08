@@ -143,14 +143,11 @@ $sheet->getStyle('A' . $row)->applyFromArray([
 // Menyimpan file ke dalam direktori penyimpanan
 $fileName = 'invoice.xlsx';
 $writer = new Xlsx($spreadsheet);
-$fileContents = $writer->writeToString();
-Storage::put('public/' . $fileName, $fileContents);
+$filePath = 'public/' . $fileName;
+$writer->save(storage_path('app/' . $filePath));
 
-// Mengambil URL untuk file yang disimpan
-$filePath = Storage::url('public/' . $fileName);
-
-// Membaca kembali file Excel yang sudah disimpan dan mengonversinya menjadi HTML
-$spreadsheet = IOFactory::load($fileName);
+// Mengonversi file Excel yang disimpan menjadi HTML
+$spreadsheet = IOFactory::load(storage_path('app/' . $filePath));
 $writer = IOFactory::createWriter($spreadsheet, 'Html');
 $htmlContent = $writer->save('php://output');
 

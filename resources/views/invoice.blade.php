@@ -7,7 +7,6 @@
 <body>
     <div class="header">
         <h1>Invoice {{ config('app.name', 'Laravel') }}</h1>
-        <p>Alamat: Blok Karang Mulya RT 17 RW 05 Desa Jangga Kecamatan Losarang Kabupaten Indramayu 45253</p>
     </div>
 
     <h2>Informasi Invoice</h2>

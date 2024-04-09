@@ -3,6 +3,7 @@ body {
     width: 95mm;
     margin: 0;
     padding: 3mm;
+    font-size: 16px; /* Memperbesar font untuk seluruh konten */
 }
 
 .header {
@@ -13,13 +14,13 @@ h1,
 h2,
 h5 {
     margin: 5px 0;
+    font-size: 22px; /* Memperbesar font untuk judul */
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     line-height: 1;
-    font-size: 14px; /* Memperbesar font proporsional untuk seluruh teks dalam tabel */
 }
 
 th,
@@ -46,7 +47,7 @@ th {
 
 .note {
     text-align: left;
-    font-size: 10px;
+    font-size: 12px; /* Memperbesar ukuran font untuk catatan */
     margin-top: 5px;
     margin-bottom: 5px;
 }
@@ -57,23 +58,28 @@ th {
     margin-bottom: 3px;
 }
 
+.invoice-detail {
+    font-size: 18px; /* Memperbesar font untuk detail barang */
+}
+
 @media print {
     body {
         width: 95mm;
+        font-size: 14px; /* Ukuran font saat dicetak */
     }
 
     h1,
     h2,
     h5 {
-        font-size: 12px;
+        font-size: 15px; /* Ukuran judul saat dicetak */
     }
 
     table {
-        font-size: 12px; /* Mengurangi ukuran font saat dicetak */
+        font-size: 13px; /* Mengurangi ukuran font saat dicetak */
     }
 
     .note {
-        font-size: 8px;
+        font-size: 5px; /* Ukuran font catatan saat dicetak */
     }
 
     .amount-label,

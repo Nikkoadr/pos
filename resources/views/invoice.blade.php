@@ -6,7 +6,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Invoice {{ config('app.name', 'Laravel') }}</h1>
+        <h1 style="font-size: 25px;">Invoice {{ config('app.name', 'Laravel') }}</h1>
     </div>
 
     <h2>Informasi Invoice</h2>
@@ -70,8 +70,8 @@
             <td class="amount">@rp($nota->kembalian)</td>
         </tr>
     </table>
-    <h5 style="font-size: 12px;" class="note">Catatan: Barang yang sudah dibeli tidak bisa dikembalikan</h5>
-    <h5 style="text-align: center; font-size: 16px;" class="note">Terima Kasih</h5>
+    <h5 style="font-size: 7px;" class="note">Catatan: Barang yang sudah dibeli tidak bisa dikembalikan</h5>
+    <h5 style="text-align: center; font-size: 12px;" class="note">Terima Kasih</h5>
     <script> window.print(); </script>
 </body>
 </html>

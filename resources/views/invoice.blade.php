@@ -9,11 +9,11 @@
         <h1 style="font-size: 25px;">Invoice {{ config('app.name', 'Laravel') }}</h1>
     </div>
 
-    <h2>Informasi Invoice</h2>
+    <h2 style="font-size: 20px">Informasi Invoice</h2>
     <table>
         <tr>
             <th>Id Invoice</th>
-            <th>Jenis Trx</th>
+            <th>Jenis Transaksi</th>
             <th>Kasir</th>
             <th>Tanggal Transaksi</th>
         </tr>
@@ -25,12 +25,12 @@
         </tr>
     </table>
 
-    <h2>Detail Barang</h2>
+    <h2 style="font-size: 20px">Detail Barang</h2>
     <table>
         <thead>
             <tr>
-                <th>Nama Barang</th>
                 <th>Qty</th>
+                <th>Nama Barang</th>
                 <th>Harga</th>
                 <th>Subtotal</th>
             </tr>
@@ -39,8 +39,8 @@
             @php $count = count($nota->detailNota); @endphp
             @foreach($nota->detailNota as $detail)
                 <tr>
-                    <td>{{ $detail->nama_barang }}</td>
                     <td>{{ $detail->qty }}</td>
+                    <td>{{ $detail->nama_barang }}</td>
                     <td>@rp($detail->harga)</td>
                     <td>@rp($detail->subtotal)</td>
                 </tr>

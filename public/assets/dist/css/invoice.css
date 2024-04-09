@@ -68,14 +68,8 @@ th {
         font-size: 20px; /* Ukuran font saat dicetak */
     }
 
-    h1,
-    h2,
-    h5 {
-        font-size: 20px; /* Ukuran judul saat dicetak */
-    }
-
     table {
-        font-size: 13px; /* Mengurangi ukuran font saat dicetak */
+        font-size: 16px; /* Mengurangi ukuran font saat dicetak */
     }
 
     .amount-label,

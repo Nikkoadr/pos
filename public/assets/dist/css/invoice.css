@@ -65,21 +65,17 @@ th {
 @media print {
     body {
         width: 95mm;
-        font-size: 14px; /* Ukuran font saat dicetak */
+        font-size: 20px; /* Ukuran font saat dicetak */
     }
 
     h1,
     h2,
     h5 {
-        font-size: 15px; /* Ukuran judul saat dicetak */
+        font-size: 20px; /* Ukuran judul saat dicetak */
     }
 
     table {
         font-size: 13px; /* Mengurangi ukuran font saat dicetak */
-    }
-
-    .note {
-        font-size: 5px; /* Ukuran font catatan saat dicetak */
     }
 
     .amount-label,

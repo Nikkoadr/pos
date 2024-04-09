@@ -1,65 +1,84 @@
 body {
-    font-family: "sans-serif";
-    margin: 2mm;
-    padding: 0;
-    color: #333;
-    font-size: 80%;
+    font-family: Arial, sans-serif;
+    width: 95mm;
+    margin: 0;
+    padding: 3mm;
 }
+
+.header {
+    text-align: center;
+}
+
+h1,
+h2,
+h5 {
+    margin: 5px 0;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 10px;
+    line-height: 1;
+    font-size: 14px; /* Memperbesar font proporsional untuk seluruh teks dalam tabel */
 }
+
+th,
+td {
+    padding: 3px; /* Menyesuaikan padding agar lebih mudah dibaca ketika dicetak */
+}
+
 th {
     border-bottom: 1px solid black;
-    padding: 2px;
-    text-align: left;
+    text-align: left; /* Mengatur teks di th menjadi rata kiri */
 }
-td {
-    padding: 2px;
-    text-align: left;
-}
-h1,
-h2 {
-    font-size: 18px;
-    margin: 5px 0;
-    color: #333;
-}
-h2 {
-    margin-top: 15px;
-}
-.header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-.header h1 {
-    margin: 0;
-    color: #555;
-}
-.header p {
-    margin: 5px 0;
-    color: #777;
-}
-h5 {
-    font-size: 14px;
-    margin-top: 15px;
-    color: #777;
-}
-/* Style untuk label jumlah */
+
 .amount-label {
-    font-weight: bold;
-    color: #333;
     text-align: right;
+    font-weight: bold;
+    width: 70%; /* Menyesuaikan lebar kolom amount-label */
 }
-/* Style untuk jumlah yang besar */
+
 .amount {
-    font-weight: bold;
-    color: #333;
     text-align: right;
+    font-weight: bold;
+    width: 30%; /* Menyesuaikan lebar kolom amount */
 }
-/* Style untuk catatan */
+
 .note {
-    font-size: 12px;
-    color: #777;
-    margin-top: 10px;
+    text-align: left;
+    font-size: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.amount-label,
+.amount,
+.note {
+    margin-bottom: 3px;
+}
+
+@media print {
+    body {
+        width: 95mm;
+    }
+
+    h1,
+    h2,
+    h5 {
+        font-size: 12px;
+    }
+
+    table {
+        font-size: 12px; /* Mengurangi ukuran font saat dicetak */
+    }
+
+    .note {
+        font-size: 8px;
+    }
+
+    .amount-label,
+    .amount {
+        font-weight: bold;
+        text-align: right;
+    }
 }

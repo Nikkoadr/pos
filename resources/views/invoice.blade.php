@@ -10,20 +10,28 @@
     </div>
 
     <h2 style="font-size: 20px">Informasi Invoice</h2>
-    <table>
-        <tr>
-            <th>Id Invoice</th>
-            <th>Jenis Transaksi</th>
-            <th>Kasir</th>
-            <th>Tanggal Transaksi</th>
-        </tr>
-        <tr>
-            <td>{{ $nota->id }}</td>
-            <td>{{ $nota->jenis_transaksi }}</td>
-            <td>{{ $nota->kasir }}</td>
-            <td>{{ \Carbon\Carbon::parse($nota->tanggal_transaksi)->locale('id_ID')->isoFormat('D MMMM YYYY, HH:mm') }}</td>
-        </tr>
-    </table>
+<table>
+    <tr>
+        <td><strong>ID Invoice</strong></td>
+        <td><strong>:</strong></td>
+        <td class="wide-column">{{ $nota->id }}</td>
+    </tr>
+    <tr>
+        <td><strong>Jenis Transaksi</strong></td>
+        <td><strong>:</strong></td>
+        <td class="wide-column">{{ $nota->jenis_transaksi }}</td>
+    </tr>
+    <tr>
+        <td><strong>Kasir</strong></td>
+        <td><strong>:</strong></td>
+        <td class="wide-column">{{ $nota->kasir }}</td>
+    </tr>
+    <tr>
+        <td><strong>Tanggal Transaksi</strong></td>
+        <td><strong>:</strong></td>
+        <td class="wide-column">{{ \Carbon\Carbon::parse($nota->tanggal_transaksi)->locale('id_ID')->isoFormat('D MMMM YYYY, HH:mm') }}</td>
+    </tr>
+</table>
 
     <h2 style="font-size: 20px">Detail Barang</h2>
     <table>
@@ -70,7 +78,7 @@
             <td class="amount">@rp($nota->kembalian)</td>
         </tr>
     </table>
-    <h5 style="font-size: 12px;" class="note">Catatan: Barang yang sudah dibeli tidak bisa dikembalikan</h5>
+    <h5 style="font-size: 12px; text-align: left;">Catatan: Barang yang sudah dibeli tidak bisa dikembalikan</h5>
     <h5 style="text-align: center; font-size: 15px;" class="note">Terima Kasih</h5>
     <script> window.print(); </script>
 </body>

@@ -3,7 +3,6 @@ body {
     width: 95mm;
     margin: 0;
     padding: 3mm;
-    font-size: 16px; /* Memperbesar font untuk seluruh konten */
 }
 
 .header {
@@ -14,67 +13,50 @@ h1,
 h2,
 h5 {
     margin: 5px 0;
-    font-size: 22px; /* Memperbesar font untuk judul */
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     line-height: 1;
+    font-size: 15px;
 }
 
 th,
 td {
-    padding: 3px; /* Menyesuaikan padding agar lebih mudah dibaca ketika dicetak */
+    padding: 1px;
 }
 
 th {
     border-bottom: 1px solid black;
-    text-align: left; /* Mengatur teks di th menjadi rata kiri */
 }
 
 .amount-label {
     text-align: right;
     font-weight: bold;
-    width: 70%; /* Menyesuaikan lebar kolom amount-label */
+    width: 70%;
 }
 
 .amount {
     text-align: right;
     font-weight: bold;
-    width: 30%; /* Menyesuaikan lebar kolom amount */
+    width: 30%;
 }
 
 .note {
     text-align: left;
-    font-size: 12px; /* Memperbesar ukuran font untuk catatan */
+    font-size: 10px;
     margin-top: 5px;
     margin-bottom: 5px;
 }
 
-.amount-label,
-.amount,
-.note {
-    margin-bottom: 3px;
+.amount-label {
+    text-align: right;
 }
-
-.invoice-detail {
-    font-size: 18px; /* Memperbesar font untuk detail barang */
+.amount {
+    font-weight: bold;
+    text-align: right;
 }
-
-@media print {
-    body {
-        width: 95mm;
-        font-size: 20px; /* Ukuran font saat dicetak */
-    }
-
-    table {
-        font-size: 16px; /* Mengurangi ukuran font saat dicetak */
-    }
-
-    .amount-label,
-    .amount {
-        font-weight: bold;
-        text-align: right;
-    }
+.wide-column {
+    width: 60%; /* Ubah lebar kolom ini sesuai kebutuhan Anda */
 }

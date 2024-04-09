@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Detail_nota;
 use App\Models\Data_barang;
+use App\Models\Setting;
 
 class NotaController extends Controller
 {
@@ -33,12 +34,25 @@ class NotaController extends Controller
         return view('riwayat_transaksi', compact('riwayat_transaksi', 'bulan', 'tahun'));
     }
 
-    public function detail($id)
-    {
-        $nota = Nota::with('detailNota')->findOrFail($id);
-        return view('invoice_excel', compact('nota'));
-        //return view('invoice', compact('nota'));
+public function detail($id)
+{
+    $nota = Nota::with('detailNota')->findOrFail($id);
+    
+
+    $printerSetting = Setting::first();
+    
+    switch ($printerSetting->printer) {
+        case 'excel':
+            return view('invoice_excel', compact('nota'));
+            break;
+        case 'termal':
+            return view('invoice_termal_58', compact('nota'));
+            break;
+        default:
+            return view('invoice', compact('nota'));
+            break;
     }
+}
 
     public function hapus_nota($id)
     {

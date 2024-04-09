@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Nota;
+use App\Models\Setting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -37,8 +37,20 @@ class HomeController extends Controller
         return view('data_supplier');
     }
 
-    public function pengaturan()
+    public function setting()
     {
-        return view('pengaturan');
+        $setting = Setting::first();
+        return view('setting', compact('setting'));
+    }
+        public function update_setting(Request $request, $id)
+    {
+        $data = Setting::findOrFail($id);
+        $validatedData = $request->validate([
+            'nama_toko' => ['required'],
+            'alamat_toko' => ['required',],
+            'printer' => ['required',],
+        ]);
+        $data->update($validatedData);
+        return redirect('setting')->with(['success' => 'pengaturan berhasil di ubah']);
     }
 }

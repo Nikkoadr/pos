@@ -97,14 +97,14 @@
             </p>
         </a>
         </li>
-        {{-- <li class="nav-item">
-        <a href="pengaturan" class="nav-link {{ request()->is('pengaturan') ? 'active' : '' }}">
+        <li class="nav-item">
+        <a href="setting" class="nav-link {{ request()->is('setting') ? 'active' : '' }}">
             <i class="nav-icon fa-solid fa-gears"></i>
             <p>
-            Pengaturan
+            Setting
             </p>
         </a>
-        </li> --}}
+        </li>
         
     </ul>
     </nav>

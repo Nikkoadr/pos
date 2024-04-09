@@ -1,0 +1,81 @@
+body {
+    font-family: Arial, sans-serif;
+    width: 58mm;
+    margin: 0;
+    padding: 3mm;
+}
+
+.header {
+    text-align: center;
+}
+
+h1,
+h2,
+h5 {
+    margin: 5px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    line-height: 1;
+}
+
+th,
+td {
+    padding: 1px;
+}
+
+th {
+    border-bottom: 1px solid black;
+}
+
+.amount-label {
+    text-align: right;
+    font-weight: bold;
+}
+
+.amount {
+    text-align: right;
+    font-weight: bold;
+}
+
+.note {
+    text-align: left;
+    font-size: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.amount-label,
+.amount,
+.note {
+    margin-bottom: 3px;
+}
+
+@media print {
+    body {
+        width: 58mm;
+    }
+
+    h1,
+    h2,
+    h5 {
+        font-size: 12px;
+    }
+
+    table {
+        font-size: 10px;
+    }
+
+    .note {
+        font-size: 8px;
+    }
+    .amount-label {
+        text-align: right;
+    }
+    .amount {
+        font-weight: bold;
+        text-align: right;
+    }
+}

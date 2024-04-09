@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             seed_user::class,
             seed_data_barang::class,
             seed_data_member::class,
+            seed_setting::class,
         ]);
     }
 }

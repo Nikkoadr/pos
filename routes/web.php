@@ -33,7 +33,8 @@ Auth::routes([
 Route::get('/home',     [HomeController::class, 'index'])->name('home');
 Route::get('/data_karyawan', [HomeController::class, 'data_karyawan'])->name('data_karyawan');
 Route::get('/data_supplier', [HomeController::class, 'data_supplier'])->name('data_supplier');
-Route::get('/pengaturan', [HomeController::class, 'pengaturan'])->name('pengaturan');
+Route::get('/setting', [HomeController::class, 'setting'])->name('setting');
+Route::put('/update_setting_{id}', [HomeController::class, 'update_setting'])->name('update_setting');
 
 Route::get('/data_barang', [Data_barangController::class, 'data_barang'])->name('data_barang');
 Route::put('/tambah_data_barang', [Data_barangController::class, 'tambah_data_barang'])->name('tambah_data_barang');

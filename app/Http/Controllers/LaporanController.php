@@ -19,7 +19,7 @@ class LaporanController extends Controller
     
     public function laporan()
     {
-        $nota = Nota::all();
+        $nota = Nota::whereDate('created_at')->get();
         $total_belanja = $nota->sum('total_belanja');
 
         return view('laporan', compact('nota', 'total_belanja'));

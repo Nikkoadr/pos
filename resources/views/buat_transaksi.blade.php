@@ -72,22 +72,50 @@
                             <tbody>
                                 @foreach ($transaksi as $data)
                                     <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $data->id }}</td>
-                                    <td>{{ $data->jenis_transaksi }}</td>
-                                    <td>
-                                        @if ($data->nama_member)
-                                            {{ $data->nama_member }}
-                                        @else
-                                            Tidak ada Member
-                                        @endif
-                                    </td>
-                                    <td>{{ \Carbon\Carbon::parse($data->tanggal_transaksi)->translatedFormat('l, j F Y') }}
-                                        Jam {{ \Carbon\Carbon::parse($data->tanggal_transaksi)->translatedFormat('H:i:s') }}</td>
-                                    <td style="text-align: center">
-                                        <a href="proses_transaksi_{{ $data->id }}" class="btn btn-success"><i class="fas fa-eye"></i></a>
-                                    </td>
-                                </tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $data->id }}</td>
+                                        <td>{{ $data->jenis_transaksi }}</td>
+                                        <td>
+                                            @if ($data->nama_member)
+                                                {{ $data->nama_member }}
+                                            @else
+                                                Tidak ada Member
+                                            @endif
+                                        </td>
+                                        <td>{{ \Carbon\Carbon::parse($data->tanggal_transaksi)->translatedFormat('l, j F Y') }}
+                                            Jam {{ \Carbon\Carbon::parse($data->tanggal_transaksi)->translatedFormat('H:i:s') }}</td>
+                                        <td style="text-align: center">
+                                            <div class="btn-group">
+
+                                                @if($data->jenis_transaksi == 'servis')
+
+                                                    {{-- KHUSUS SERVIS --}}
+                                                    <a href="{{ url('transaksi_servis_'.$data->id) }}" class="btn btn-info">
+                                                        <i class="fas fa-tools"></i>
+                                                    </a>
+
+                                                @else
+
+                                                    {{-- TRANSAKSI BIASA --}}
+                                                    <a href="{{ url('proses_transaksi_'.$data->id) }}" class="btn btn-success">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+
+                                                @endif
+
+                                                <form action="{{ url('hapus_nota/'.$data->id) }}" method="POST"
+                                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus nota ini? Stok barang akan dikembalikan.')"
+                                                    style="display:inline;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+
+                                            </div>
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -111,6 +139,7 @@
                                 <select class="form-control" id="jenis_transaksi" name="jenis_transaksi">
                                     <option value="umum">Umum</option>
                                     <option value="member">Member</option>
+                                    <option value="servis">Servis</option>
                                 </select>
                             </div>
                             <div class="form-group" id="nama_member">

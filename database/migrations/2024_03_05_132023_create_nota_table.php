@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('nota', function (Blueprint $table) {
             $table->id();
-            $table->enum('jenis_transaksi', ['umum', 'member']);
+            $table->enum('jenis_transaksi', ['umum', 'member', 'servis']);
             $table->string('kasir');
             $table->string('member')->nullable();
             $table->timestamp('tanggal_transaksi');

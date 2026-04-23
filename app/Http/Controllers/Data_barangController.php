@@ -19,7 +19,7 @@ class Data_barangController extends Controller
     {
         $this->middleware('auth');
     }
-    
+
     public function data_barang()
     {
         $data_barang = Data_barang::all();
@@ -30,20 +30,22 @@ class Data_barangController extends Controller
         $this->validate($request, [
             'id_toko' => ['required'],
             'id_supplier' => ['required'],
+            'barcode' => ['required'],
             'nama_barang' => ['required'],
             'qty' => ['required', 'string'],
             'harga_modal' => ['required'],
             'harga_umum' => ['required',],
-            'harga_grosir' => ['required',],
+            'harga_member' => ['required',],
         ]);
         Data_barang::create([
             'id_toko'   => $request->id_toko,
             'id_supplier'   => $request->id_supplier,
+            'barcode'   => $request->barcode,
             'nama'   => $request->nama_barang,
             'qty'   => $request->qty,
             'harga_modal'   => $request->harga_modal,
-            'harga_jual1'   => $request->harga_umum,
-            'harga_jual2'   => $request->harga_grosir,
+            'harga_umum'   => $request->harga_umum,
+            'harga_member'   => $request->harga_member,
         ]);
         return redirect()->back()->with(['success' => 'Data berhasil ditambahkan!']);
     }
@@ -58,11 +60,12 @@ class Data_barangController extends Controller
     {
         $data = Data_barang::findOrFail($id);
         $validatedData = $request->validate([
+            'barcode' => ['required'],
             'nama' => ['required'],
             'qty' => ['required', 'numeric'],
             'harga_modal' => ['required', 'numeric'],
-            'harga_jual1' => ['required', 'numeric'],
-            'harga_jual2' => ['required', 'numeric'],
+            'harga_umum' => ['required', 'numeric'],
+            'harga_member' => ['required', 'numeric'],
         ]);
         $data->update($validatedData);
         return redirect('data_barang')->with(['success' => 'Data Barang Berhasil Di Update']);

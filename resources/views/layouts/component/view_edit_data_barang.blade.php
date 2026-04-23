@@ -33,6 +33,10 @@
                     @csrf
                     @method('PUT')
                     <div class="form-group">
+                        <label for="barcode">Barcode</label>
+                        <input type="text" class="form-control" id="barcode" name="barcode" value="{{ $data->barcode }}" required>
+                    </div>
+                    <div class="form-group">
                         <label for="nama">Nama Barang</label>
                         <input type="text" class="form-control" id="nama" name="nama" value="{{ $data->nama }}" required>
                     </div>

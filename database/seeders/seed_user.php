@@ -16,7 +16,7 @@ class seed_user extends Seeder
     public function run()
     {
         User::create([
-            'email' => 'admin@POS.net',
+            'email' => 'admin@pos.net',
             'password' => Hash::make('P4ssw0rd'),
             'nama' => 'Administrator',
             'nomor_hp' => '081000000000',

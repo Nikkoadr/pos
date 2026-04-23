@@ -63,6 +63,11 @@ Route::post('/checkout', [TransaksiController::class, 'checkout'])->name('checko
 
 Route::get('/riwayat_transaksi', [NotaController::class, 'riwayat_transaksi'])->name('riwayat_transaksi');
 Route::get('/nota_{id}', [NotaController::class, 'detail'])->name('detail');
-Route::get('/hapus_nota_{id}', [NotaController::class, 'hapus_nota'])->name('hapus_nota');
+Route::delete('/hapus_nota/{id}', [NotaController::class, 'batal_transaksi'])->name('batal_transaksi');
 Route::get('/laporan', [LaporanController::class, 'laporan'])->name('laporan');
 Route::POST('/laporan_filter', [LaporanController::class, 'filter'])->name('laporan.filter');
+
+Route::post('/scan-barang', [TransaksiController::class, 'scanBarang']);
+
+Route::get('/transaksi_servis_{id}', [TransaksiController::class, 'transaksiServis'])->name('transaksi-servis');
+Route::post('/tambah-servis_{id}', [TransaksiController::class, 'store_servis'])->name('servis.store');

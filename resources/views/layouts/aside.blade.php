@@ -39,22 +39,22 @@
             </p>
         </a>
         <ul class="nav nav-treeview">
-            {{-- <li class="nav-item">
+            <li class="nav-item">
             <a href="data_karyawan" class="nav-link {{ request()->is('data_karyawan') ? 'active' : '' }}">
             <i class="nav-icon fa-solid fa-id-card"></i>
             <p>
             Data Karyawan
             </p>
             </a>
-            </li> --}}
-            {{-- <li class="nav-item">
+            </li>
+            <li class="nav-item">
             <a href="data_supplier" class="nav-link {{ request()->is('data_supplier') ? 'active' : '' }}">
             <i class="nav-icon fa-solid fa-truck-fast"></i>
             <p>
             Data Supplier
             </p>
             </a>
-            </li> --}}
+            </li>
             <li class="nav-item">
             <a href="data_member" class="nav-link {{ request()->is('data_member') ? 'active' : '' }}">
             <i class="nav-icon fa-solid fa-user-group"></i>
@@ -78,6 +78,14 @@
             <i class="nav-icon fa-solid fa-handshake"></i>
             <p>
             Transaksi
+            </p>
+        </a>
+        </li>
+        <li class="nav-item">
+        <a href="servis" class="nav-link {{ request()->is('servis') ? 'active' : '' }} {{ request()->is('proses_servis_*') ? 'active' : '' }}">
+            <i class="nav-icon fa-solid fa-screwdriver-wrench"></i>
+            <p>
+            Servis
             </p>
         </a>
         </li>

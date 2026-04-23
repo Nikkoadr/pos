@@ -20,8 +20,9 @@ class seed_data_barang extends Seeder
             'nama' => 'Yakult 1 Botol',
             'qty' => '1000',
             'harga_modal' => '2000',
-            'harga_jual1' => '2500',
-            'harga_jual2' => '9500',
+            'barcode' => '123456789012',
+            'harga_umum' => '2500',
+            'harga_member' => '9500',
 
         ]);
     }

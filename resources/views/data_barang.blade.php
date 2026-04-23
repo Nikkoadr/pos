@@ -35,11 +35,12 @@
                 <thead>
                 <tr>
                 <th>No</th>
+                <th>Barcode</th>
                 <th>Nama</th>
                 <th>Qty</th>
                 <th>Harga Modal</th>
                 <th>Harga Umum</th>
-                <th>Harga Grosir</th>
+                <th>Harga Member</th>
                 <th style="text-align: center" data-orderable="false">Menu</th>
                 </tr>
                 </thead>
@@ -48,11 +49,12 @@
                 @foreach ($data_barang as $data )
                 <tr>
                     <td><?= $no++ ?></td>
+                    <td>{{ $data -> barcode }}</td>
                     <td>{{ $data -> nama }}</td>
                     <td>{{ $data -> qty }}</td>
                     <td>@rp($data -> harga_modal)</td>
-                    <td>@rp($data -> harga_jual1)</td>
-                    <td>@rp($data -> harga_jual2)</td>
+                    <td>@rp($data -> harga_umum)</td>
+                    <td>@rp($data -> harga_member)</td>
                     <td style="text-align: center">
                         <a href="view_edit_data_barang_{{ $data->id }}" class="btn btn-primary"><i class="fa-solid fa-pen-to-square"></i></i></a>
                         <a href="hapus_data_barang_{{ $data->id }}" class="btn btn-danger konfirmasi m-1"><i class="far fa-trash-alt"></i></a>

@@ -14,6 +14,17 @@
                         <input type="hidden" name="id_toko" value="1">
                         <input type="hidden" name="id_supplier" value="1">
                         <div class="row mb-3">
+                            <label for="barcode" class="col-sm-5 col-form-label text-md-end">Barcode :</label>
+                            <div class="col-sm-7">
+                                <input id="barcode" type="text" class="form-control @error('barcode') is-invalid @enderror" name="barcode" value="{{ old('barcode')}}" autocomplete="barcode" autofocus>
+                                @error('barcode')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="row mb-3">
                             <label for="nama_barang" class="col-sm-5 col-form-label text-md-end">Nama Barang :</label>
                             <div class="col-sm-7">
                                 <input id="nik" type="text" class="form-control @error('nama_barang') is-invalid @enderror" name="nama_barang" value="{{ old('nama_barang')}}" autocomplete="nama_barang" autofocus>
@@ -58,10 +69,10 @@
                             </div>
                         </div>
                         <div class="row mb-3">
-                            <label for="harga_grosir" class="col-sm-5 col-form-label text-md-end">Harga Grosir :</label>
+                            <label for="harga_member" class="col-sm-5 col-form-label text-md-end">Harga Member :</label>
                             <div class="col-sm-7">
-                                <input id="harga_grosir" type="number" class="form-control @error('harga_grosir') is-invalid @enderror" name="harga_grosir" value="{{ old('harga_grosir')}}" autocomplete="harga_grosir" autofocus>
-                                @error('harga_grosir')
+                                <input id="harga_member" type="number" class="form-control @error('harga_member') is-invalid @enderror" name="harga_member" value="{{ old('harga_member')}}" autocomplete="harga_member" autofocus>
+                                @error('harga_member')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
                                     </span>

@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->integer('id_toko');
             $table->integer('id_supplier');
+            $table->string('barcode')->unique();
             $table->string('nama');
             $table->integer('qty');
             $table->integer('harga_modal');
-            $table->integer('harga_jual1');
-            $table->integer('harga_jual2');
+            $table->integer('harga_umum');
+            $table->integer('harga_member');
             $table->timestamps();
         });
     }

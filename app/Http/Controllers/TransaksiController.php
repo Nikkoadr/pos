@@ -11,6 +11,8 @@ use App\Models\Keranjang;
 use App\Models\Nota;
 use App\Models\Detail_nota;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
+use App\Models\DetailServis;
 
 class TransaksiController extends Controller
 {
@@ -65,6 +67,41 @@ class TransaksiController extends Controller
         return view('proses_transaksi', compact('transaksi', 'total', 'keranjang', 'member'));
     }
 
+    public function scanBarang(Request $request)
+    {
+        $barang = Data_barang::where('barcode', $request->input('barcode'))->first();
+
+        if (!$barang) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        // cek sudah ada di keranjang
+        $cek = DB::table('keranjang')
+            ->where('id_transaksi', $request->id_transaksi)
+            ->where('id_barang', $barang->id)
+            ->first();
+
+        if ($cek) {
+            DB::table('keranjang')
+                ->where('id', $cek->id)
+                ->update([
+                    'qty' => $cek->qty + 1,
+                    'subtotal' => ($cek->qty + 1) * $barang->harga_umum
+                ]);
+        } else {
+            DB::table('keranjang')->insert([
+                'id_transaksi' => $request->id_transaksi,
+                'id_barang' => $barang->id,
+                'nama' => $barang->nama,
+                'harga' => $barang->harga_umum,
+                'qty' => 1,
+                'subtotal' => $barang->harga_umum
+            ]);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     public function tambah_keranjang(Request $request)
     {
         $produk = Data_barang::find($request->input('id'));
@@ -77,7 +114,7 @@ class TransaksiController extends Controller
         $keranjang = Keranjang::where('id_barang', $produk->id)
             ->where('id_transaksi', $request->id_transaksi)
             ->first();
-        $harga = $request->id_member ? $produk->harga_jual2 : $produk->harga_jual1;
+        $harga = $request->id_member ? $produk->harga_member : $produk->harga_umum;
         $subtotal = $harga * $qty;
         if ($keranjang) {
             $keranjang->qty += $qty;
@@ -96,6 +133,50 @@ class TransaksiController extends Controller
         }
         return redirect()->back()->with('success', 'Keranjang berhasil ditambah dan diperbaharui!');
     }
+    public function transaksiServis($id)
+    {
+        $transaksi = Transaksi::findOrFail($id);
+
+        $servis = DetailServis::where('id_nota', $id)->first();
+
+        return view('buat_servis', compact('transaksi', 'servis'));
+    }
+
+    public function store_servis(Request $request, $id)
+    {
+
+        $request->validate([
+            'tanggal_masuk' => 'required|date',
+            'nama' => 'required',
+            'nohp' => 'required',
+            'merk' => 'required',
+            'kerusakan' => 'required',
+        ]);
+
+        // simpan detail servis
+        DB::table('detail_servis')->insert([
+            'id_nota' => $id,
+            'tanggal_masuk' => $request->tanggal_masuk,
+            'tanggal_dikerjakan' => null,
+            'tanggal_diambil' => null,
+            'nama' => $request->nama,
+            'nohp' => $request->nohp,
+            'alamat' => $request->alamat,
+            'merk' => $request->merk,
+            'tipe' => $request->tipe,
+            'kerusakan' => $request->kerusakan,
+            'kondisi' => $request->kondisi,
+            'pin' => $request->pin,
+            'sandi' => $request->sandi,
+            'pola' => $request->pola,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect('proses_transaksi_' . $id)
+            ->with('success', 'Servis berhasil ditambahkan');
+    }
+
     public function edit_qty(Request $request)
     {
         $id = $request->input('id');

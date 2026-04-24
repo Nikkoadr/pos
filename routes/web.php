@@ -8,6 +8,7 @@ use App\Http\Controllers\NotaController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\ServisController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,11 +47,11 @@ Route::get('/hapus_data_barang_{id}', [Data_barangController::class, 'hapus_data
 
 Route::get('/data_member', [MemberController::class, 'data_member'])->name('data_member');
 Route::get('/search/member', [MemberController::class, 'search'])->name('search');
-Route::post('tambah_data_member', [MemberController::class, 'tambah_data_member'])->name('tambah_data_member');
-Route::get('view_edit_data_member_{id}', [MemberController::class, 'view_edit_data_member'])->name('view_edit_data_member');
-Route::put('update_data_member_{id}', [MemberController::class, 'update_data_member'])->name('update_data_member');
-Route::get('hapus_data_member_{id}', [MemberController::class, 'hapus_data_member'])->name('hapus_data_member');
-Route::post('edit_data_member_{id}', [MemberController::class, 'edit_data_member'])->name('edit_data_member');
+Route::post('/tambah_data_member', [MemberController::class, 'tambah_data_member'])->name('tambah_data_member');
+Route::get('/view_edit_data_member_{id}', [MemberController::class, 'view_edit_data_member'])->name('view_edit_data_member');
+Route::put('/update_data_member_{id}', [MemberController::class, 'update_data_member'])->name('update_data_member');
+Route::get('/hapus_data_member_{id}', [MemberController::class, 'hapus_data_member'])->name('hapus_data_member');
+Route::post('/edit_data_member_{id}', [MemberController::class, 'edit_data_member'])->name('edit_data_member');
 
 Route::get('/transaksi', [TransaksiController::class, 'transaksi'])->name('transaksi');
 Route::post('/buat_transaksi', [TransaksiController::class, 'buat_transaksi'])->name('buat_transaksi');
@@ -58,7 +59,7 @@ Route::get('/proses_transaksi_{id}', [TransaksiController::class, 'proses_transa
 Route::get('/data-barang', [TransaksiController::class, 'dataBarang'])->name('data-barang');
 Route::post('/tambah_keranjang', [TransaksiController::class, 'tambah_keranjang'])->name('tambah_keranjang');
 Route::post('/edit_qty', [TransaksiController::class, 'edit_qty'])->name('edit_qty');
-Route::delete('hapus_keranjang_{id}', [TransaksiController::class, 'hapus_keranjang']);
+Route::delete('/hapus_keranjang_{id}', [TransaksiController::class, 'hapus_keranjang'])->name('hapus_keranjang');
 Route::post('/checkout', [TransaksiController::class, 'checkout'])->name('checkout');
 
 Route::get('/riwayat_transaksi', [NotaController::class, 'riwayat_transaksi'])->name('riwayat_transaksi');
@@ -69,5 +70,5 @@ Route::POST('/laporan_filter', [LaporanController::class, 'filter'])->name('lapo
 
 Route::post('/scan-barang', [TransaksiController::class, 'scanBarang']);
 
-Route::get('/transaksi_servis_{id}', [TransaksiController::class, 'transaksiServis'])->name('transaksi-servis');
-Route::post('/tambah-servis_{id}', [TransaksiController::class, 'store_servis'])->name('servis.store');
+Route::get('/transaksi_servis_{id}', [ServisController::class, 'transaksiServis']);
+Route::post('/servis/store/{id}', [ServisController::class, 'store_servis']);

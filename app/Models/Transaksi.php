@@ -15,4 +15,9 @@ class Transaksi extends Model
     {
         return $this->belongsTo(Data_member::class, 'member_id');
     }
+
+    public function servis()
+    {
+        return $this->hasOne(DetailTransaksiServis::class, 'id_transaksi');
+    }
 }

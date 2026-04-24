@@ -34,8 +34,29 @@
                             <h6 class="card-title"><b>ID Transaksi :</b> {{ $transaksi->id }}</h6><br>
                             <h6 class="card-title"><b>Jenis Transaksi :</b> {{ $transaksi->jenis_transaksi }}</h6><br>
                             <h6 class="card-title"><b>Kasir :</b> {{ auth()->user()->nama }}</h6><br>
-                            <h6 class="card-title"><b>Member :</b> {{ $transaksi->nama_member }}</h6><br>
+                            @if($transaksi->jenis_transaksi == 'member')
+                                <h6 class="card-title"><b>Member :</b> {{ $transaksi->nama_member ?? 'Tidak ada Member' }}</h6><br>
+                            @else
+                                <h6 class="card-title"><b>Member :</b> -</h6><br>
+                            @endif
                             <h6 class="card-title"><b>Tanggal Transaksi :</b> {{ \Carbon\Carbon::now()->locale('id_ID')->isoFormat('D MMMM YYYY') }}</h6><br>
+                            @if($transaksi->jenis_transaksi == 'servis')
+                            <hr>
+                            <h6 class="card-title"><b>Data Servis :</b></h6><br>
+
+                            @if(isset($servis))
+                                <h6 class="card-title"><b>Kode :</b> {{ $servis->kode_servis }}</h6><br>
+                                <h6 class="card-title"><b>Customer :</b> {{ $servis->nama }}</h6><br>
+                                <h6 class="card-title"><b>No HP :</b> {{ $servis->nohp }}</h6><br>
+                                <h6 class="card-title"><b>Device :</b> {{ $servis->merk }} - {{ $servis->tipe }}</h6><br>
+                                <h6 class="card-title"><b>Kerusakan :</b> {{ $servis->kerusakan }}</h6><br>
+                            @else
+                                <h6 class="text-danger"><b>Data servis belum diisi!</b></h6>
+                                <a href="{{ url('transaksi_servis_'.$transaksi->id) }}" class="btn btn-warning btn-sm">
+                                    Isi Servis
+                                </a><br><br>
+                            @endif
+                        @endif
                             <h6 class="card-title"><b>Grand Total :</b> @rp($total)</h6><br>
                             <h6 class="card-title"><b>Kembalian :</b> <span id="kembalian">0</span></h6><br>
                             <div class="row">
@@ -47,13 +68,15 @@
                                 </div>
                             </div>
                         </div>
-                    @if($total != 0)
+                    @if($total != 0 && !($transaksi->jenis_transaksi == 'servis' && !isset($servis)))
                         <div class="card-footer">
                             <form action="{{ route('checkout') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
                                 <input type="hidden" name="jenis_transaksi" value="{{ $transaksi->jenis_transaksi }}">
-                                <input type="hidden" name="member" value="{{ $transaksi->nama_member }}">
+                                @if($transaksi->jenis_transaksi == 'member')
+                                    <input type="hidden" name="member" value="{{ $transaksi->id_member }}">
+                                @endif
                                 <input type="hidden" name="bayar" id="inputBayar">
                                 <input type="hidden" name="kembalian" id="inputKembalian">
                                 <button class="btn btn-success float-right konfirmasi" type="submit">Checkout</button>
@@ -70,6 +93,9 @@
                 <h5 class="m-0">Keranjang</h5>
                 </div>
                 <div class="card-body">
+                    <div class="mb-3">
+                        <input type="text" id="scanner" class="form-control" placeholder="Scan Barcode di sini..." autofocus>
+                    </div>
                 <table id="table_keranjang" class="table table-bordered table-striped">
                     <thead>
                     <tr style="text-align: center">
@@ -88,7 +114,20 @@
                         <td><?= $no++ ?></td>
                         <td>{{ $data-> nama }}</td>
                         <td>@rp($data -> harga)</td>
-                        <td>{{ $data -> qty }}</td>
+                        <td class="col-3">
+                            <form action="/edit_qty" method="POST">
+                                @csrf
+                                <input type="hidden" name="id" value="{{ $data->id }}">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input class="form-control" type="number" name="qty" value="{{ $data->qty }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-info btn-block" type="submit"><i class="fa-solid fa-save"></i></button>
+                                    </div>
+                                </div>
+                            </form>
+                        </td>
                         <td>@rp($data -> subtotal)</td>
                         <td width="10%" style="text-align: center">
                             <form action="hapus_keranjang_{{ $data->id }}" method="POST">
@@ -110,45 +149,19 @@
                 <h5 class="m-0">Pilih Barang</h5>
                 </div>
                 <div class="card-body">
-                <table id="table_data_barang" class="table table-bordered table-striped">
-                    <thead>
-                    <tr style="text-align: center">
-                    <th>No</th>
-                    <th>Nama</th>
-                    <th>Stok</th>
-                    <th>Harga Jual</th>
-                    <th data-orderable="false">Jumlah</th>
-                    <th data-orderable="false">Menu</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php $no=1; ?>
-                    @foreach ($data_barang as $data )
-                    <tr>
-                    <td><?= $no++ ?></td>
-                    <td>{{ $data -> nama }}</td>
-                    <td>{{ $data -> qty }}</td>
-                    @if($transaksi->id_member == null)
-                        <td>@rp($data->harga_jual1)</td>
-                    @else
-                        <td>@rp($data->harga_jual2)</td>
-                    @endif
-                    
-                    <td width="15%" style="text-align: center">
-                        <form method="post" action="/tambah_keranjang">
-                            @csrf
-                            <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
-                            <input type="hidden" name="id_member" value="{{ $transaksi->id_member }}">
-                            <input type="hidden" name="id" value="{{ $data->id }}">
-                            <input class="form-control" type="number" name="jumlah" min="1" max="{{ $data->qty }}" value="1">
-                    </td>
-                    <td width="10%" style="text-align: center">
-                            <button class="btn btn-info" type="submit"><i class="fa-solid fa-cart-plus"></i></button>
-                        </form>
-                    </td>
-                    @endforeach
-                    </tbody>
-                </table>
+                    <table id="table_data_barang" class="table table-bordered table-striped">
+                        <thead>
+                            <tr style="text-align: center">
+                                <th data-orderable="false">No</th>
+                                <th>Nama</th>
+                                <th>Stok</th>
+                                <th>Harga</th>
+                                <th data-orderable="false">Tambah Ke Keranjang</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                </div>
                 </div>
             </div>
             </div>
@@ -171,13 +184,35 @@
 <script src="{{ asset('assets/plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/sweetalert2/sweetalert2.all.min.js') }}"></script>
+
 <script>
-$(function () {
-$("#table_data_barang").DataTable({
-    "responsive": true, 
-    "lengthChange": true, 
-    "autoWidth": true,
-});
+$('#scanner').on('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+
+        let barcode = $(this).val().trim();
+
+        if (barcode === '') return;
+
+        $.ajax({
+            url: '/scan-barang',
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                barcode: barcode,
+                id_transaksi: '{{ $transaksi->id }}',
+                id_member: '{{ $transaksi->id_member }}'
+            },
+            success: function(res) {
+                $('#scanner').val('');
+                location.reload();
+            },
+            error: function() {
+                alert('Barang tidak ditemukan!');
+                $('#scanner').val('');
+            }
+        });
+    }
 });
 </script>
 <script>
@@ -190,30 +225,19 @@ $("#table_keranjang").DataTable({
 });
 </script>
 <script>
-    // Mendapatkan elemen input bayar dan span kembalian
+
     var inputBayar = document.getElementById('bayar');
     var inputKembalian = document.getElementById('kembalian');
     var spanKembalian = document.getElementById('kembalian');
-
-    // Fungsi untuk memformat nilai uang dengan tanda titik sebagai pemisah ribuan
     function formatUang(angka) {
         return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
-
-    // Menambahkan event listener untuk input bayar
     inputBayar.addEventListener('input', function() {
-        // Mengambil nilai bayar dari elemen input
-        var bayar = parseInt(inputBayar.value.replace(/\D/g, "")); // Menghapus semua karakter kecuali angka
-        inputBayar.value = formatUang(bayar); // Memformat nilai uang di dalam input
-        
-        // Menghitung kembalian
+        var bayar = parseInt(inputBayar.value.replace(/\D/g, "")) || 0;
+        inputBayar.value = formatUang(bayar);
         var total = {{ $total }};
         var kembalian = bayar - total;
-        
-        // Menampilkan kembalian dengan format mata uang
         spanKembalian.textContent = 'Rp. ' + formatUang(kembalian);
-        
-        // Update nilai input tersembunyi bayar dan kembalian
         document.getElementById('inputBayar').value = bayar;
         document.getElementById('inputKembalian').value = kembalian;
     });
@@ -250,4 +274,65 @@ var Toast = Swal.mixin({
     })
 @endif
 </script>
+<script>
+$(document).ready(function() {
+    $('#table_data_barang').DataTable({
+        responsive: true, 
+        lengthChange: true, 
+        autoWidth: true,
+        processing: true,
+        serverSide: true,
+        searching: true,
+        ajax: {
+            url: '{{ route('data-barang') }}',
+            type: 'GET'
+        },
+        
+        columns: [
+            { data: null, orderable: false, searchable: false, 
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            { data: 'nama', name: 'nama' },
+            { data: 'qty', name: 'qty' },
+            @if ( $transaksi->jenis_transaksi == 'member')
+                { data: 'harga_umum', name: 'harga_umum', render: $.fn.dataTable.render.number('.', ',', 0, 'Rp ') },  
+            @else
+
+                { data: 'harga_member', name: 'harga_member', render: $.fn.dataTable.render.number('.', ',', 0, 'Rp ') },
+            @endif
+            { 
+                data: 'action', 
+                name: 'action', 
+                orderable: false, 
+                searchable: false,
+                render: function(data, type, full, meta) {
+                    let csrfToken = '{{ csrf_token() }}';
+                    let transaksiId = '{{ $transaksi->id }}';
+                    let transaksiMember = '{{ $transaksi->id_member }}';
+                    return `
+                        <form method="post" action="/tambah_keranjang">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <input type="hidden" name="_token" value="${csrfToken}">
+                                    <input type="hidden" name="id_transaksi" value="${transaksiId}">
+                                    <input type="hidden" name="id_member" value="${transaksiMember}">
+                                    <input type="hidden" name="id" value="${full.id}">
+                                    <input class="form-control" type="number" name="jumlah" min="1" max="${full.qty}" value="1">
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="fa-solid fa-cart-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>`;
+                }
+            }
+        ]
+    });
+});
+</script>
+
 @endsection

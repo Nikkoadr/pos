@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('keranjang', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_transaksi')->constrained('transaksi'); // Tambahkan foreign key ke tabel transaksi
+            $table->foreignId('id_transaksi')->constrained('transaksi');
             $table->string('id_barang');
             $table->string('nama');
             $table->string('qty');

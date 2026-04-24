@@ -30,11 +30,11 @@ class HomeController extends Controller
     }
     public function data_karyawan()
     {
-        return view('data_karyawan');
+        return view('karyawan.data_karyawan');
     }
     public function data_supplier()
     {
-        return view('data_supplier');
+        return view('supplier.data_supplier');
     }
 
     public function setting()

@@ -23,7 +23,7 @@ class Data_barangController extends Controller
     public function data_barang()
     {
         $data_barang = Data_barang::all();
-        return view('data_barang', compact(['data_barang']));
+        return view('barang.data_barang', compact(['data_barang']));
     }
     public function tambah_data_barang(Request $request)
     {
@@ -68,7 +68,7 @@ class Data_barangController extends Controller
             'harga_member' => ['required', 'numeric'],
         ]);
         $data->update($validatedData);
-        return redirect('data_barang')->with(['success' => 'Data Barang Berhasil Di Update']);
+        return redirect('barang.data_barang')->with(['success' => 'Data Barang Berhasil Di Update']);
     }
 
     public function import_data_barang()

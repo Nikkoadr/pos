@@ -20,7 +20,7 @@ class MemberController extends Controller
     public function data_member()
     {
         $data_member = Data_member::all();
-        return view('data_member', compact('data_member'));
+        return view('member.data_member', compact('data_member'));
     }
     public function tambah_data_member(Request $request)
     {
@@ -54,13 +54,13 @@ class MemberController extends Controller
             'alamat' => ['required'],
         ]);
         $data->update($validatedData);
-        return redirect('data_member')->with(['success' => 'Data Barang Berhasil Di Update']);
+        return redirect('member.data_member')->with(['success' => 'Data Member Berhasil Di Update']);
     }
     public function hapus_data_member($id)
     {
         $data = Data_member::findOrFail($id);
         $data->delete();
-        return redirect()->back()->with(['success' => 'Data Barang Berhasil di Hapus']);
+        return redirect()->back()->with(['success' => 'Data Member Berhasil di Hapus']);
     }
 
     public function search(Request $request)

@@ -11,22 +11,35 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detail_servis', function (Blueprint $table) {
+        Schema::create('detail_transaksi_servis', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_nota')->constrained('nota')->onDelete('cascade');
+
+            $table->foreignId('id_transaksi')
+                ->constrained('transaksi')
+                ->onDelete('restrict');
+
+            $table->string('kode_servis')->unique();
+
             $table->date('tanggal_masuk');
             $table->date('tanggal_dikerjakan')->nullable();
             $table->date('tanggal_diambil')->nullable();
+
             $table->string('nama');
             $table->string('nohp');
             $table->string('alamat');
+
             $table->string('merk');
             $table->string('tipe');
             $table->text('kerusakan');
+
             $table->string('kondisi')->nullable();
             $table->string('pin')->nullable();
             $table->string('sandi')->nullable();
             $table->string('pola')->nullable();
+
+            $table->enum('status_servis', ['masuk', 'proses', 'selesai', 'diambil'])
+                ->default('masuk'); // 🔥 penting
+
             $table->timestamps();
         });
     }

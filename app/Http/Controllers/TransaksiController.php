@@ -5,14 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Data_member;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use App\Models\Data_barang;
 use App\Models\Keranjang;
-use App\Models\Nota;
-use App\Models\Detail_nota;
+use App\Models\DetailTransaksi;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
-use App\Models\DetailServis;
+use App\Models\DetailTransaksiServis;
 
 class TransaksiController extends Controller
 {
@@ -28,23 +26,37 @@ class TransaksiController extends Controller
 
     public function transaksi(Request $request)
     {
-        $transaksi = Transaksi::latest()->get();
+        // 🔥 hanya transaksi aktif
+        $transaksi = Transaksi::where('status', 'aktif')->latest()->get();
+
         $member = Data_member::all();
+
         foreach ($transaksi as $data) {
             $nama_member = Data_member::find($data->id_member);
             $data->nama_member = $nama_member ? $nama_member->nama_member : "Tidak ada Member";
         }
-        return view('buat_transaksi', compact('transaksi', 'member'));
+
+        return view('transaksi.buat_transaksi', compact('transaksi', 'member'));
     }
 
     public function buat_transaksi(Request $request)
     {
-        Transaksi::create([
+        $transaksi = Transaksi::create([
             'jenis_transaksi' => $request->jenis_transaksi,
             'id_member' => $request->id_member,
-            'tanggal_transaksi' => Carbon::now(),
+            'tanggal_transaksi' => now(),
+            'status' => 'aktif', // 🔥 penting
+            'kasir' => auth()->user()->nama,
+            'total_belanja' => 0
         ]);
-        return redirect('transaksi')->with('sukses', 'transaksi berhasil dibuat');
+
+        // 🔥 BEDAKAN FLOW
+        if ($request->jenis_transaksi == 'servis') {
+            return redirect('transaksi_servis_' . $transaksi->id);
+        }
+
+        return redirect('/proses_transaksi_' . $transaksi->id)
+            ->with('sukses', 'Transaksi berhasil dibuat');
     }
 
     private function calculateTotal($keranjang)
@@ -59,12 +71,27 @@ class TransaksiController extends Controller
     public function proses_transaksi(Request $request, $id)
     {
         $transaksi = Transaksi::findOrFail($id);
+
         $keranjang = Keranjang::where('id_transaksi', $id)->get();
+
         $member = Data_member::all();
+
         $nama_member = Data_member::find($transaksi->id_member);
+
         $transaksi->nama_member = $nama_member ? $nama_member->nama_member : "Tidak ada Member";
+
         $total = $this->calculateTotal($keranjang);
-        return view('proses_transaksi', compact('transaksi', 'total', 'keranjang', 'member'));
+
+        // 🔥 TAMBAHAN PENTING
+        $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
+
+        return view('transaksi.proses_transaksi', compact(
+            'transaksi',
+            'total',
+            'keranjang',
+            'member',
+            'servis' // 🔥 WAJIB ADA
+        ));
     }
 
     public function scanBarang(Request $request)
@@ -133,49 +160,6 @@ class TransaksiController extends Controller
         }
         return redirect()->back()->with('success', 'Keranjang berhasil ditambah dan diperbaharui!');
     }
-    public function transaksiServis($id)
-    {
-        $transaksi = Transaksi::findOrFail($id);
-
-        $servis = DetailServis::where('id_nota', $id)->first();
-
-        return view('buat_servis', compact('transaksi', 'servis'));
-    }
-
-    public function store_servis(Request $request, $id)
-    {
-
-        $request->validate([
-            'tanggal_masuk' => 'required|date',
-            'nama' => 'required',
-            'nohp' => 'required',
-            'merk' => 'required',
-            'kerusakan' => 'required',
-        ]);
-
-        // simpan detail servis
-        DB::table('detail_servis')->insert([
-            'id_nota' => $id,
-            'tanggal_masuk' => $request->tanggal_masuk,
-            'tanggal_dikerjakan' => null,
-            'tanggal_diambil' => null,
-            'nama' => $request->nama,
-            'nohp' => $request->nohp,
-            'alamat' => $request->alamat,
-            'merk' => $request->merk,
-            'tipe' => $request->tipe,
-            'kerusakan' => $request->kerusakan,
-            'kondisi' => $request->kondisi,
-            'pin' => $request->pin,
-            'sandi' => $request->sandi,
-            'pola' => $request->pola,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        return redirect('proses_transaksi_' . $id)
-            ->with('success', 'Servis berhasil ditambahkan');
-    }
 
     public function edit_qty(Request $request)
     {
@@ -207,22 +191,20 @@ class TransaksiController extends Controller
     public function checkout(Request $request)
     {
         $id_transaksi = $request->input('id_transaksi');
+
+        // ambil data keranjang
         $keranjang = Keranjang::where('id_transaksi', $id_transaksi)->get();
+
+        if ($keranjang->isEmpty()) {
+            return redirect()->back()->with('error', 'Keranjang kosong!');
+        }
+
         $total = $keranjang->sum('subtotal');
 
-        $nota = new Nota();
-        $nota->jenis_transaksi = $request->input('jenis_transaksi');
-        $nota->member = $request->input('member');
-        $nota->tanggal_transaksi = Carbon::now();
-        $nota->kasir = Auth()->user()->nama;
-        $nota->total_belanja = $total;
-        $nota->bayar = $request->input('bayar');
-        $nota->kembalian = $request->input('kembalian');
-        $nota->save();
-
+        // 🔥 pindahkan ke detail_transaksi
         foreach ($keranjang as $item) {
-            Detail_nota::create([
-                'id_nota' => $nota->id,
+            DetailTransaksi::create([
+                'id_transaksi' => $id_transaksi,
                 'id_barang' => $item->id_barang,
                 'nama_barang' => $item->nama,
                 'harga' => $item->harga,
@@ -230,11 +212,25 @@ class TransaksiController extends Controller
                 'subtotal' => $item->subtotal,
             ]);
         }
+
+        // 🔥 update transaksi jadi final
+        Transaksi::where('id', $id_transaksi)->update([
+            'total_belanja' => $total,
+            'bayar' => $request->input('bayar'),
+            'kembalian' => $request->input('kembalian'),
+            'status' => 'selesai',
+            'kasir' => auth()->user()->nama
+        ]);
+
+        // 🧹 hapus keranjang (aman)
         Keranjang::where('id_transaksi', $id_transaksi)->delete();
-        Transaksi::where('id', $id_transaksi)->delete();
-        session()->put('transaksi_id', $nota->id);
+
+        // simpan untuk keperluan print
+        session()->put('transaksi_id', $id_transaksi);
+
         return redirect('transaksi')->with('transaksi_sukses', 'Transaksi Berhasil !');
     }
+
     public function dataBarang(Request $request)
     {
         $dataBarang = Data_barang::select('*');

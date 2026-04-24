@@ -14,8 +14,13 @@ return new class extends Migration
         Schema::create('transaksi', function (Blueprint $table) {
             $table->id();
             $table->enum('jenis_transaksi', ['umum', 'member', 'servis']);
+            $table->enum('status', ['aktif', 'selesai'])->default('aktif');
             $table->string('id_member')->nullable();
             $table->timestamp('tanggal_transaksi');
+            $table->string('kasir');
+            $table->integer('total_belanja');
+            $table->integer('bayar')->nullable();
+            $table->integer('kembalian')->nullable();
             $table->timestamps();
         });
     }

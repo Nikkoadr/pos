@@ -23,7 +23,7 @@ class LaporanController extends Controller
         $nota = Nota::whereDate('created_at', '=', $tanggal)->get();
         $total_belanja = $nota->sum('total_belanja');
 
-        return view('laporan', compact('nota', 'total_belanja'));
+        return view('laporan.laporan', compact('nota', 'total_belanja'));
     }
 
     public function filter(Request $request)
@@ -48,6 +48,6 @@ class LaporanController extends Controller
         $nota = $nota->get();
         $total_belanja = $nota->sum('total_belanja');
 
-        return view('laporan', compact('nota', 'total_belanja', 'tanggal', 'bulan', 'tahun'));
+        return view('laporan.laporan', compact('nota', 'total_belanja', 'tanggal', 'bulan', 'tahun'));
     }
 }

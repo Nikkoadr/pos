@@ -37,7 +37,7 @@ class NotaController extends Controller
             ->whereRaw('YEAR(tanggal_transaksi) = ?', [$tahun])
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('riwayat_transaksi', compact('riwayat_transaksi', 'bulan', 'tahun'));
+        return view('arsip.riwayat_transaksi', compact('riwayat_transaksi', 'bulan', 'tahun'));
     }
 
     public function detail($id)
@@ -51,10 +51,10 @@ class NotaController extends Controller
                 return $this->printThermal($nota);
                 break;
             case 'excel':
-                return view('invoice_excel', compact('nota'));
+                return view('invoice.invoice_excel', compact('nota'));
                 break;
             default:
-                return view('invoice', compact('nota'));
+                return view('invoice.invoice', compact('nota'));
                 break;
         }
     }

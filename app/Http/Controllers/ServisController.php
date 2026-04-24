@@ -11,9 +11,89 @@ use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\EscposImage;
 use App\Models\Keranjang;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use App\Models\Data_member;
 
 class ServisController extends Controller
 {
+    public function index()
+    {
+        // Mengambil data servis terbaru (descending)
+        // Kita gunakan get() untuk mengambil semua data agar bisa ditampilkan di DataTable
+        $data_servis = DetailTransaksiServis::orderBy('created_at', 'DESC')->get();
+
+        // Mengirim data ke view
+        return view('servis.index', compact('data_servis'));
+    }
+
+    /**
+     * Fungsi untuk update status servis (Logic yang dipicu tombol di View)
+     */
+    public function updateStatusServis(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:detail_transaksi_servis,id',
+            'status' => 'required|in:masuk,proses,selesai,dibatalkan,diambil'
+        ]);
+
+        $servis = DetailTransaksiServis::findOrFail($request->id);
+
+        // kalau status sama, stop
+        if ($servis->status_servis === $request->status) {
+            return redirect()->back()->with('success', 'Status tidak berubah');
+        }
+
+        $servis->status_servis = $request->status;
+
+        // =========================
+        // HANDLE BATAL (INTI LOGIKA)
+        // =========================
+        if ($request->status == 'dibatalkan') {
+
+            // 1. update transaksi utama
+            DB::table('transaksi')
+                ->where('id', $servis->id_transaksi)
+                ->update([
+                    'status' => 'dibatalkan',
+                    'updated_at' => now()
+                ]);
+
+            $keranjang = Keranjang::where('id_transaksi', $servis->id_transaksi)->get();
+
+            // pindahkan ke detail_transaksi dengan status dibatalkan
+            foreach ($keranjang as $item) {
+                DB::table('detail_transaksi')->insert([
+                    'id_transaksi' => $item->id_transaksi,
+                    'id_barang'    => $item->id_barang,
+                    'nama_barang'  => $item->nama,
+                    'qty'          => 0,
+                    'harga'        => 0,
+                    'subtotal'     => 0,
+                    'status'       => 'dibatalkan',
+                    'created_at'   => now(),
+                    'updated_at'   => now()
+                ]);
+            }
+
+            // hapus keranjang setelah dipindahkan
+            DB::table('keranjang')
+                ->where('id_transaksi', $servis->id_transaksi)
+                ->delete();
+        }
+
+        // =========================
+        // UPDATE AUTO TIMESTAMP GLOBAL
+        // =========================
+        $servis->updated_at = now();
+
+        $servis->save();
+
+        return redirect()->back()->with(
+            'success',
+            'Status servis berhasil diubah menjadi ' . strtoupper($request->status)
+        );
+    }
+
     public function transaksiServis($id)
     {
         $transaksi = Transaksi::findOrFail($id);
@@ -95,8 +175,7 @@ class ServisController extends Controller
         // UPDATE STATUS
         // =========================
 
-        // transaksi dianggap selesai (karena sudah dibuat nota)
-        $transaksi->status = 'selesai';
+        $transaksi->status = 'proses';
         $transaksi->save();
 
         // servis masuk ke proses pengerjaan
@@ -109,7 +188,8 @@ class ServisController extends Controller
         // =========================
         $this->printServis($id);
 
-        return back()->with('success', 'Servis diproses & nota berhasil dicetak!');
+        return redirect('/transaksi')
+            ->with('success', 'Servis berhasil diproses dan nota tercetak!');
     }
 
     private function printServis($id)
@@ -239,5 +319,43 @@ class ServisController extends Controller
             Log::error("Gagal mencetak nota servis: " . $e->getMessage());
             return back()->with('error', 'Gagal mencetak nota servis. Pastikan printer terhubung dan coba lagi.');
         }
+    }
+
+    public function pembayaran_servis($id)
+    {
+        // 1. Ambil transaksi
+        $transaksi = Transaksi::findOrFail($id);
+
+        // 2. Ambil data servis
+        $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
+
+        // 3. Hitung estimasi servis
+        $total_servis = DetailTransaksiServis::where('id_transaksi', $id)
+            ->sum('harga_estimasi');
+
+        // 4. Hitung keranjang tambahan
+        $keranjang = Keranjang::where('id_transaksi', $id)->get();
+        $total_keranjang = $keranjang->sum('subtotal');
+
+        // 5. Grand total
+        $total = $total_servis + $total_keranjang;
+
+        // 6. Optional nama member
+        $nama_member = null;
+        if ($transaksi->id_member) {
+            $member = Data_member::find($transaksi->id_member);
+            $nama_member = $member ? $member->nama_member : null;
+        }
+
+        // 7. kirim ke view
+        return view('servis.pembayaran_servis', compact(
+            'transaksi',
+            'servis',
+            'keranjang',
+            'total_servis',
+            'total_keranjang',
+            'total',
+            'nama_member'
+        ));
     }
 }

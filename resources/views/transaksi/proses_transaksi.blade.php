@@ -55,6 +55,12 @@
                                 <h6 class="card-title"><b>No HP :</b> {{ $servis->nohp }}</h6><br>
                                 <h6 class="card-title"><b>Device :</b> {{ $servis->merk }} - {{ $servis->tipe }}</h6><br>
                                 <h6 class="card-title"><b>Kerusakan :</b> {{ $servis->kerusakan }}</h6><br>
+
+                                {{-- 🔥 INI INTINYA --}}
+                                <h6 class="card-title">
+                                    <b>Estimasi :</b> @rp($total_servis)
+                                </h6><br>
+
                             @else
                                 <h6 class="text-danger"><b>Data servis belum diisi!</b></h6>
                                 <a href="{{ url('transaksi_servis_'.$transaksi->id) }}" class="btn btn-warning btn-sm">
@@ -86,7 +92,7 @@
                         {{-- 🔥 SERVIS = CETAK NOTA PENGAMBILAN --}}
                         @if($transaksi->jenis_transaksi == 'servis')
                             @if(isset($servis))
-                                <a href="{{ url('cetak_transaksi_servis/'.$transaksi->id) }}" target="_blank" class="btn btn-primary float-right">
+                                <a href="{{ url('cetak_transaksi_servis/'.$transaksi->id) }}" class="btn btn-primary float-right">
                                     <i class="fas fa-print mr-1"></i> Cetak Nota Pengambilan
                                 </a>
                             @else

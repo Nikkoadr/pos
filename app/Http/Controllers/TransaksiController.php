@@ -74,23 +74,29 @@ class TransaksiController extends Controller
 
         $keranjang = Keranjang::where('id_transaksi', $id)->get();
 
+        // Member list (kalau dipakai di dropdown)
         $member = Data_member::all();
 
+        // Ambil nama member dengan aman
         $nama_member = Data_member::find($transaksi->id_member);
+        $transaksi->nama_member = $nama_member ? $nama_member->nama_member : null;
 
-        $transaksi->nama_member = $nama_member ? $nama_member->nama_member : "Tidak ada Member";
-
+        // Total transaksi biasa
         $total = $this->calculateTotal($keranjang);
 
-        // 🔥 TAMBAHAN PENTING
+        // 🔥 SERVIS (aman kalau tidak ada data)
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
+
+        // 🔥 TAMBAHAN: total servis dari keranjang (biar konsisten seperti transaksi biasa)
+        $total_servis = $keranjang->sum('subtotal');
 
         return view('transaksi.proses_transaksi', compact(
             'transaksi',
             'total',
+            'total_servis',
             'keranjang',
             'member',
-            'servis' // 🔥 WAJIB ADA
+            'servis'
         ));
     }
 
@@ -277,6 +283,7 @@ class TransaksiController extends Controller
     public function hapus_transaksi($id)
     {
         $transaksi = Transaksi::findOrFail($id);
+
         $detailTransaksi = DetailTransaksi::where('id_transaksi', $transaksi->id)->get();
 
         foreach ($detailTransaksi as $detail) {
@@ -284,8 +291,16 @@ class TransaksiController extends Controller
             $barang->qty += $detail->qty;
             $barang->save();
         }
+
+        // HAPUS DETAIL TRANSAKSI
         DetailTransaksi::where('id_transaksi', $transaksi->id)->delete();
+
+        // HAPUS DETAIL SERVIS (INI YANG KURANG)
+        DetailTransaksiServis::where('id_transaksi', $transaksi->id)->delete();
+
+        // HAPUS TRANSAKSI
         $transaksi->delete();
+
         return redirect()->back();
     }
 

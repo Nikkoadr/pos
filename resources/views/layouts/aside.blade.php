@@ -39,7 +39,7 @@
             </p>
         </a>
         <ul class="nav nav-treeview">
-            <li class="nav-item">
+            {{-- <li class="nav-item">
             <a href="data_karyawan" class="nav-link {{ request()->is('data_karyawan') ? 'active' : '' }}">
             <i class="nav-icon fa-solid fa-id-card"></i>
             <p>
@@ -54,7 +54,7 @@
             Data Supplier
             </p>
             </a>
-            </li>
+            </li> --}}
             <li class="nav-item">
             <a href="data_member" class="nav-link {{ request()->is('data_member') ? 'active' : '' }}">
             <i class="nav-icon fa-solid fa-user-group"></i>
@@ -82,7 +82,7 @@
         </a>
         </li>
         <li class="nav-item">
-        <a href="servis" class="nav-link {{ request()->is('servis') ? 'active' : '' }} {{ request()->is('proses_servis_*') ? 'active' : '' }}">
+        <a href="/servis" class="nav-link {{ request()->is('servis') ? 'active' : '' }} {{ request()->is('proses_servis_*') ? 'active' : '' }}">
             <i class="nav-icon fa-solid fa-screwdriver-wrench"></i>
             <p>
             Servis
@@ -90,18 +90,10 @@
         </a>
         </li>
         <li class="nav-item">
-        <a href="riwayat_transaksi" class="nav-link {{ request()->is('riwayat_transaksi') ? 'active' : '' }}">
-            <i class="nav-icon fa-solid fa-file-invoice-dollar"></i>
-            <p>
-            Riwayat Transaksi
-            </p>
-        </a>
-        </li>
-        <li class="nav-item">
-        <a href="laporan" class="nav-link {{ request()->is('laporan') ? 'active' : '' }} {{ request()->is('laporan_filter') ? 'active' : '' }}">
+        <a href="/arsip" class="nav-link {{ request()->is('arsip') ? 'active' : '' }} {{ request()->is('arsip/*') ? 'active' : '' }}">
             <i class="nav-icon fa-solid fa-book"></i>
             <p>
-            Laporan
+            Arsip 
             </p>
         </a>
         </li>

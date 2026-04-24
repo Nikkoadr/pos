@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Nota;
+use App\Models\Transaksi;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 
@@ -25,7 +25,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $pendapatan = Nota::whereDate('created_at', today())->sum('total_belanja');
+        $pendapatan = Transaksi::whereDate('created_at', today())->sum('total_belanja');
         return view('home', compact('pendapatan'));
     }
     public function data_karyawan()
@@ -42,7 +42,7 @@ class HomeController extends Controller
         $setting = Setting::first();
         return view('setting', compact('setting'));
     }
-        public function update_setting(Request $request, $id)
+    public function update_setting(Request $request, $id)
     {
         $data = Setting::findOrFail($id);
         $validatedData = $request->validate([

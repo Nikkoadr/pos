@@ -181,10 +181,21 @@ class TransaksiController extends Controller
     public function hapus_keranjang($id)
     {
         $item = Keranjang::findOrFail($id);
-        $produk = Data_barang::find($item->id_barang);
-        $produk->qty += $item->qty;
-        $produk->save();
+
+        // 🔥 cek apakah ini barang dari database
+        if ($item->id_barang) {
+
+            $produk = Data_barang::find($item->id_barang);
+
+            if ($produk) {
+                $produk->qty += $item->qty;
+                $produk->save();
+            }
+        }
+
+        // 🔥 hapus item keranjang (manual / barang tetap dihapus)
         $item->delete();
+
         return redirect()->back()->with('success', 'Barang berhasil dihapus dari keranjang !');
     }
 
@@ -261,5 +272,41 @@ class TransaksiController extends Controller
             })
             ->rawColumns(['action'])
             ->make(true);
+    }
+
+    public function hapus_transaksi($id)
+    {
+        $transaksi = Transaksi::findOrFail($id);
+        $detailTransaksi = DetailTransaksi::where('id_transaksi', $transaksi->id)->get();
+
+        foreach ($detailTransaksi as $detail) {
+            $barang = Data_barang::findOrFail($detail->id_barang);
+            $barang->qty += $detail->qty;
+            $barang->save();
+        }
+        DetailTransaksi::where('id_transaksi', $transaksi->id)->delete();
+        $transaksi->delete();
+        return redirect()->back();
+    }
+
+    public function tambah_manual(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required',
+            'harga' => 'required|numeric',
+            'qty' => 'required|numeric|min:1',
+            'id_transaksi' => 'required'
+        ]);
+
+        Keranjang::create([
+            'id_transaksi' => $request->id_transaksi,
+            'id_barang' => null, // 🔥 penting (karena bukan dari barang)
+            'nama' => $request->nama,
+            'harga' => $request->harga,
+            'qty' => $request->qty,
+            'subtotal' => $request->harga * $request->qty,
+        ]);
+
+        return redirect()->back()->with('success', 'Item manual ditambahkan!');
     }
 }

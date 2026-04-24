@@ -103,7 +103,7 @@
 
                                                 @endif
 
-                                                <form action="{{ url('hapus_nota/'.$data->id) }}" method="POST"
+                                                <form action="{{ url('hapus_transaksi/'.$data->id) }}" method="POST"
                                                     onsubmit="return confirm('Apakah Anda yakin ingin menghapus nota ini? Stok barang akan dikembalikan.')"
                                                     style="display:inline;">
                                                     @csrf

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Detail_nota;
 use App\Models\Data_barang;
+use App\Models\DetailTransaksi;
 use App\Models\Setting;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
@@ -167,17 +168,17 @@ class NotaController extends Controller
         }
     }
 
-    public function hapus_nota($id)
+    public function hapus_transaksi($id)
     {
         $nota = Nota::findOrFail($id);
-        $detailNota = Detail_nota::where('id_nota', $nota->id)->get();
+        $detailNota = DetailTransaksi::where('id_nota', $nota->id)->get();
 
         foreach ($detailNota as $detail) {
             $barang = Data_barang::findOrFail($detail->id_barang);
             $barang->qty += $detail->qty;
             $barang->save();
         }
-        Detail_nota::where('id_nota', $nota->id)->delete();
+        DetailTransaksi::where('id_nota', $nota->id)->delete();
         $nota->delete();
         return redirect()->back();
     }

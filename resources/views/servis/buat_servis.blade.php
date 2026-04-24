@@ -101,28 +101,11 @@
                                 </div>
                             </div>
 
-                            {{-- SECTION 3 --}}
-                            <div class="col-md-4">
+                            <div class="col-md-12">
                                 <div class="form-group">
-                                    <label>PIN</label>
-                                    <input type="text" name="pin" class="form-control"
-                                        value="{{ $servis->pin ?? '' }}">
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Sandi</label>
-                                    <input type="text" name="sandi" class="form-control"
-                                        value="{{ $servis->sandi ?? '' }}">
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Pola</label><small class="pattern-help" data-toggle="modal" data-target="#modalPola"> (Lihat Contoh Petunjuk) </small>
-                                    <input type="text" name="pola" class="form-control"
-                                        value="{{ $servis->pola ?? '' }}">
+                                    <label>Security</label><small class="pattern-help" data-toggle="modal" data-target="#modalPola"> (Lihat Contoh Petunjuk) </small>
+                                    <input type="text" name="security" class="form-control"
+                                        value="{{ $servis->security ?? '' }}">
                                 </div>
                             </div>
 

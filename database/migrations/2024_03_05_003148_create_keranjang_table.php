@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('keranjang', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_transaksi')->constrained('transaksi');
-            $table->string('id_barang');
+            $table->string('id_barang')->nullable();
             $table->string('nama');
             $table->string('qty');
             $table->string('harga');

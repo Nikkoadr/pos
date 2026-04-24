@@ -33,12 +33,13 @@ return new class extends Migration
             $table->text('kerusakan');
 
             $table->string('kondisi')->nullable();
-            $table->string('pin')->nullable();
-            $table->string('sandi')->nullable();
-            $table->string('pola')->nullable();
+            $table->string('security')->nullable();
 
-            $table->enum('status_servis', ['masuk', 'proses', 'selesai', 'diambil'])
-                ->default('masuk'); // 🔥 penting
+            $table->integer('harga_modal')->default(0);
+            $table->integer('harga_jual')->default(0);
+
+            $table->enum('status_servis', ['masuk', 'proses', 'selesai', 'dibatalkan', 'diambil'])
+                ->default('masuk');
 
             $table->timestamps();
         });

@@ -28,19 +28,24 @@
             <div class="col-lg-6">
                 <div class="card card-primary card-outline">
                     <div class="card-header">
-                    <h5 class="m-0">Administrasi</h5>
+                        <h5 class="m-0">Administrasi</h5>
                     </div>
-                        <div class="card-body">
-                            <h6 class="card-title"><b>ID Transaksi :</b> {{ $transaksi->id }}</h6><br>
-                            <h6 class="card-title"><b>Jenis Transaksi :</b> {{ $transaksi->jenis_transaksi }}</h6><br>
-                            <h6 class="card-title"><b>Kasir :</b> {{ auth()->user()->nama }}</h6><br>
-                            @if($transaksi->jenis_transaksi == 'member')
-                                <h6 class="card-title"><b>Member :</b> {{ $transaksi->nama_member ?? 'Tidak ada Member' }}</h6><br>
-                            @else
-                                <h6 class="card-title"><b>Member :</b> -</h6><br>
-                            @endif
-                            <h6 class="card-title"><b>Tanggal Transaksi :</b> {{ \Carbon\Carbon::now()->locale('id_ID')->isoFormat('D MMMM YYYY') }}</h6><br>
-                            @if($transaksi->jenis_transaksi == 'servis')
+
+                    <div class="card-body">
+                        <h6 class="card-title"><b>ID Transaksi :</b> {{ $transaksi->id }}</h6><br>
+                        <h6 class="card-title"><b>Jenis Transaksi :</b> {{ $transaksi->jenis_transaksi }}</h6><br>
+                        <h6 class="card-title"><b>Kasir :</b> {{ auth()->user()->nama }}</h6><br>
+
+                        @if($transaksi->jenis_transaksi == 'member')
+                            <h6 class="card-title"><b>Member :</b> {{ $transaksi->nama_member ?? 'Tidak ada Member' }}</h6><br>
+                        @else
+                            <h6 class="card-title"><b>Member :</b> -</h6><br>
+                        @endif
+
+                        <h6 class="card-title"><b>Tanggal Transaksi :</b> {{ \Carbon\Carbon::now()->locale('id_ID')->isoFormat('D MMMM YYYY') }}</h6><br>
+
+                        {{-- ================= SERVIS ================= --}}
+                        @if($transaksi->jenis_transaksi == 'servis')
                             <hr>
                             <h6 class="card-title"><b>Data Servis :</b></h6><br>
 
@@ -57,8 +62,12 @@
                                 </a><br><br>
                             @endif
                         @endif
+
+                        {{-- ================= NON SERVIS (ADA TRANSAKSI) ================= --}}
+                        @if($transaksi->jenis_transaksi != 'servis')
                             <h6 class="card-title"><b>Grand Total :</b> @rp($total)</h6><br>
                             <h6 class="card-title"><b>Kembalian :</b> <span id="kembalian">0</span></h6><br>
+
                             <div class="row">
                                 <div class="col-sm-2">
                                     <label class="card-title"><b>Bayar :</b></label>
@@ -67,26 +76,52 @@
                                     <input type="text" class="form-control" placeholder="Customer Bayar" id="bayar">
                                 </div>
                             </div>
-                        </div>
-                    @if($total != 0 && !($transaksi->jenis_transaksi == 'servis' && !isset($servis)))
-                        <div class="card-footer">
-                            <form action="{{ route('checkout') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
-                                <input type="hidden" name="jenis_transaksi" value="{{ $transaksi->jenis_transaksi }}">
-                                @if($transaksi->jenis_transaksi == 'member')
-                                    <input type="hidden" name="member" value="{{ $transaksi->id_member }}">
-                                @endif
-                                <input type="hidden" name="bayar" id="inputBayar">
-                                <input type="hidden" name="kembalian" id="inputKembalian">
-                                <button class="btn btn-success float-right konfirmasi" type="submit">Checkout</button>
-                            </form>
-                        </div>
-                    @else
-                        <div class="card-footer">
-                            <button class="btn btn-success float-right disabled" disabled type="submit">Keranjang masih Kosong</button>
-                        </div>
-                    @endif
+                        @endif
+
+                    </div>
+
+                    {{-- ================= FOOTER ================= --}}
+                    <div class="card-footer">
+
+                        {{-- 🔥 SERVIS = CETAK NOTA PENGAMBILAN --}}
+                        @if($transaksi->jenis_transaksi == 'servis')
+                            @if(isset($servis))
+                                <a href="{{ url('cetak_transaksi_servis/'.$transaksi->id) }}" target="_blank" class="btn btn-primary float-right">
+                                    <i class="fas fa-print mr-1"></i> Cetak Nota Pengambilan
+                                </a>
+                            @else
+                                <button class="btn btn-secondary float-right disabled">
+                                    Isi data servis dulu
+                                </button>
+                            @endif
+
+                        {{-- 🔥 NON SERVIS = CHECKOUT --}}
+                        @else
+                            @if($total != 0)
+                                <form action="{{ route('checkout') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
+                                    <input type="hidden" name="jenis_transaksi" value="{{ $transaksi->jenis_transaksi }}">
+                                    
+                                    @if($transaksi->jenis_transaksi == 'member')
+                                        <input type="hidden" name="member" value="{{ $transaksi->id_member }}">
+                                    @endif
+
+                                    <input type="hidden" name="bayar" id="inputBayar">
+                                    <input type="hidden" name="kembalian" id="inputKembalian">
+
+                                    <button class="btn btn-success float-right konfirmasi" type="submit">
+                                        Checkout
+                                    </button>
+                                </form>
+                            @else
+                                <button class="btn btn-success float-right disabled" disabled>
+                                    Keranjang masih Kosong
+                                </button>
+                            @endif
+                        @endif
+
+                    </div>
                 </div>
             <div class="card card-primary card-outline">
                 <div class="card-header">
@@ -96,6 +131,29 @@
                     <div class="mb-3">
                         <input type="text" id="scanner" class="form-control" placeholder="Scan Barcode di sini..." autofocus>
                     </div>
+                    <div class="mb-3">
+                    <form action="/tambah_manual" method="POST">
+                        @csrf
+                        <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" name="nama" class="form-control" placeholder="Nama jasa / item" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" name="harga" class="form-control" placeholder="Harga" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" name="qty" class="form-control" value="1" min="1" placeholder="qty">
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-success btn-block" type="submit">
+                                    <i class="fa fa-plus"></i> Tambah Manual
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
                 <table id="table_keranjang" class="table table-bordered table-striped">
                     <thead>
                     <tr style="text-align: center">
@@ -112,9 +170,17 @@
                     @foreach ($keranjang as $data )
                     <tr>
                         <td><?= $no++ ?></td>
-                        <td>{{ $data-> nama }}</td>
+                        <td>
+                            {{ $data->nama }}
+                            @if(is_null($data->id_barang))
+                                <span class="badge badge-warning">Manual</span>
+                            @endif
+                        </td>
                         <td>@rp($data -> harga)</td>
                         <td class="col-3">
+                            @if(is_null($data->id_barang))
+                            {{ $data->qty }}
+                            @else
                             <form action="/edit_qty" method="POST">
                                 @csrf
                                 <input type="hidden" name="id" value="{{ $data->id }}">
@@ -127,6 +193,7 @@
                                     </div>
                                 </div>
                             </form>
+                            @endif
                         </td>
                         <td>@rp($data -> subtotal)</td>
                         <td width="10%" style="text-align: center">

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\Data_member;
 use App\Models\DetailTransaksi;
+use App\Models\Setting;
 
 class ServisController extends Controller
 {
@@ -202,7 +203,7 @@ class ServisController extends Controller
         $tanggal = now()->format('d M Y H:i:s');
 
         try {
-            $connector = new WindowsPrintConnector("bener");
+            $connector = new WindowsPrintConnector(Setting::first()->nama_perinter);
             $printer = new Printer($connector);
 
             // 🔥 pisah jasa & barang
@@ -410,7 +411,7 @@ class ServisController extends Controller
         $tanggal = now()->format('d M Y H:i:s');
 
         try {
-            $connector = new WindowsPrintConnector("bener");
+            $connector = new WindowsPrintConnector(Setting::first()->nama_perinter);
             $printer = new Printer($connector);
 
             // Pisahkan jasa & barang berdasarkan nama

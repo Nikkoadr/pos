@@ -16,8 +16,8 @@ class seed_setting extends Seeder
     {
         Setting::create([
             'nama_toko' => 'Angel Cell',
-            'printer' => 'termal',
             'alamat_toko' => 'Jangga',
+            'nama_perinter' => 'bener',
         ]);
     }
 }

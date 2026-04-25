@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama_toko');
             $table->string('alamat_toko');
-            $table->enum('printer', ['excel', 'termal','default'])->default('default');
+            $table->string('nama_perinter');
             $table->timestamps();
         });
     }

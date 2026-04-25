@@ -16,6 +16,7 @@ use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\EscposImage;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use App\Models\Setting;
 
 class TransaksiController extends Controller
 {
@@ -266,7 +267,7 @@ class TransaksiController extends Controller
         }
 
         try {
-            $connector = new WindowsPrintConnector("bener");
+            $connector = new WindowsPrintConnector(Setting::first()->nama_perinter);
             $printer = new Printer($connector);
 
             $printer->initialize();

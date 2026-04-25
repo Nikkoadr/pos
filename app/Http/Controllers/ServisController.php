@@ -206,11 +206,9 @@ class ServisController extends Controller
             $connector = new WindowsPrintConnector(Setting::first()->nama_perinter);
             $printer = new Printer($connector);
 
-            // 🔥 pisah jasa & barang
             $jasa = $keranjang->filter(fn($i) => str_contains(strtolower($i->nama), 'jasa'));
             $barang = $keranjang->filter(fn($i) => !str_contains(strtolower($i->nama), 'jasa'));
 
-            // 🔥 cetak 2x
             for ($cetak = 1; $cetak <= 2; $cetak++) {
 
                 $printer->initialize();
@@ -221,7 +219,7 @@ class ServisController extends Controller
                     try {
                         $logo = EscposImage::load($logoPath, false);
                         $printer->setJustification(Printer::JUSTIFY_CENTER);
-                        $printer->bitImage($logo);
+                        $printer->graphics($logo);
                     } catch (\Exception $e) {
                         $printer->text("ANGEL CELL\n");
                     }
@@ -245,7 +243,6 @@ class ServisController extends Controller
 
                 if ($servis) {
 
-                    // 🔥 rapihin panjang text biar ga berantakan
                     $tipe = strlen($servis->tipe) > 15 ? substr($servis->tipe, 0, 15) . '..' : $servis->tipe;
 
                     $printer->text("Tipe   : $tipe\n");
@@ -256,7 +253,6 @@ class ServisController extends Controller
 
                     $printer->text("Alamat : {$servis->alamat}\n");
 
-                    // 🔥 sekarang pakai field security
                     $printer->text("Security : {$servis->security}\n");
 
                     $printer->text("--------------------------------\n");
@@ -427,7 +423,7 @@ class ServisController extends Controller
                     try {
                         $logo = EscposImage::load($logoPath, false);
                         $printer->setJustification(Printer::JUSTIFY_CENTER);
-                        $printer->bitImage($logo);
+                        $printer->graphics($logo);
                     } catch (\Exception $e) {
                         $printer->setJustification(Printer::JUSTIFY_CENTER);
                         $printer->setEmphasis(true);

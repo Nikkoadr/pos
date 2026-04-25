@@ -46,12 +46,8 @@
                         <input type="text" id="alamat_toko" name="alamat_toko" class="form-control" value="{{ $setting->alamat_toko }}">
                     </div>
                     <div class="form-group">
-                        <label for="printer">Jenis Printer:</label>
-                        <select name="printer" id="printer" class="form-control">
-                            <option value="excel" @if($setting->printer === 'excel') selected @endif>Excel Web View</option>
-                            <option value="termal" @if($setting->printer === 'termal') selected @endif>Printer Termal 58mm</option>
-                            <option value="default" @if($setting->printer === 'default') selected @endif>Default(95mm X 140mm)</option>
-                        </select>
+                        <label for="nama_perinter">Nama Printer:</label>
+                        <input type="text" id="nama_perinter" name="nama_perinter" class="form-control" value="{{ $setting->nama_perinter }}">
                     </div>
                     <button type="submit" class="btn btn-primary">Simpan</button>
                 </form>

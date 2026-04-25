@@ -277,7 +277,7 @@ class TransaksiController extends Controller
             $logoPath = public_path('assets/dist/img/logo.png');
             if (file_exists($logoPath)) {
                 $logo = EscposImage::load($logoPath, false);
-                $printer->bitImage($logo);
+                $printer->graphics($logo);
             } else {
                 $printer->setEmphasis(true);
                 $printer->text("ANGEL CELL\n");

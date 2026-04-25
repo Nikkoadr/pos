@@ -55,9 +55,7 @@ class ArsipController extends Controller
                     <a href="' . route('arsip.show', $row->id) . '" class="btn btn-xs btn-info">
                         <i class="fas fa-eye"></i> Detail
                     </a>
-                    <button class="btn btn-xs btn-secondary" onclick="printNota(' . $row->id . ')">
-                        <i class="fas fa-print"></i> Cetak
-                    </button>';
+                ';
             })
             ->rawColumns(['jenis_transaksi', 'action']) // Agar tag HTML badge muncul
             ->make(true);

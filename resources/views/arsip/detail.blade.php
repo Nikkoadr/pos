@@ -61,11 +61,11 @@
                                 </tr>
                             </table>
                         </div>
-                        <div class="card-footer">
+                        {{-- <div class="card-footer">
                             <button class="btn btn-secondary btn-block" onclick="printNota({{ $transaksi->id }})">
                                 <i class="fas fa-print"></i> Cetak Ulang Nota
                             </button>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
 

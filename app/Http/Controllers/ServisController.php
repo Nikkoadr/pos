@@ -202,7 +202,7 @@ class ServisController extends Controller
         $tanggal = now()->format('d M Y H:i:s');
 
         try {
-            $connector = new WindowsPrintConnector("FK80 Printer");
+            $connector = new WindowsPrintConnector("bener");
             $printer = new Printer($connector);
 
             // 🔥 pisah jasa & barang
@@ -410,7 +410,7 @@ class ServisController extends Controller
         $tanggal = now()->format('d M Y H:i:s');
 
         try {
-            $connector = new WindowsPrintConnector("FK80 Printer");
+            $connector = new WindowsPrintConnector("bener");
             $printer = new Printer($connector);
 
             // Pisahkan jasa & barang berdasarkan nama

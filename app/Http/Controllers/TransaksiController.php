@@ -266,7 +266,7 @@ class TransaksiController extends Controller
         }
 
         try {
-            $connector = new WindowsPrintConnector("FK80 Printer");
+            $connector = new WindowsPrintConnector("bener");
             $printer = new Printer($connector);
 
             $printer->initialize();

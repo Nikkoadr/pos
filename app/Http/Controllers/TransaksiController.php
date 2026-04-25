@@ -274,10 +274,10 @@ class TransaksiController extends Controller
             $printer->setJustification(Printer::JUSTIFY_CENTER);
 
             // Logo Toko
-            $logoPath = public_path('assets/dist/img/logo.png');
+            $logoPath = public_path('assets/dist/img/logo_print.png');
             if (file_exists($logoPath)) {
                 $logo = EscposImage::load($logoPath, false);
-                $printer->graphics($logo);
+                $printer->bitImage($logo);
             } else {
                 $printer->setEmphasis(true);
                 $printer->text("ANGEL CELL\n");

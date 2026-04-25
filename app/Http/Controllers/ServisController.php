@@ -214,12 +214,12 @@ class ServisController extends Controller
                 $printer->initialize();
 
                 // ================= LOGO =================
-                $logoPath = public_path('assets/dist/img/logo.png');
+                $logoPath = public_path('assets/dist/img/logo_print.png');
                 if (file_exists($logoPath)) {
                     try {
                         $logo = EscposImage::load($logoPath, false);
                         $printer->setJustification(Printer::JUSTIFY_CENTER);
-                        $printer->graphics($logo);
+                        $printer->bitImage($logo);
                     } catch (\Exception $e) {
                         $printer->text("ANGEL CELL\n");
                     }
@@ -418,12 +418,12 @@ class ServisController extends Controller
                 $printer->initialize();
 
                 // ================= LOGO =================
-                $logoPath = public_path('assets/dist/img/logo.png');
+                $logoPath = public_path('assets/dist/img/logo_print.png');
                 if (file_exists($logoPath)) {
                     try {
                         $logo = EscposImage::load($logoPath, false);
                         $printer->setJustification(Printer::JUSTIFY_CENTER);
-                        $printer->graphics($logo);
+                        $printer->bitImage($logo);
                     } catch (\Exception $e) {
                         $printer->setJustification(Printer::JUSTIFY_CENTER);
                         $printer->setEmphasis(true);

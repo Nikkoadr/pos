@@ -370,10 +370,10 @@ $(document).ready(function() {
             { data: 'nama', name: 'nama' },
             { data: 'qty', name: 'qty' },
             @if ( $transaksi->jenis_transaksi == 'member')
-                { data: 'harga_umum', name: 'harga_umum', render: $.fn.dataTable.render.number('.', ',', 0, 'Rp ') },  
+                { data: 'harga_member', name: 'harga_member', render: $.fn.dataTable.render.number('.', ',', 0, 'Rp ') },  
             @else
 
-                { data: 'harga_member', name: 'harga_member', render: $.fn.dataTable.render.number('.', ',', 0, 'Rp ') },
+                { data: 'harga_umum', name: 'harga_umum', render: $.fn.dataTable.render.number('.', ',', 0, 'Rp ') },
             @endif
             { 
                 data: 'action', 

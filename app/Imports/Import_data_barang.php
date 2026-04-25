@@ -20,10 +20,10 @@ class Import_data_barang implements ToModel, WithHeadingRow
             'id_supplier'     => 1,
             'barcode'     => $row['barcode'],
             'nama'     => $row['nama_barang'],
-            'qty'     => $row['stok'],
+            'qty'     => $row['qty'],
             'harga_modal'     => $row['harga_modal'],
-            'harga_jual1'     => $row['harga_umum'],
-            'harga_jual2'     => $row['harga_member'],
+            'harga_umum'     => $row['harga_umum'],
+            'harga_member'     => $row['harga_member'],
         ]);
     }
 }

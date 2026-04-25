@@ -7,6 +7,7 @@ use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Models\Data_barang;
 use App\Models\DetailTransaksiServis;
+use App\Models\DetailTransaksi;
 
 
 class HomeController extends Controller
@@ -32,23 +33,27 @@ class HomeController extends Controller
         $bulan_ini = now()->month;
         $tahun_ini = now()->year;
 
-        // --- STATISTIK PENDAPATAN ---
+        // --- STATISTIK PENDAPATAN (DIHITUNG DARI DETAIL_TRANSAKSI) ---
 
-        // Pendapatan Hari Ini
-        $pendapatan_hari_ini = Transaksi::whereDate('tanggal_transaksi', $hari_ini)
-            ->where('status', 'selesai')
-            ->sum('total_belanja');
+        // 1. Pendapatan Hari Ini
+        $pendapatan_hari_ini = DetailTransaksi::whereHas('transaksi', function ($q) use ($hari_ini) {
+            $q->whereDate('tanggal_transaksi', $hari_ini)
+                ->where('status', 'selesai');
+        })->sum('subtotal');
 
-        // Pendapatan Bulan Ini
-        $pendapatan_bulan_ini = Transaksi::whereMonth('tanggal_transaksi', $bulan_ini)
-            ->whereYear('tanggal_transaksi', $tahun_ini)
-            ->where('status', 'selesai')
-            ->sum('total_belanja');
+        // 2. Pendapatan Bulan Ini
+        $pendapatan_bulan_ini = DetailTransaksi::whereHas('transaksi', function ($q) use ($bulan_ini, $tahun_ini) {
+            $q->whereMonth('tanggal_transaksi', $bulan_ini)
+                ->whereYear('tanggal_transaksi', $tahun_ini)
+                ->where('status', 'selesai');
+        })->sum('subtotal');
 
-        // Pendapatan Tahun Ini
-        $pendapatan_tahun_ini = Transaksi::whereYear('tanggal_transaksi', $tahun_ini)
-            ->where('status', 'selesai')
-            ->sum('total_belanja');
+        // 3. Pendapatan Tahun Ini
+        $pendapatan_tahun_ini = DetailTransaksi::whereHas('transaksi', function ($q) use ($tahun_ini) {
+            $q->whereYear('tanggal_transaksi', $tahun_ini)
+                ->where('status', 'selesai');
+        })->sum('subtotal');
+
 
         // --- DATA PENDUKUNG LAINNYA ---
         $servis_proses = DetailTransaksiServis::whereIn('status_servis', ['masuk', 'proses'])->count();

@@ -20,4 +20,10 @@ class Transaksi extends Model
     {
         return $this->hasOne(DetailTransaksiServis::class, 'id_transaksi');
     }
+
+    public function detail_transaksi()
+    {
+        // Pastikan 'id_transaksi' sesuai dengan kolom di tabel detail_transaksi
+        return $this->hasMany(DetailTransaksi::class, 'id_transaksi');
+    }
 }

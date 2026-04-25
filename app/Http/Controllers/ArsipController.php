@@ -33,11 +33,13 @@ class ArsipController extends Controller
     // Fungsi untuk mensuplai data ke DataTables (AJAX)
     public function data_arsip(Request $request)
     {
-        $query = Transaksi::where('status', 'selesai')
+        // Kita hitung total belanja dari relasi detail_transaksi
+        $query = Transaksi::withSum('detail_transaksi as total_riil', 'subtotal')
+            ->where('status', 'selesai')
             ->orderBy('tanggal_transaksi', 'desc');
 
         return DataTables::of($query)
-            ->addIndexColumn() // Membuat nomor urut 1, 2, 3...
+            ->addIndexColumn()
             ->editColumn('tanggal_transaksi', function ($row) {
                 return date('d/m/Y H:i', strtotime($row->tanggal_transaksi));
             })
@@ -47,17 +49,20 @@ class ArsipController extends Controller
                 }
                 return '<span class="badge badge-success"><i class="fas fa-shopping-cart"></i> Penjualan</span>';
             })
+            // 🔥 KUNCINYA DI SINI: Gunakan 'total_riil' bukan 'total_belanja'
             ->editColumn('total_belanja', function ($row) {
-                return 'Rp ' . number_format($row->total_belanja, 0, ',', '.');
+                $nominal = $row->total_riil ?? 0;
+                return 'Rp ' . number_format($nominal, 0, ',', '.');
             })
             ->addColumn('action', function ($row) {
                 return '
+                <div class="btn-group">
                     <a href="' . route('arsip.show', $row->id) . '" class="btn btn-xs btn-info">
                         <i class="fas fa-eye"></i> Detail
                     </a>
-                ';
+                </div>';
             })
-            ->rawColumns(['jenis_transaksi', 'action']) // Agar tag HTML badge muncul
+            ->rawColumns(['jenis_transaksi', 'action'])
             ->make(true);
     }
 

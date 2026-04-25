@@ -4,11 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Data_barangController;
-use App\Http\Controllers\NotaController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\ServisController;
+use App\Http\Controllers\ArsipController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,8 +62,6 @@ Route::post('/edit_qty', [TransaksiController::class, 'edit_qty'])->name('edit_q
 Route::delete('/hapus_keranjang_{id}', [TransaksiController::class, 'hapus_keranjang'])->name('hapus_keranjang');
 Route::post('/checkout', [TransaksiController::class, 'checkout'])->name('checkout');
 
-Route::get('/riwayat_transaksi', [NotaController::class, 'riwayat_transaksi'])->name('riwayat_transaksi');
-Route::get('/nota_{id}', [NotaController::class, 'detail'])->name('detail');
 Route::delete('/hapus_transaksi/{id}', [TransaksiController::class, 'hapus_transaksi'])->name('hapus_transaksi');
 Route::get('/laporan', [LaporanController::class, 'laporan'])->name('laporan');
 Route::POST('/laporan_filter', [LaporanController::class, 'filter'])->name('laporan.filter');
@@ -79,3 +77,9 @@ Route::post('/tambah_manual', [TransaksiController::class, 'tambah_manual']);
 
 Route::get('/pembayaran/servis/{id}', [ServisController::class, 'pembayaran_servis']);
 Route::post('/selesaikan_servis', [ServisController::class, 'selesaikan_servis'])->name('selesaikan_servis');
+
+Route::prefix('arsip')->group(function () {
+    Route::get('/', [ArsipController::class, 'index'])->name('arsip.index');
+    Route::get('/data', [ArsipController::class, 'data_arsip'])->name('arsip.data');
+    Route::get('/detail/{id}', [ArsipController::class, 'show'])->name('arsip.show');
+});

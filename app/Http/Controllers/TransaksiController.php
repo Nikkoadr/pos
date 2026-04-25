@@ -11,6 +11,11 @@ use App\Models\DetailTransaksi;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
 use App\Models\DetailTransaksiServis;
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\EscposImage;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class TransaksiController extends Controller
 {
@@ -202,14 +207,12 @@ class TransaksiController extends Controller
         // 🔥 hapus item keranjang (manual / barang tetap dihapus)
         $item->delete();
 
-        return redirect()->back()->with('success', 'Barang berhasil dihapus dari keranjang !');
+        return redirect()->back()->with('sukses', 'Barang berhasil dihapus dari keranjang !');
     }
 
     public function checkout(Request $request)
     {
         $id_transaksi = $request->input('id_transaksi');
-
-        // ambil data keranjang
         $keranjang = Keranjang::where('id_transaksi', $id_transaksi)->get();
 
         if ($keranjang->isEmpty()) {
@@ -218,34 +221,117 @@ class TransaksiController extends Controller
 
         $total = $keranjang->sum('subtotal');
 
-        // 🔥 pindahkan ke detail_transaksi
+        // 1. Pindahkan ke detail_transaksi
         foreach ($keranjang as $item) {
             DetailTransaksi::create([
                 'id_transaksi' => $id_transaksi,
-                'id_barang' => $item->id_barang,
-                'nama_barang' => $item->nama,
-                'harga' => $item->harga,
-                'qty' => $item->qty,
-                'subtotal' => $item->subtotal,
+                'id_barang'    => $item->id_barang,
+                'nama_barang'  => $item->nama,
+                'harga'        => $item->harga,
+                'qty'          => $item->qty,
+                'subtotal'     => $item->subtotal,
             ]);
         }
 
-        // 🔥 update transaksi jadi final
-        Transaksi::where('id', $id_transaksi)->update([
+        // 2. Update transaksi jadi final
+        $transaksi = Transaksi::findOrFail($id_transaksi);
+        $transaksi->update([
             'total_belanja' => $total,
-            'bayar' => $request->input('bayar'),
-            'kembalian' => $request->input('kembalian'),
-            'status' => 'selesai',
-            'kasir' => auth()->user()->nama
+            'bayar'         => $request->input('bayar'),
+            'kembalian'     => $request->input('kembalian'),
+            'status'        => 'selesai',
+            'kasir'         => auth()->user()->nama
         ]);
 
-        // 🧹 hapus keranjang (aman)
+        // 3. CETAK NOTA (Panggil fungsi private)
+        $this->printNotaUmum($id_transaksi);
+
+        // 4. Hapus keranjang
         Keranjang::where('id_transaksi', $id_transaksi)->delete();
 
-        // simpan untuk keperluan print
         session()->put('transaksi_id', $id_transaksi);
+        return redirect('transaksi')->with('sukses', 'Transaksi Berhasil!');
+    }
 
-        return redirect('transaksi')->with('sukses', 'Transaksi Berhasil !');
+    private function printNotaUmum($id)
+    {
+        $transaksi = Transaksi::find($id);
+        $details = DetailTransaksi::where('id_transaksi', $id)->get();
+
+        // Ambil info member jika ada
+        $nama_member = "Umum";
+        if ($transaksi->id_member) {
+            $m = Data_member::find($transaksi->id_member);
+            $nama_member = $m ? $m->nama_member : "Umum";
+        }
+
+        try {
+            $connector = new WindowsPrintConnector("FK80 Printer");
+            $printer = new Printer($connector);
+
+            $printer->initialize();
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+
+            // Logo Toko
+            $logoPath = public_path('assets/dist/img/logo.png');
+            if (file_exists($logoPath)) {
+                $logo = EscposImage::load($logoPath, false);
+                $printer->bitImage($logo);
+            } else {
+                $printer->setEmphasis(true);
+                $printer->text("ANGEL CELL\n");
+                $printer->setEmphasis(false);
+            }
+
+            // Header
+            $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
+            $printer->text("Telp: 08xx-xxxx-xxxx\n");
+            $printer->text(now()->format('d/m/Y H:i') . "\n");
+            $printer->text("--------------------------------\n");
+
+            // Info Transaksi
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+            $printer->text(sprintf("%-10s: %s\n", "Nota", "#" . $id));
+            $printer->text(sprintf("%-10s: %s\n", "Kasir", auth()->user()->nama));
+            $printer->text(sprintf("%-10s: %s\n", "Pelanggan", $nama_member));
+            $printer->text("--------------------------------\n");
+
+            // Daftar Barang
+            foreach ($details as $d) {
+                $nama = strlen($d->nama_barang) > 30 ? substr($d->nama_barang, 0, 27) . '...' : $d->nama_barang;
+                $printer->text("$nama\n");
+                $printer->text(
+                    sprintf(
+                        "%d x %-10s %15s\n",
+                        $d->qty,
+                        number_format($d->harga, 0, '.', '.'),
+                        number_format($d->subtotal, 0, '.', '.')
+                    )
+                );
+            }
+
+            $printer->text("--------------------------------\n");
+
+            // Total, Bayar, Kembali
+            $printer->setEmphasis(true);
+            $printer->text(sprintf("%-15s %16s\n", "TOTAL", "Rp " . number_format($transaksi->total_belanja, 0, '.', '.')));
+            $printer->setEmphasis(false);
+            $printer->text(sprintf("%-15s %16s\n", "BAYAR", "Rp " . number_format($transaksi->bayar, 0, '.', '.')));
+            $printer->text(sprintf("%-15s %16s\n", "KEMBALI", "Rp " . number_format($transaksi->kembalian, 0, '.', '.')));
+
+            // Footer
+            $printer->feed();
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->text("Terima Kasih Atas Kunjungan Anda\n");
+            $printer->text("Barang yang sudah dibeli\n");
+            $printer->text("tidak dapat ditukar/dikembalikan\n");
+
+            $printer->feed(3);
+            $printer->cut();
+            $printer->close();
+        } catch (\Exception $e) {
+            Log::error("Gagal Cetak Nota Umum: " . $e->getMessage());
+        }
     }
 
     public function dataBarang(Request $request)

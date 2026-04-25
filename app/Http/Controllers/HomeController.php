@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Transaksi;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use App\Models\Data_barang;
+use App\Models\DetailTransaksiServis;
+
 
 class HomeController extends Controller
 {
@@ -25,9 +28,47 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $pendapatan = Transaksi::whereDate('created_at', today())->sum('total_belanja');
-        return view('home', compact('pendapatan'));
+        $hari_ini = now()->today();
+        $bulan_ini = now()->month;
+        $tahun_ini = now()->year;
+
+        // --- STATISTIK PENDAPATAN ---
+
+        // Pendapatan Hari Ini
+        $pendapatan_hari_ini = Transaksi::whereDate('tanggal_transaksi', $hari_ini)
+            ->where('status', 'selesai')
+            ->sum('total_belanja');
+
+        // Pendapatan Bulan Ini
+        $pendapatan_bulan_ini = Transaksi::whereMonth('tanggal_transaksi', $bulan_ini)
+            ->whereYear('tanggal_transaksi', $tahun_ini)
+            ->where('status', 'selesai')
+            ->sum('total_belanja');
+
+        // Pendapatan Tahun Ini
+        $pendapatan_tahun_ini = Transaksi::whereYear('tanggal_transaksi', $tahun_ini)
+            ->where('status', 'selesai')
+            ->sum('total_belanja');
+
+        // --- DATA PENDUKUNG LAINNYA ---
+        $servis_proses = DetailTransaksiServis::whereIn('status_servis', ['masuk', 'proses'])->count();
+        $stok_limit = Data_barang::where('qty', '<', 5)->count();
+
+        $servis_terbaru = DetailTransaksiServis::whereIn('status_servis', ['masuk', 'proses'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('home', compact(
+            'pendapatan_hari_ini',
+            'pendapatan_bulan_ini',
+            'pendapatan_tahun_ini',
+            'servis_proses',
+            'stok_limit',
+            'servis_terbaru'
+        ));
     }
+
     public function data_karyawan()
     {
         return view('karyawan.data_karyawan');

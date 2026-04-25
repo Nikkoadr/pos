@@ -72,12 +72,12 @@
                     </a>
                 </li>
 
-                <li class="nav-item">
+                {{-- <li class="nav-item">
                     <a href="{{ url('/setting') }}" class="nav-link {{ request()->is('setting*') ? 'active' : '' }}">
                         <i class="nav-icon fa-solid fa-gears"></i>
                         <p>Setting</p>
                     </a>
-                </li>
+                </li> --}}
 
                 
             </ul>

@@ -59,7 +59,8 @@
     {{-- DEVICE --}}
     <td>
         <strong>{{ $data->merk }} {{ $data->tipe }}</strong><br>
-        <small class="text-danger">Kerusakan: {{ $data->kerusakan }}</small>
+        <small class="text-danger">Kerusakan: {{ $data->kerusakan }}</small><br>
+        <small class="text-secondary">Keamanan: {{ $data->security }}</small>
     </td>
 
     {{-- STATUS --}}

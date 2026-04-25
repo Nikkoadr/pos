@@ -20,17 +20,12 @@ class ServisController extends Controller
 {
     public function index()
     {
-        // Mengambil data servis terbaru (descending)
-        // Kita gunakan get() untuk mengambil semua data agar bisa ditampilkan di DataTable
+
         $data_servis = DetailTransaksiServis::orderBy('created_at', 'DESC')->get();
 
-        // Mengirim data ke view
         return view('servis.index', compact('data_servis'));
     }
 
-    /**
-     * Fungsi untuk update status servis (Logic yang dipicu tombol di View)
-     */
     public function updateStatusServis(Request $request)
     {
         $request->validate([
@@ -40,19 +35,14 @@ class ServisController extends Controller
 
         $servis = DetailTransaksiServis::findOrFail($request->id);
 
-        // kalau status sama, stop
         if ($servis->status_servis === $request->status) {
             return redirect()->back()->with('sukses', 'Status tidak berubah');
         }
 
         $servis->status_servis = $request->status;
 
-        // =========================
-        // HANDLE BATAL (INTI LOGIKA)
-        // =========================
         if ($request->status == 'dibatalkan') {
 
-            // 1. update transaksi utama
             DB::table('transaksi')
                 ->where('id', $servis->id_transaksi)
                 ->update([
@@ -62,7 +52,6 @@ class ServisController extends Controller
 
             $keranjang = Keranjang::where('id_transaksi', $servis->id_transaksi)->get();
 
-            // pindahkan ke detail_transaksi dengan status dibatalkan
             foreach ($keranjang as $item) {
                 DB::table('detail_transaksi')->insert([
                     'id_transaksi' => $item->id_transaksi,
@@ -77,15 +66,11 @@ class ServisController extends Controller
                 ]);
             }
 
-            // hapus keranjang setelah dipindahkan
             DB::table('keranjang')
                 ->where('id_transaksi', $servis->id_transaksi)
                 ->delete();
         }
 
-        // =========================
-        // UPDATE AUTO TIMESTAMP GLOBAL
-        // =========================
         $servis->updated_at = now();
 
         $servis->save();
@@ -115,11 +100,9 @@ class ServisController extends Controller
             'kerusakan' => 'required',
         ]);
 
-        // 🔥 cek apakah sudah ada data servis
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
 
         if ($servis) {
-            // ================= UPDATE =================
             $servis->update([
                 'tanggal_masuk' => $request->tanggal_masuk,
                 'nama' => $request->nama,
@@ -134,7 +117,6 @@ class ServisController extends Controller
 
             $message = 'Servis berhasil diupdate!';
         } else {
-            // ================= CREATE =================
             DetailTransaksiServis::create([
                 'id_transaksi' => $id,
                 'kode_servis' => 'SRV-' . date('YmdHis'),
@@ -166,28 +148,19 @@ class ServisController extends Controller
     {
         $transaksi = Transaksi::findOrFail($id);
 
-        // 🔥 ambil data servis
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
 
         if (!$servis) {
             return back()->with('error', 'Data servis belum diisi!');
         }
 
-        // =========================
-        // UPDATE STATUS
-        // =========================
-
         $transaksi->status = 'proses';
         $transaksi->save();
 
-        // servis masuk ke proses pengerjaan
         $servis->status_servis = 'proses';
         $servis->tanggal_dikerjakan = now();
         $servis->save();
 
-        // =========================
-        // CETAK NOTA
-        // =========================
         $this->printServis($id);
 
         return redirect('/transaksi')
@@ -206,14 +179,10 @@ class ServisController extends Controller
             $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
             $printer = new Printer($connector);
 
-            $jasa = $keranjang->filter(fn($i) => str_contains(strtolower($i->nama), 'jasa'));
-            $barang = $keranjang->filter(fn($i) => !str_contains(strtolower($i->nama), 'jasa'));
-
             for ($cetak = 1; $cetak <= 2; $cetak++) {
 
                 $printer->initialize();
 
-                // ================= LOGO =================
                 $logoPath = public_path('assets/dist/img/logo_print.png');
                 if (file_exists($logoPath)) {
                     try {
@@ -221,37 +190,39 @@ class ServisController extends Controller
                         $printer->setJustification(Printer::JUSTIFY_CENTER);
                         $printer->bitImage($logo);
                     } catch (\Exception $e) {
+                        $printer->setJustification(Printer::JUSTIFY_CENTER);
+                        $printer->setTextSize(2, 2);
+                        $printer->setEmphasis(true);
                         $printer->text("ANGEL CELL\n");
+                        $printer->setTextSize(1, 1);
+                        $printer->setEmphasis(false);
                     }
                 }
 
-                $printer->feed();
-
-                // ================= HEADER =================
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
                 $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
                 $printer->text("Kecamatan Losarang\n");
-                $printer->feed();
                 $printer->text($tanggal . "\n");
 
                 $printer->text("--------------------------------\n");
 
-                // ================= ADMIN =================
                 $printer->setJustification(Printer::JUSTIFY_LEFT);
                 $printer->text("Kasir  : $namakasir\n");
                 $printer->text("Jenis  : Servis\n");
 
                 if ($servis) {
 
-                    $tipe = strlen($servis->tipe) > 15 ? substr($servis->tipe, 0, 15) . '..' : $servis->tipe;
+                    $tipe = strlen($servis->tipe) > 15
+                        ? substr($servis->tipe, 0, 15) . '..'
+                        : $servis->tipe;
 
-                    $printer->text("Tipe   : $tipe\n");
                     $printer->text("Merk   : {$servis->merk}\n");
-
+                    $printer->text("Tipe   : $tipe\n");
                     $printer->text("No HP  : {$servis->nohp}\n");
                     $printer->text("Nama   : {$servis->nama}\n");
 
-                    $printer->text("Alamat : {$servis->alamat}\n");
+                    $alamat = wordwrap($servis->alamat, 30, "\n          ");
+                    $printer->text("Alamat : $alamat\n");
 
                     $printer->text("Security : {$servis->security}\n");
 
@@ -259,54 +230,65 @@ class ServisController extends Controller
 
                     $printer->text("Kondisi   : {$servis->kondisi}\n");
 
-                    // multiline kerusakan
                     $kerusakan = wordwrap($servis->kerusakan, 30, "\n            ");
                     $printer->text("Kerusakan : $kerusakan\n\n");
                 }
 
-                // ================= JASA =================
-                $printer->text("Jasa:\n");
-                $totaljasa = 0;
-
-                foreach ($jasa as $j) {
-                    $nama = strlen($j->nama) > 25 ? substr($j->nama, 0, 25) . '...' : $j->nama;
-                    $printer->text("- $nama\n");
-                    $totaljasa += $j->subtotal;
-                }
-
-                $printer->feed();
-
-                // ================= BARANG =================
-                $printer->text("Sparepart:\n");
-                $totalbarang = 0;
-
-                foreach ($barang as $b) {
-                    $nama = strlen($b->nama) > 25 ? substr($b->nama, 0, 25) . '...' : $b->nama;
-                    $printer->text("- $nama\n");
-                    $totalbarang += $b->subtotal;
-                }
-
-                $printer->feed();
-
-                // ================= TOTAL =================
-                $grandtotal = $totaljasa + $totalbarang;
-
-                $printer->text("--------------------------------\n");
                 $printer->setEmphasis(true);
-                $printer->text("ESTIMASI : Rp " . number_format($grandtotal, 0, '.', '.') . "\n");
+                $printer->text("Sparepart & Jasa\n");
                 $printer->setEmphasis(false);
 
-                // ================= FOOTER =================
+                $printer->text("--------------------------------\n");
+
+                $grandtotal = 0;
+
+                if ($keranjang->isEmpty()) {
+                    $printer->text("- Belum ada item\n");
+                } else {
+                    foreach ($keranjang as $item) {
+                        $nama = strlen($item->nama) > 25
+                            ? substr($item->nama, 0, 25) . '...'
+                            : $item->nama;
+
+                        $printer->text(sprintf(
+                            "%-25s %10s\n",
+                            $nama,
+                            number_format($item->subtotal, 0, '.', '.')
+                        ));
+
+                        $grandtotal += $item->subtotal;
+                    }
+                }
+
+                $printer->feed();
+                $printer->text("--------------------------------\n");
+
+                $printer->setJustification(Printer::JUSTIFY_CENTER);
+                $printer->setTextSize(2, 2);
+                $printer->setEmphasis(true);
+
+                $printer->text("ESTIMASI\n");
+                $printer->text("Rp " . number_format($grandtotal, 0, '.', '.') . "\n");
+
+                $printer->setTextSize(1, 1);
+                $printer->setEmphasis(false);
+
                 $printer->feed();
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
 
+                $printer->setEmphasis(true);
                 $printer->text("!! PERHATIAN !!\n");
+                $printer->setEmphasis(false);
+
                 $printer->text("Nota wajib dibawa saat pengambilan\n");
                 $printer->text("Jika hilang wajib KTP\n");
                 $printer->text("1 bulan tidak diambil bukan tanggung jawab\n");
 
                 $printer->feed();
+
+                $printer->setEmphasis(true);
                 $printer->text("TERIMA KASIH\n");
+                $printer->setEmphasis(false);
 
                 $printer->feed(3);
                 $printer->cut();
@@ -321,24 +303,20 @@ class ServisController extends Controller
 
     public function pembayaran_servis($id)
     {
-        // 1. Ambil transaksi
+
         $transaksi = Transaksi::findOrFail($id);
 
-        // 2. Ambil data servis
         $detail_servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
 
-        // 4. Hitung keranjang tambahan
         $keranjang = Keranjang::where('id_transaksi', $id)->get();
         $total_keranjang = $keranjang->sum('subtotal');
 
-        // 6. Optional nama member
         $nama_member = null;
         if ($transaksi->id_member) {
             $member = Data_member::find($transaksi->id_member);
             $nama_member = $member ? $member->nama_member : null;
         }
 
-        // 7. kirim ke view
         return view('servis.pembayaran_servis', compact(
             'transaksi',
             'detail_servis',
@@ -360,7 +338,6 @@ class ServisController extends Controller
             return back()->with('error', 'Keranjang masih kosong!');
         }
 
-        // 1. Pindahkan data ke DetailTransaksi
         foreach ($keranjang as $item) {
             DetailTransaksi::create([
                 'id_transaksi' => $item->id_transaksi,
@@ -372,13 +349,11 @@ class ServisController extends Controller
             ]);
         }
 
-        // 2. Update status transaksi & simpan nominal bayar
         $transaksi->status = 'selesai';
         $transaksi->bayar = $request->bayar;
         $transaksi->kembalian = $request->kembalian;
         $transaksi->save();
 
-        // 3. Update status detail servis
         $servis = DetailTransaksiServis::where('id_transaksi', $transaksi->id)->first();
         if ($servis) {
             $servis->status_servis = 'diambil';
@@ -386,11 +361,8 @@ class ServisController extends Controller
             $servis->save();
         }
 
-        // 4. PANGGIL FUNGSI CETAK (Sebelum keranjang dihapus agar data filter tetap jalan)
-        // Atau bisa juga ambil dari DetailTransaksi di dalam fungsi printServis
         $this->printServisDiambil($transaksi->id);
 
-        // 5. Hapus data di keranjang
         Keranjang::where('id_transaksi', $transaksi->id)->delete();
 
         return redirect('/transaksi')->with('sukses', 'Servis selesai dan Nota dicetak!');
@@ -398,99 +370,102 @@ class ServisController extends Controller
 
     private function printServisDiambil($id)
     {
-        // Mengambil data dari DetailTransaksi karena keranjang akan dihapus
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
         $items = DetailTransaksi::where('id_transaksi', $id)->get();
         $transaksi = Transaksi::find($id);
-
         $namakasir = auth()->user()->nama;
         $tanggal = now()->format('d M Y H:i:s');
+        $grandTotal = $items->sum('subtotal');
 
         try {
             $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
             $printer = new Printer($connector);
-
-            $jasa = $items->filter(fn($i) => str_contains(strtolower($i->nama_barang), 'jasa'));
-            $barang = $items->filter(fn($i) => !str_contains(strtolower($i->nama_barang), 'jasa'));
-
-                $printer->initialize();
-
-                // ================= LOGO =================
-                $logoPath = public_path('assets/dist/img/logo_print.png');
-                if (file_exists($logoPath)) {
-                    try {
-                        $logo = EscposImage::load($logoPath, true);
-                        $printer->setJustification(Printer::JUSTIFY_CENTER);
-                        $printer->bitImage($logo);
-                    } catch (\Exception $e) {
-                        $printer->setJustification(Printer::JUSTIFY_CENTER);
-                        $printer->setEmphasis(true);
-                        $printer->text("ANGEL CELL\n");
-                        $printer->setEmphasis(false);
-                    }
-                }
-
-                // ================= HEADER =================
-                $printer->setJustification(Printer::JUSTIFY_CENTER);
-                $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
-                $printer->text("Kecamatan Losarang\n");
-                $printer->text($tanggal . "\n");
-                $printer->text("--------------------------------\n");
-
-                // ================= INFO NOTA =================
-                $printer->setJustification(Printer::JUSTIFY_LEFT);
-                $printer->text("No. Nota : #$id\n");
-                $printer->text("Kasir    : $namakasir\n");
-                $printer->text("Pelanggan: " . ($servis->nama ?? 'Umum') . "\n");
-
-                if ($servis) {
-                    $tipe = strlen($servis->tipe) > 15 ? substr($servis->tipe, 0, 15) . '..' : $servis->tipe;
-                    $printer->text("Unit     : {$servis->merk} - $tipe\n");
-                }
-                $printer->text("--------------------------------\n");
-
-                // ================= JASA =================
-                if ($jasa->count() > 0) {
+            $printer->initialize();
+            $logoPath = public_path('assets/dist/img/logo_print.png');
+            if (file_exists($logoPath)) {
+                try {
+                    $logo = EscposImage::load($logoPath, true);
+                    $printer->setJustification(Printer::JUSTIFY_CENTER);
+                    $printer->bitImage($logo);
+                } catch (\Exception $e) {
+                    $printer->setJustification(Printer::JUSTIFY_CENTER);
                     $printer->setEmphasis(true);
-                    $printer->text("Jasa:\n");
+                    $printer->setTextSize(2, 2);
+                    $printer->text("ANGEL CELL\n");
+                    $printer->setTextSize(1, 1);
                     $printer->setEmphasis(false);
-                    foreach ($jasa as $j) {
-                        $nama = strlen($j->nama_barang) > 20 ? substr($j->nama_barang, 0, 20) . '..' : $j->nama_barang;
-                        $printer->text(sprintf("%-21s %10s\n", "- " . $nama, number_format($j->subtotal, 0, '.', '.')));
-                    }
                 }
+            }
 
-                // ================= BARANG =================
-                if ($barang->count() > 0) {
-                    $printer->setEmphasis(true);
-                    $printer->text("\nSparepart:\n");
-                    $printer->setEmphasis(false);
-                    foreach ($barang as $b) {
-                        $nama = strlen($b->nama_barang) > 20 ? substr($b->nama_barang, 0, 20) . '..' : $b->nama_barang;
-                        $printer->text(sprintf("%-21s %10s\n", "- " . $nama, number_format($b->subtotal, 0, '.', '.')));
-                    }
-                }
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
+            $printer->text("Kecamatan Losarang\n");
+            $printer->text($tanggal . "\n");
 
-                // ================= TOTAL =================
-                $printer->text("--------------------------------\n");
-                $printer->setEmphasis(true);
-                $printer->text(sprintf("%-15s %15s\n", "GRAND TOTAL", "Rp " . number_format($transaksi->bayar + $transaksi->kembalian, 0, '.', '.')));
-                $printer->setEmphasis(false);
+            $printer->text("--------------------------------\n");
 
-                $printer->text(sprintf("%-15s %15s\n", "BAYAR", "Rp " . number_format($transaksi->bayar, 0, '.', '.')));
-                $printer->text(sprintf("%-15s %15s\n", "KEMBALI", "Rp " . number_format($transaksi->kembalian, 0, '.', '.')));
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+            $printer->text("No. Nota : #$id\n");
+            $printer->text("Kasir    : $namakasir\n");
+            $printer->text("Pelanggan: " . ($servis->nama ?? 'Umum') . "\n");
 
-                // ================= FOOTER =================
-                $printer->feed();
-                $printer->setJustification(Printer::JUSTIFY_CENTER);
-                $printer->text("!! LUNAS !!\n");
-                $printer->text("Barang yang sudah diservis\n");
-                $printer->text("memiliki garansi sesuai kesepakatan\n");
-                $printer->feed();
-                $printer->text("TERIMA KASIH\n");
+            if ($servis) {
+                $tipe = strlen($servis->tipe) > 15
+                    ? substr($servis->tipe, 0, 15) . '..'
+                    : $servis->tipe;
 
-                $printer->feed(3);
-                $printer->cut();
+                $printer->text("Unit     : {$servis->merk} - $tipe\n");
+            }
+
+            $printer->text("--------------------------------\n");
+
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->setEmphasis(true);
+            $printer->setTextSize(2, 2);
+
+            $printer->text("GRAND TOTAL\n");
+            $printer->text("Rp " . number_format($grandTotal, 0, '.', '.') . "\n");
+
+            $printer->setTextSize(1, 1);
+            $printer->setEmphasis(false);
+
+            $printer->feed();
+
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+
+            $printer->text(sprintf(
+                "%-15s %15s\n",
+                "BAYAR",
+                "Rp " . number_format($transaksi->bayar, 0, '.', '.')
+            ));
+
+            $printer->text(sprintf(
+                "%-15s %15s\n",
+                "KEMBALI",
+                "Rp " . number_format($transaksi->kembalian, 0, '.', '.')
+            ));
+
+            $printer->feed();
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->setEmphasis(true);
+            $printer->setTextSize(2, 2);
+
+            $printer->text("LUNAS\n");
+
+            $printer->setTextSize(1, 1);
+            $printer->setEmphasis(false);
+
+            $printer->feed();
+            $printer->text("Barang yang sudah diservis\n");
+            $printer->text("memiliki garansi sesuai kesepakatan\n");
+
+            $printer->feed();
+            $printer->setEmphasis(true);
+            $printer->text("TERIMA KASIH\n");
+            $printer->setEmphasis(false);
+
+            $printer->feed(3);
+            $printer->cut();
 
             $printer->close();
         } catch (\Exception $e) {

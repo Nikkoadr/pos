@@ -32,7 +32,6 @@ class TransaksiController extends Controller
 
     public function transaksi(Request $request)
     {
-        // 🔥 hanya transaksi aktif
         $transaksi = Transaksi::where('status', 'aktif')->latest()->get();
 
         $member = Data_member::all();
@@ -51,12 +50,11 @@ class TransaksiController extends Controller
             'jenis_transaksi' => $request->jenis_transaksi,
             'id_member' => $request->id_member,
             'tanggal_transaksi' => now(),
-            'status' => 'aktif', // 🔥 penting
+            'status' => 'aktif',
             'kasir' => auth()->user()->nama,
             'total_belanja' => 0
         ]);
 
-        // 🔥 BEDAKAN FLOW
         if ($request->jenis_transaksi == 'servis') {
             return redirect('transaksi_servis_' . $transaksi->id);
         }
@@ -80,20 +78,15 @@ class TransaksiController extends Controller
 
         $keranjang = Keranjang::where('id_transaksi', $id)->get();
 
-        // Member list (kalau dipakai di dropdown)
         $member = Data_member::all();
 
-        // Ambil nama member dengan aman
         $nama_member = Data_member::find($transaksi->id_member);
         $transaksi->nama_member = $nama_member ? $nama_member->nama_member : null;
 
-        // Total transaksi biasa
         $total = $this->calculateTotal($keranjang);
 
-        // 🔥 SERVIS (aman kalau tidak ada data)
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
 
-        // 🔥 TAMBAHAN: total servis dari keranjang (biar konsisten seperti transaksi biasa)
         $total_servis = $keranjang->sum('subtotal');
 
         return view('transaksi.proses_transaksi', compact(
@@ -194,7 +187,6 @@ class TransaksiController extends Controller
     {
         $item = Keranjang::findOrFail($id);
 
-        // 🔥 cek apakah ini barang dari database
         if ($item->id_barang) {
 
             $produk = Data_barang::find($item->id_barang);
@@ -205,7 +197,6 @@ class TransaksiController extends Controller
             }
         }
 
-        // 🔥 hapus item keranjang (manual / barang tetap dihapus)
         $item->delete();
 
         return redirect()->back()->with('sukses', 'Barang berhasil dihapus dari keranjang !');
@@ -222,7 +213,6 @@ class TransaksiController extends Controller
 
         $total = $keranjang->sum('subtotal');
 
-        // 1. Pindahkan ke detail_transaksi
         foreach ($keranjang as $item) {
             DetailTransaksi::create([
                 'id_transaksi' => $id_transaksi,
@@ -234,7 +224,6 @@ class TransaksiController extends Controller
             ]);
         }
 
-        // 2. Update transaksi jadi final
         $transaksi = Transaksi::findOrFail($id_transaksi);
         $transaksi->update([
             'total_belanja' => $total,
@@ -244,10 +233,8 @@ class TransaksiController extends Controller
             'kasir'         => auth()->user()->nama
         ]);
 
-        // 3. CETAK NOTA (Panggil fungsi private)
         $this->printNotaUmum($id_transaksi);
 
-        // 4. Hapus keranjang
         Keranjang::where('id_transaksi', $id_transaksi)->delete();
 
         session()->put('transaksi_id', $id_transaksi);
@@ -258,8 +245,8 @@ class TransaksiController extends Controller
     {
         $transaksi = Transaksi::find($id);
         $details = DetailTransaksi::where('id_transaksi', $id)->get();
+        $tanggal = now()->format('d M Y H:i:s');
 
-        // Ambil info member jika ada
         $nama_member = "Umum";
         if ($transaksi->id_member) {
             $m = Data_member::find($transaksi->id_member);
@@ -269,65 +256,89 @@ class TransaksiController extends Controller
         try {
             $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
             $printer = new Printer($connector);
-
             $printer->initialize();
             $printer->setJustification(Printer::JUSTIFY_CENTER);
-
-            // Logo Toko
             $logoPath = public_path('assets/dist/img/logo_print.png');
             if (file_exists($logoPath)) {
                 try {
                     $logo = EscposImage::load($logoPath, true);
-                    $printer->setJustification(Printer::JUSTIFY_CENTER);
                     $printer->bitImage($logo);
                 } catch (\Exception $e) {
-                    $printer->setJustification(Printer::JUSTIFY_CENTER);
+                    $printer->setTextSize(2, 2);
                     $printer->setEmphasis(true);
                     $printer->text("ANGEL CELL\n");
+                    $printer->setTextSize(1, 1);
                     $printer->setEmphasis(false);
                 }
             }
 
-            // Header
             $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
             $printer->text("Telp: 08xx-xxxx-xxxx\n");
-            $printer->text(now()->format('d/m/Y H:i') . "\n");
+            $printer->text($tanggal . "\n");
+
             $printer->text("--------------------------------\n");
 
-            // Info Transaksi
             $printer->setJustification(Printer::JUSTIFY_LEFT);
+
             $printer->text(sprintf("%-10s: %s\n", "Nota", "#" . $id));
             $printer->text(sprintf("%-10s: %s\n", "Kasir", auth()->user()->nama));
             $printer->text(sprintf("%-10s: %s\n", "Pelanggan", $nama_member));
+
             $printer->text("--------------------------------\n");
 
-            // Daftar Barang
             foreach ($details as $d) {
-                $nama = strlen($d->nama_barang) > 30 ? substr($d->nama_barang, 0, 27) . '...' : $d->nama_barang;
-                $printer->text("$nama\n");
-                $printer->text(
-                    sprintf(
-                        "%d x %-10s %15s\n",
-                        $d->qty,
-                        number_format($d->harga, 0, '.', '.'),
-                        number_format($d->subtotal, 0, '.', '.')
-                    )
-                );
+
+                $nama = strlen($d->nama_barang) > 30
+                    ? substr($d->nama_barang, 0, 27) . '...'
+                    : $d->nama_barang;
+
+                $printer->text($nama . "\n");
+
+                $printer->text(sprintf(
+                    "%d x %-10s %15s\n",
+                    $d->qty,
+                    number_format($d->harga, 0, '.', '.'),
+                    number_format($d->subtotal, 0, '.', '.')
+                ));
             }
 
             $printer->text("--------------------------------\n");
 
-            // Total, Bayar, Kembali
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->setTextSize(2, 2);
             $printer->setEmphasis(true);
-            $printer->text(sprintf("%-15s %16s\n", "TOTAL", "Rp " . number_format($transaksi->total_belanja, 0, '.', '.')));
-            $printer->setEmphasis(false);
-            $printer->text(sprintf("%-15s %16s\n", "BAYAR", "Rp " . number_format($transaksi->bayar, 0, '.', '.')));
-            $printer->text(sprintf("%-15s %16s\n", "KEMBALI", "Rp " . number_format($transaksi->kembalian, 0, '.', '.')));
 
-            // Footer
+            $printer->text("TOTAL\n");
+            $printer->text("Rp " . number_format($transaksi->total_belanja, 0, '.', '.') . "\n");
+
+            $printer->setTextSize(1, 1);
+            $printer->setEmphasis(false);
+
+            $printer->feed();
+
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+
+            $printer->text(sprintf(
+                "%-15s %16s\n",
+                "BAYAR",
+                "Rp " . number_format($transaksi->bayar, 0, '.', '.')
+            ));
+
+            $printer->text(sprintf(
+                "%-15s %16s\n",
+                "KEMBALI",
+                "Rp " . number_format($transaksi->kembalian, 0, '.', '.')
+            ));
+
+            // ================= FOOTER =================
             $printer->feed();
             $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->text("Terima Kasih Atas Kunjungan Anda\n");
+
+            $printer->setEmphasis(true);
+            $printer->text("TERIMA KASIH\n");
+            $printer->setEmphasis(false);
+
+            $printer->text("Atas Kunjungan Anda\n");
             $printer->text("Barang yang sudah dibeli\n");
             $printer->text("tidak dapat ditukar/dikembalikan\n");
 
@@ -375,7 +386,6 @@ class TransaksiController extends Controller
     {
         $transaksi = Transaksi::findOrFail($id);
 
-        // 🔁 BALIKIN STOK DARI KERANJANG
         $keranjang = Keranjang::where('id_transaksi', $transaksi->id)->get();
 
         foreach ($keranjang as $item) {
@@ -389,12 +399,10 @@ class TransaksiController extends Controller
             $barang->save();
         }
 
-        // 🧹 HAPUS RELASI
         Keranjang::where('id_transaksi', $transaksi->id)->delete();
         DetailTransaksi::where('id_transaksi', $transaksi->id)->delete();
         DetailTransaksiServis::where('id_transaksi', $transaksi->id)->delete();
 
-        // ❌ HAPUS TRANSAKSI
         $transaksi->delete();
 
         return redirect()->back()->with('sukses', 'Transaksi berhasil dihapus!');
@@ -411,7 +419,7 @@ class TransaksiController extends Controller
 
         Keranjang::create([
             'id_transaksi' => $request->id_transaksi,
-            'id_barang' => null, // 🔥 penting (karena bukan dari barang)
+            'id_barang' => null,
             'nama' => $request->nama,
             'harga' => $request->harga,
             'qty' => $request->qty,

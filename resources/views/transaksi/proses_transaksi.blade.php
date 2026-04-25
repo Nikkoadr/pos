@@ -24,221 +24,213 @@
     </div>
     <div class="content">
         <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-6">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <h5 class="m-0">Administrasi</h5>
+                        </div>
+
+                        <div class="card-body">
+                            <h6 class="card-title"><b>ID Transaksi :</b> {{ $transaksi->id }}</h6><br>
+                            <h6 class="card-title"><b>Jenis Transaksi :</b> {{ $transaksi->jenis_transaksi }}</h6><br>
+                            <h6 class="card-title"><b>Kasir :</b> {{ auth()->user()->nama }}</h6><br>
+
+                            @if($transaksi->jenis_transaksi == 'member')
+                                <h6 class="card-title"><b>Member :</b> {{ $transaksi->nama_member ?? 'Tidak ada Member' }}</h6><br>
+                            @else
+                                <h6 class="card-title"><b>Member :</b> -</h6><br>
+                            @endif
+
+                            <h6 class="card-title"><b>Tanggal Transaksi :</b> {{ \Carbon\Carbon::now()->locale('id_ID')->isoFormat('D MMMM YYYY') }}</h6><br>
+                            @if($transaksi->jenis_transaksi == 'servis')
+                                <hr>
+                                <h6 class="card-title"><b>Data Servis :</b></h6><br>
+
+                                @if(isset($servis))
+                                    <h6 class="card-title"><b>Kode :</b> {{ $servis->kode_servis }}</h6><br>
+                                    <h6 class="card-title"><b>Customer :</b> {{ $servis->nama }}</h6><br>
+                                    <h6 class="card-title"><b>No HP :</b> {{ $servis->nohp }}</h6><br>
+                                    <h6 class="card-title"><b>Device :</b> {{ $servis->merk }} - {{ $servis->tipe }}</h6><br>
+                                    <h6 class="card-title"><b>Kerusakan :</b> {{ $servis->kerusakan }}</h6><br>
+
+                                    <h6 class="card-title">
+                                        <b>Estimasi :</b> @rp($total_servis)
+                                    </h6><br>
+
+                                @else
+                                    <h6 class="text-danger"><b>Data servis belum diisi!</b></h6>
+                                    <a href="{{ url('transaksi_servis_'.$transaksi->id) }}" class="btn btn-warning btn-sm">
+                                        Isi Servis
+                                    </a><br><br>
+                                @endif
+                            @endif
+
+                            {{-- ================= NON SERVIS (ADA TRANSAKSI) ================= --}}
+                            @if($transaksi->jenis_transaksi != 'servis')
+                                <h6 class="card-title"><b>Grand Total :</b> @rp($total)</h6><br>
+                                <h6 class="card-title"><b>Kembalian :</b> <span id="kembalian">0</span></h6><br>
+
+                                <div class="row">
+                                    <div class="col-sm-2">
+                                        <label class="card-title"><b>Bayar :</b></label>
+                                    </div>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" placeholder="Customer Bayar" id="bayar">
+                                    </div>
+                                </div>
+                            @endif
+
+                        </div>
+
+                        <div class="card-footer">
+
+                            @if($transaksi->jenis_transaksi == 'servis')
+                                @if(isset($servis))
+                                    <a href="{{ url('cetak_transaksi_servis/'.$transaksi->id) }}" class="btn btn-primary float-right">
+                                        <i class="fas fa-print mr-1"></i> Cetak Nota Pengambilan
+                                    </a>
+                                @else
+                                    <button class="btn btn-secondary float-right disabled">
+                                        Isi data servis dulu
+                                    </button>
+                                @endif
+
+                            @else
+                                @if($total != 0)
+                                    <form action="{{ route('checkout') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
+                                        <input type="hidden" name="jenis_transaksi" value="{{ $transaksi->jenis_transaksi }}">
+                                        
+                                        @if($transaksi->jenis_transaksi == 'member')
+                                            <input type="hidden" name="member" value="{{ $transaksi->id_member }}">
+                                        @endif
+
+                                        <input type="hidden" name="bayar" id="inputBayar">
+                                        <input type="hidden" name="kembalian" id="inputKembalian">
+
+                                        <button class="btn btn-success float-right konfirmasi" type="submit">
+                                            Checkout
+                                        </button>
+                                    </form>
+                                @else
+                                    <button class="btn btn-success float-right disabled" disabled>
+                                        Keranjang masih Kosong
+                                    </button>
+                                @endif
+                            @endif
+
+                        </div>
+                    </div>
                 <div class="card card-primary card-outline">
                     <div class="card-header">
-                        <h5 class="m-0">Administrasi</h5>
+                    <h5 class="m-0">Keranjang</h5>
                     </div>
-
                     <div class="card-body">
-                        <h6 class="card-title"><b>ID Transaksi :</b> {{ $transaksi->id }}</h6><br>
-                        <h6 class="card-title"><b>Jenis Transaksi :</b> {{ $transaksi->jenis_transaksi }}</h6><br>
-                        <h6 class="card-title"><b>Kasir :</b> {{ auth()->user()->nama }}</h6><br>
-
-                        @if($transaksi->jenis_transaksi == 'member')
-                            <h6 class="card-title"><b>Member :</b> {{ $transaksi->nama_member ?? 'Tidak ada Member' }}</h6><br>
-                        @else
-                            <h6 class="card-title"><b>Member :</b> -</h6><br>
-                        @endif
-
-                        <h6 class="card-title"><b>Tanggal Transaksi :</b> {{ \Carbon\Carbon::now()->locale('id_ID')->isoFormat('D MMMM YYYY') }}</h6><br>
-
-                        {{-- ================= SERVIS ================= --}}
-                        @if($transaksi->jenis_transaksi == 'servis')
-                            <hr>
-                            <h6 class="card-title"><b>Data Servis :</b></h6><br>
-
-                            @if(isset($servis))
-                                <h6 class="card-title"><b>Kode :</b> {{ $servis->kode_servis }}</h6><br>
-                                <h6 class="card-title"><b>Customer :</b> {{ $servis->nama }}</h6><br>
-                                <h6 class="card-title"><b>No HP :</b> {{ $servis->nohp }}</h6><br>
-                                <h6 class="card-title"><b>Device :</b> {{ $servis->merk }} - {{ $servis->tipe }}</h6><br>
-                                <h6 class="card-title"><b>Kerusakan :</b> {{ $servis->kerusakan }}</h6><br>
-
-                                {{-- 🔥 INI INTINYA --}}
-                                <h6 class="card-title">
-                                    <b>Estimasi :</b> @rp($total_servis)
-                                </h6><br>
-
-                            @else
-                                <h6 class="text-danger"><b>Data servis belum diisi!</b></h6>
-                                <a href="{{ url('transaksi_servis_'.$transaksi->id) }}" class="btn btn-warning btn-sm">
-                                    Isi Servis
-                                </a><br><br>
-                            @endif
-                        @endif
-
-                        {{-- ================= NON SERVIS (ADA TRANSAKSI) ================= --}}
-                        @if($transaksi->jenis_transaksi != 'servis')
-                            <h6 class="card-title"><b>Grand Total :</b> @rp($total)</h6><br>
-                            <h6 class="card-title"><b>Kembalian :</b> <span id="kembalian">0</span></h6><br>
+                        <div class="mb-3">
+                            <input type="text" id="scanner" class="form-control" placeholder="Scan Barcode di sini..." autofocus>
+                        </div>
+                        <div class="mb-3">
+                        <form action="/tambah_manual" method="POST">
+                            @csrf
+                            <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
 
                             <div class="row">
-                                <div class="col-sm-2">
-                                    <label class="card-title"><b>Bayar :</b></label>
+                                <div class="col-md-4">
+                                    <input type="text" name="nama" class="form-control" placeholder="Nama jasa / item" required>
                                 </div>
-                                <div class="col-sm-10">
-                                    <input type="text" class="form-control" placeholder="Customer Bayar" id="bayar">
+                                <div class="col-md-3">
+                                    <input type="number" name="harga" class="form-control" placeholder="Harga" required>
                                 </div>
-                            </div>
-                        @endif
-
-                    </div>
-
-                    {{-- ================= FOOTER ================= --}}
-                    <div class="card-footer">
-
-                        {{-- 🔥 SERVIS = CETAK NOTA PENGAMBILAN --}}
-                        @if($transaksi->jenis_transaksi == 'servis')
-                            @if(isset($servis))
-                                <a href="{{ url('cetak_transaksi_servis/'.$transaksi->id) }}" class="btn btn-primary float-right">
-                                    <i class="fas fa-print mr-1"></i> Cetak Nota Pengambilan
-                                </a>
-                            @else
-                                <button class="btn btn-secondary float-right disabled">
-                                    Isi data servis dulu
-                                </button>
-                            @endif
-
-                        {{-- 🔥 NON SERVIS = CHECKOUT --}}
-                        @else
-                            @if($total != 0)
-                                <form action="{{ route('checkout') }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
-                                    <input type="hidden" name="jenis_transaksi" value="{{ $transaksi->jenis_transaksi }}">
-                                    
-                                    @if($transaksi->jenis_transaksi == 'member')
-                                        <input type="hidden" name="member" value="{{ $transaksi->id_member }}">
-                                    @endif
-
-                                    <input type="hidden" name="bayar" id="inputBayar">
-                                    <input type="hidden" name="kembalian" id="inputKembalian">
-
-                                    <button class="btn btn-success float-right konfirmasi" type="submit">
-                                        Checkout
+                                <div class="col-md-2">
+                                    <input type="number" name="qty" class="form-control" value="1" min="1" placeholder="qty">
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-success btn-block" type="submit">
+                                        <i class="fa fa-plus"></i> Tambah Manual
                                     </button>
-                                </form>
-                            @else
-                                <button class="btn btn-success float-right disabled" disabled>
-                                    Keranjang masih Kosong
-                                </button>
-                            @endif
-                        @endif
-
-                    </div>
-                </div>
-            <div class="card card-primary card-outline">
-                <div class="card-header">
-                <h5 class="m-0">Keranjang</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <input type="text" id="scanner" class="form-control" placeholder="Scan Barcode di sini..." autofocus>
-                    </div>
-                    <div class="mb-3">
-                    <form action="/tambah_manual" method="POST">
-                        @csrf
-                        <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
-
-                        <div class="row">
-                            <div class="col-md-4">
-                                <input type="text" name="nama" class="form-control" placeholder="Nama jasa / item" required>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="number" name="harga" class="form-control" placeholder="Harga" required>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="number" name="qty" class="form-control" value="1" min="1" placeholder="qty">
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-success btn-block" type="submit">
-                                    <i class="fa fa-plus"></i> Tambah Manual
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <table id="table_keranjang" class="table table-bordered table-striped">
-                    <thead>
-                    <tr style="text-align: center">
-                        <th>No</th>
-                        <th>Nama</th>
-                        <th>Harga</th>
-                        <th>qty</th>
-                        <th>Subtotal</th>
-                        <th data-orderable="false">Menu</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php $no=1; ?>
-                    @foreach ($keranjang as $data )
-                    <tr>
-                        <td><?= $no++ ?></td>
-                        <td>
-                            {{ $data->nama }}
-                            @if(is_null($data->id_barang))
-                                <span class="badge badge-warning">Manual</span>
-                            @endif
-                        </td>
-                        <td>@rp($data -> harga)</td>
-                        <td class="col-3">
-                            @if(is_null($data->id_barang))
-                            {{ $data->qty }}
-                            @else
-                            <form action="/edit_qty" method="POST">
-                                @csrf
-                                <input type="hidden" name="id" value="{{ $data->id }}">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <input class="form-control" type="number" name="qty" value="{{ $data->qty }}">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <button class="btn btn-info btn-block" type="submit"><i class="fa-solid fa-save"></i></button>
-                                    </div>
                                 </div>
-                            </form>
-                            @endif
-                        </td>
-                        <td>@rp($data -> subtotal)</td>
-                        <td width="10%" style="text-align: center">
-                            <form action="hapus_keranjang_{{ $data->id }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-danger" type="submit"><i class="fa-solid fa-trash"></i></button>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+                            </div>
+                        </form>
+                    </div>
+                    <table id="table_keranjang" class="table table-bordered table-striped">
+                        <thead>
+                        <tr style="text-align: center">
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>Harga</th>
+                            <th>qty</th>
+                            <th>Subtotal</th>
+                            <th data-orderable="false">Menu</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php $no=1; ?>
+                        @foreach ($keranjang as $data )
+                        <tr>
+                            <td><?= $no++ ?></td>
+                            <td>
+                                {{ $data->nama }}
+                                @if(is_null($data->id_barang))
+                                    <span class="badge badge-warning">Manual</span>
+                                @endif
+                            </td>
+                            <td>@rp($data -> harga)</td>
+                            <td class="col-3">
+                                @if(is_null($data->id_barang))
+                                {{ $data->qty }}
+                                @else
+                                <form action="/edit_qty" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="id" value="{{ $data->id }}">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <input class="form-control" type="number" name="qty" value="{{ $data->qty }}">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button class="btn btn-info btn-block" type="submit"><i class="fa-solid fa-save"></i></button>
+                                        </div>
+                                    </div>
+                                </form>
+                                @endif
+                            </td>
+                            <td>@rp($data -> subtotal)</td>
+                            <td width="10%" style="text-align: center">
+                                <form action="hapus_keranjang_{{ $data->id }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-danger" type="submit"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                    </div>
                 </div>
-            </div>
             </div>
             <div class="col-lg-6">
                 <div class="card card-primary card-outline">
                     <div class="card-header">
                     <h5 class="m-0">Pilih Barang</h5>
                     </div>
-                    <div class="card-body">
-                        <table id="table_data_barang" class="table table-bordered table-striped">
-                            <thead>
-                                <tr style="text-align: center">
-                                    <th data-orderable="false">No</th>
-                                    <th>Nama</th>
-                                    <th>Stok</th>
-                                    <th>Harga</th>
-                                    <th data-orderable="false">Tambah Ke Keranjang</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
+                        <div class="card-body">
+                            <table id="table_data_barang" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr style="text-align: center">
+                                        <th data-orderable="false">No</th>
+                                        <th>Nama</th>
+                                        <th>Stok</th>
+                                        <th>Harga</th>
+                                        <th data-orderable="false">Tambah Ke Keranjang</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-            </div>
-        </div>
         </div>
     </div>
 </div>

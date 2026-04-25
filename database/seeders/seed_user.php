@@ -16,8 +16,8 @@ class seed_user extends Seeder
     public function run()
     {
         User::create([
-            'email' => 'admin@pos.net',
-            'password' => Hash::make('P4ssw0rd'),
+            'email' => 'admin@angelcell.com',
+            'password' => Hash::make('1234567800'),
             'nama' => 'Administrator',
             'nomor_hp' => '081000000000',
             'role' => 'admin',

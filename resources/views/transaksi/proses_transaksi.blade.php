@@ -217,24 +217,24 @@
             </div>
             </div>
             <div class="col-lg-6">
-            <div class="card card-primary card-outline">
-                <div class="card-header">
-                <h5 class="m-0">Pilih Barang</h5>
-                </div>
-                <div class="card-body">
-                    <table id="table_data_barang" class="table table-bordered table-striped">
-                        <thead>
-                            <tr style="text-align: center">
-                                <th data-orderable="false">No</th>
-                                <th>Nama</th>
-                                <th>Stok</th>
-                                <th>Harga</th>
-                                <th data-orderable="false">Tambah Ke Keranjang</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-                </div>
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                    <h5 class="m-0">Pilih Barang</h5>
+                    </div>
+                    <div class="card-body">
+                        <table id="table_data_barang" class="table table-bordered table-striped">
+                            <thead>
+                                <tr style="text-align: center">
+                                    <th data-orderable="false">No</th>
+                                    <th>Nama</th>
+                                    <th>Stok</th>
+                                    <th>Harga</th>
+                                    <th data-orderable="false">Tambah Ke Keranjang</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    </div>
                 </div>
             </div>
             </div>

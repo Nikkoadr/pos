@@ -15,8 +15,8 @@ class seed_setting extends Seeder
     public function run()
     {
         Setting::create([
-            'nama_toko' => 'Toko Andreas',
-            'printer' => 'default',
+            'nama_toko' => 'Angel Cell',
+            'printer' => 'termal',
             'alamat_toko' => 'Jangga',
         ]);
     }

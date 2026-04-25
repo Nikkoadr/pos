@@ -327,18 +327,11 @@ class ServisController extends Controller
         $transaksi = Transaksi::findOrFail($id);
 
         // 2. Ambil data servis
-        $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
-
-        // 3. Hitung estimasi servis
-        $total_servis = DetailTransaksiServis::where('id_transaksi', $id)
-            ->sum('harga_estimasi');
+        $detail_servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
 
         // 4. Hitung keranjang tambahan
         $keranjang = Keranjang::where('id_transaksi', $id)->get();
         $total_keranjang = $keranjang->sum('subtotal');
-
-        // 5. Grand total
-        $total = $total_servis + $total_keranjang;
 
         // 6. Optional nama member
         $nama_member = null;
@@ -350,11 +343,9 @@ class ServisController extends Controller
         // 7. kirim ke view
         return view('servis.pembayaran_servis', compact(
             'transaksi',
-            'servis',
+            'detail_servis',
             'keranjang',
-            'total_servis',
             'total_keranjang',
-            'total',
             'nama_member'
         ));
     }

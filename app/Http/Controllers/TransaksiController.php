@@ -256,8 +256,8 @@ class TransaksiController extends Controller
             $dataBarang->where(function ($query) use ($keyword) {
                 $query->where('nama', 'like', "%{$keyword}%")
                     ->orWhere('qty', 'like', "%{$keyword}%")
-                    ->orWhere('harga_jual1', 'like', "%{$keyword}%")
-                    ->orWhere('harga_jual2', 'like', "%{$keyword}%");
+                    ->orWhere('harga_umum', 'like', "%{$keyword}%")
+                    ->orWhere('harga_member', 'like', "%{$keyword}%");
             });
         }
         return DataTables::of($dataBarang)
@@ -284,24 +284,29 @@ class TransaksiController extends Controller
     {
         $transaksi = Transaksi::findOrFail($id);
 
-        $detailTransaksi = DetailTransaksi::where('id_transaksi', $transaksi->id)->get();
+        // 🔁 BALIKIN STOK DARI KERANJANG
+        $keranjang = Keranjang::where('id_transaksi', $transaksi->id)->get();
 
-        foreach ($detailTransaksi as $detail) {
-            $barang = Data_barang::findOrFail($detail->id_barang);
-            $barang->qty += $detail->qty;
+        foreach ($keranjang as $item) {
+
+            if (!$item->id_barang) continue;
+
+            $barang = Data_barang::find($item->id_barang);
+            if (!$barang) continue;
+
+            $barang->qty += $item->qty;
             $barang->save();
         }
 
-        // HAPUS DETAIL TRANSAKSI
+        // 🧹 HAPUS RELASI
+        Keranjang::where('id_transaksi', $transaksi->id)->delete();
         DetailTransaksi::where('id_transaksi', $transaksi->id)->delete();
-
-        // HAPUS DETAIL SERVIS (INI YANG KURANG)
         DetailTransaksiServis::where('id_transaksi', $transaksi->id)->delete();
 
-        // HAPUS TRANSAKSI
+        // ❌ HAPUS TRANSAKSI
         $transaksi->delete();
 
-        return redirect()->back();
+        return redirect()->back()->with('sukses', 'Transaksi berhasil dihapus!');
     }
 
     public function tambah_manual(Request $request)

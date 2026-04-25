@@ -245,7 +245,7 @@ class TransaksiController extends Controller
         // simpan untuk keperluan print
         session()->put('transaksi_id', $id_transaksi);
 
-        return redirect('transaksi')->with('transaksi_sukses', 'Transaksi Berhasil !');
+        return redirect('transaksi')->with('sukses', 'Transaksi Berhasil !');
     }
 
     public function dataBarang(Request $request)
@@ -327,6 +327,6 @@ class TransaksiController extends Controller
             'subtotal' => $request->harga * $request->qty,
         ]);
 
-        return redirect()->back()->with('success', 'Item manual ditambahkan!');
+        return redirect()->back()->with('sukses', 'Item manual ditambahkan!');
     }
 }

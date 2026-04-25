@@ -16,13 +16,14 @@ class Import_data_barang implements ToModel, WithHeadingRow
     public function model(array $row)
     {
         return new Data_barang([
-            'id_toko' => $row['id_toko'],
-            'id_supplier'     => $row['id_supplier'],
+            'id_toko' => 1,
+            'id_supplier'     => 1,
+            'barcode'     => $row['barcode'],
             'nama'     => $row['nama_barang'],
             'qty'     => $row['stok'],
             'harga_modal'     => $row['harga_modal'],
             'harga_jual1'     => $row['harga_umum'],
-            'harga_jual2'     => $row['harga_grosir'],
+            'harga_jual2'     => $row['harga_member'],
         ]);
     }
 }

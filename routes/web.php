@@ -78,3 +78,4 @@ Route::get('/cetak_transaksi_servis/{id}', [ServisController::class, 'proses_ser
 Route::post('/tambah_manual', [TransaksiController::class, 'tambah_manual']);
 
 Route::get('/pembayaran/servis/{id}', [ServisController::class, 'pembayaran_servis']);
+Route::post('/selesaikan_servis', [ServisController::class, 'selesaikan_servis'])->name('selesaikan_servis');

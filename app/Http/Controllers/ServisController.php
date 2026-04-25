@@ -410,9 +410,8 @@ class ServisController extends Controller
             $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
             $printer = new Printer($connector);
 
-            // Pisahkan jasa & barang berdasarkan nama
-            $jasa = $items->filter(fn($i) => str_contains(strtolower($i->nama), 'jasa'));
-            $barang = $items->filter(fn($i) => !str_contains(strtolower($i->nama), 'jasa'));
+            $jasa = $items->filter(fn($i) => str_contains(strtolower($i->nama_barang), 'jasa'));
+            $barang = $items->filter(fn($i) => !str_contains(strtolower($i->nama_barang), 'jasa'));
 
                 $printer->initialize();
 
@@ -456,7 +455,7 @@ class ServisController extends Controller
                     $printer->text("Jasa:\n");
                     $printer->setEmphasis(false);
                     foreach ($jasa as $j) {
-                        $nama = strlen($j->nama) > 20 ? substr($j->nama, 0, 20) . '..' : $j->nama;
+                        $nama = strlen($j->nama_barang) > 20 ? substr($j->nama_barang, 0, 20) . '..' : $j->nama_barang;
                         $printer->text(sprintf("%-21s %10s\n", "- " . $nama, number_format($j->subtotal, 0, '.', '.')));
                     }
                 }
@@ -467,7 +466,7 @@ class ServisController extends Controller
                     $printer->text("\nSparepart:\n");
                     $printer->setEmphasis(false);
                     foreach ($barang as $b) {
-                        $nama = strlen($b->nama) > 20 ? substr($b->nama, 0, 20) . '..' : $b->nama;
+                        $nama = strlen($b->nama_barang) > 20 ? substr($b->nama_barang, 0, 20) . '..' : $b->nama_barang;
                         $printer->text(sprintf("%-21s %10s\n", "- " . $nama, number_format($b->subtotal, 0, '.', '.')));
                     }
                 }

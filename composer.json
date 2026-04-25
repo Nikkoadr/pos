@@ -12,7 +12,7 @@
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.4",
         "maatwebsite/excel": "^3.1",
-        "mike42/escpos-php": "^2.2",
+        "mike42/escpos-php": "^4.0",
         "phpoffice/phpspreadsheet": "^1.29",
         "yajra/laravel-datatables-oracle": "^10.11"
     },

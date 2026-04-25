@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama_toko');
             $table->string('alamat_toko');
-            $table->string('nama_perinter');
+            $table->string('nama_printer');
             $table->timestamps();
         });
     }

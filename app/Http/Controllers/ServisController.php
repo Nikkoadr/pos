@@ -203,7 +203,7 @@ class ServisController extends Controller
         $tanggal = now()->format('d M Y H:i:s');
 
         try {
-            $connector = new WindowsPrintConnector(Setting::first()->nama_perinter);
+            $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
             $printer = new Printer($connector);
 
             $jasa = $keranjang->filter(fn($i) => str_contains(strtolower($i->nama), 'jasa'));
@@ -217,7 +217,7 @@ class ServisController extends Controller
                 $logoPath = public_path('assets/dist/img/logo_print.png');
                 if (file_exists($logoPath)) {
                     try {
-                        $logo = EscposImage::load($logoPath, false);
+                        $logo = EscposImage::load($logoPath, true);
                         $printer->setJustification(Printer::JUSTIFY_CENTER);
                         $printer->bitImage($logo);
                     } catch (\Exception $e) {
@@ -407,21 +407,20 @@ class ServisController extends Controller
         $tanggal = now()->format('d M Y H:i:s');
 
         try {
-            $connector = new WindowsPrintConnector(Setting::first()->nama_perinter);
+            $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
             $printer = new Printer($connector);
 
             // Pisahkan jasa & barang berdasarkan nama
             $jasa = $items->filter(fn($i) => str_contains(strtolower($i->nama), 'jasa'));
             $barang = $items->filter(fn($i) => !str_contains(strtolower($i->nama), 'jasa'));
 
-            for ($cetak = 1; $cetak <= 2; $cetak++) {
                 $printer->initialize();
 
                 // ================= LOGO =================
                 $logoPath = public_path('assets/dist/img/logo_print.png');
                 if (file_exists($logoPath)) {
                     try {
-                        $logo = EscposImage::load($logoPath, false);
+                        $logo = EscposImage::load($logoPath, true);
                         $printer->setJustification(Printer::JUSTIFY_CENTER);
                         $printer->bitImage($logo);
                     } catch (\Exception $e) {
@@ -493,7 +492,6 @@ class ServisController extends Controller
 
                 $printer->feed(3);
                 $printer->cut();
-            }
 
             $printer->close();
         } catch (\Exception $e) {

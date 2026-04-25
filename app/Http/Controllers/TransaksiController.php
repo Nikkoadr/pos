@@ -267,7 +267,7 @@ class TransaksiController extends Controller
         }
 
         try {
-            $connector = new WindowsPrintConnector(Setting::first()->nama_perinter);
+            $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
             $printer = new Printer($connector);
 
             $printer->initialize();
@@ -276,12 +276,16 @@ class TransaksiController extends Controller
             // Logo Toko
             $logoPath = public_path('assets/dist/img/logo_print.png');
             if (file_exists($logoPath)) {
-                $logo = EscposImage::load($logoPath, false);
-                $printer->bitImage($logo);
-            } else {
-                $printer->setEmphasis(true);
-                $printer->text("ANGEL CELL\n");
-                $printer->setEmphasis(false);
+                try {
+                    $logo = EscposImage::load($logoPath, true);
+                    $printer->setJustification(Printer::JUSTIFY_CENTER);
+                    $printer->bitImage($logo);
+                } catch (\Exception $e) {
+                    $printer->setJustification(Printer::JUSTIFY_CENTER);
+                    $printer->setEmphasis(true);
+                    $printer->text("ANGEL CELL\n");
+                    $printer->setEmphasis(false);
+                }
             }
 
             // Header

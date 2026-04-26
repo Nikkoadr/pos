@@ -344,10 +344,9 @@ class TransaksiController extends Controller
             }
 
             $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
-            $printer->text("Telp: 08xx-xxxx-xxxx\n");
             $printer->text($tanggal . "\n");
 
-            $printer->text("--------------------------------\n");
+            $printer->text("-----------------------------------------------\n");
 
             $printer->setJustification(Printer::JUSTIFY_LEFT);
 
@@ -355,7 +354,7 @@ class TransaksiController extends Controller
             $printer->text(sprintf("%-10s: %s\n", "Kasir", auth()->user()->nama));
             $printer->text(sprintf("%-10s: %s\n", "Pelanggan", $nama_member));
 
-            $printer->text("--------------------------------\n");
+            $printer->text("-----------------------------------------------\n");
 
             foreach ($details as $d) {
 
@@ -375,33 +374,23 @@ class TransaksiController extends Controller
                 ));
             }
 
-            $printer->text("--------------------------------\n");
+            $printer->text("-----------------------------------------------\n");
+            // ================= TOTAL =================
+            $printer->setJustification(Printer::JUSTIFY_RIGHT);
 
-            $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->setTextSize(2, 2);
+            // 1. Baris TOTAL (Besar & Tebal)
             $printer->setEmphasis(true);
+            $printer->setTextSize(2, 2); 
+            // Pada ukuran (2,2), lebar kertas jadi terbatas (sekitar 22-24 karakter)
+            $printer->text("TOTAL: Rp " . number_format($transaksi->total_belanja, 0, '.', '.') . "\n");
 
-            $printer->text("TOTAL\n");
-            $printer->text("Rp " . number_format($transaksi->total_belanja, 0, '.', '.') . "\n");
-
+            // 2. Baris BAYAR & KEMBALI (Ukuran Normal)
             $printer->setTextSize(1, 1);
             $printer->setEmphasis(false);
 
-            $printer->feed();
-
-            $printer->setJustification(Printer::JUSTIFY_LEFT);
-
-            $printer->text(sprintf(
-                "%-15s %16s\n",
-                "BAYAR",
-                "Rp " . number_format($transaksi->bayar, 0, '.', '.')
-            ));
-
-            $printer->text(sprintf(
-                "%-15s %16s\n",
-                "KEMBALI",
-                "Rp " . number_format($transaksi->kembalian, 0, '.', '.')
-            ));
+            // Gunakan %48s agar teks didorong sejauh 48 karakter ke kanan
+            $printer->text(sprintf("%48s\n", "BAYAR: Rp " . number_format($transaksi->bayar, 0, '.', '.')));
+            $printer->text(sprintf("%48s\n", "KEMBALI: Rp " . number_format($transaksi->kembalian, 0, '.', '.')));
 
             // ================= FOOTER =================
             $printer->feed();

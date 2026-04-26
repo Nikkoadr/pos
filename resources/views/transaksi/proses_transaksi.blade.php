@@ -148,7 +148,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <button class="btn btn-success btn-block" type="submit">
-                                        <i class="fa fa-plus"></i> Tambah Manual
+                                        <i class="fa fa-plus"></i>
                                     </button>
                                 </div>
                             </div>

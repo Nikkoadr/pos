@@ -224,7 +224,7 @@ class ServisController extends Controller
                 $printer->text("Kecamatan Losarang\n");
                 $printer->text($tanggal . "\n");
 
-                $printer->text("--------------------------------\n");
+                $printer->text("-----------------------------------------------\n");
 
                 $printer->setJustification(Printer::JUSTIFY_LEFT);
                 $printer->text("Kasir  : $namakasir\n");
@@ -247,7 +247,7 @@ class ServisController extends Controller
 
                     $printer->text("Security : {$servis->security}\n");
 
-                    $printer->text("--------------------------------\n");
+                    $printer->text("-----------------------------------------------\n");
 
                     $printer->text("Kondisi   : {$servis->kondisi}\n");
 
@@ -255,52 +255,33 @@ class ServisController extends Controller
                     $printer->text("Kerusakan : $kerusakan\n\n");
                 }
 
-                // ================= ITEM =================
-                $printer->setEmphasis(true);
-                $printer->text("Sparepart & Jasa\n");
-                $printer->setEmphasis(false);
-
-                $printer->text("--------------------------------\n");
-
                 $grandtotal = 0;
 
                 if ($keranjang->isEmpty()) {
                     $printer->text("- Belum ada item\n");
                 } else {
                     foreach ($keranjang as $item) {
-
-                        $nama = strlen($item->nama) > 25
-                            ? substr($item->nama, 0, 25) . '...'
-                            : $item->nama;
-
-                        // HITUNG SUBTOTAL (FIX)
                         $subtotal = $item->harga_jual * $item->qty;
-
-                        // tampilkan qty juga biar jelas
-                        $printer->text(sprintf(
-                            "%d x %-20s %10s\n",
-                            $item->qty,
-                            $nama,
-                            number_format($subtotal, 0, '.', '.')
-                        ));
-
                         $grandtotal += $subtotal;
                     }
                 }
 
                 // ================= TOTAL =================
-                $printer->feed();
-                $printer->text("--------------------------------\n");
+                $printer->text("------------------------------------------------\n");
 
-                $printer->setJustification(Printer::JUSTIFY_CENTER);
-                $printer->setTextSize(2, 2);
+                // ================= ESTIMASI =================
+                $printer->setJustification(Printer::JUSTIFY_RIGHT);
                 $printer->setEmphasis(true);
+                $printer->setTextSize(2, 2); // Membuat teks besar (double width & height)
 
-                $printer->text("ESTIMASI\n");
-                $printer->text("Rp " . number_format($grandtotal, 0, '.', '.') . "\n");
+                // Catatan: Pastikan total karakter (ESTIMASI + Nominal) tidak lebih dari 22 karakter 
+                // agar tetap dalam satu baris pada mode teks besar.
+                $printer->text("ESTIMASI: Rp " . number_format($grandtotal, 0, '.', '.') . "\n");
 
+                // Kembalikan ke ukuran normal
                 $printer->setTextSize(1, 1);
                 $printer->setEmphasis(false);
+                $printer->setJustification(Printer::JUSTIFY_LEFT); // Reset rata kiri untuk teks berikutnya
 
                 // ================= FOOTER =================
                 $printer->feed();
@@ -312,7 +293,7 @@ class ServisController extends Controller
 
                 $printer->text("Nota wajib dibawa saat pengambilan\n");
                 $printer->text("Jika hilang wajib KTP\n");
-                $printer->text("1 bulan tidak diambil bukan tanggung jawab\n");
+                $printer->text("1 bulan tidak diambil bukan tanggung jawab kami\n");
 
                 $printer->feed();
 
@@ -471,7 +452,7 @@ class ServisController extends Controller
             $printer->text("Kecamatan Losarang\n");
             $printer->text($tanggal . "\n");
 
-            $printer->text("--------------------------------\n");
+            $printer->text("-----------------------------------------------\n");
 
             $printer->setJustification(Printer::JUSTIFY_LEFT);
             $printer->text("No. Nota : #$id\n");
@@ -485,53 +466,36 @@ class ServisController extends Controller
 
                 $printer->text("Unit     : {$servis->merk} - $tipe\n");
             }
-
-            $printer->text("--------------------------------\n");
-
+            $printer->text("-----------------------------------------------\n");
             // ================= TOTAL =================
-            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->setJustification(Printer::JUSTIFY_RIGHT);
+
+            // 1. Baris TOTAL (Besar & Tebal)
             $printer->setEmphasis(true);
-            $printer->setTextSize(2, 2);
+            $printer->setTextSize(2, 2); 
+            // Pada ukuran (2,2), lebar kertas jadi terbatas (sekitar 22-24 karakter)
+            $printer->text("TOTAL: Rp " . number_format($grandTotal, 0, '.', '.') . "\n");
 
-            $printer->text("GRAND TOTAL\n");
-            $printer->text("Rp " . number_format($grandTotal, 0, '.', '.') . "\n");
-
+            // 2. Baris BAYAR & KEMBALI (Ukuran Normal)
             $printer->setTextSize(1, 1);
             $printer->setEmphasis(false);
 
-            $printer->feed();
-
-            // ================= BAYAR =================
-            $printer->setJustification(Printer::JUSTIFY_LEFT);
-
-            $printer->text(sprintf(
-                "%-15s %15s\n",
-                "BAYAR",
-                "Rp " . number_format($transaksi->bayar, 0, '.', '.')
-            ));
-
-            $printer->text(sprintf(
-                "%-15s %15s\n",
-                "KEMBALI",
-                "Rp " . number_format($transaksi->kembalian, 0, '.', '.')
-            ));
+            // Gunakan %48s agar teks didorong sejauh 48 karakter ke kanan
+            $printer->text(sprintf("%48s\n", "BAYAR: Rp " . number_format($transaksi->bayar, 0, '.', '.')));
+            $printer->text(sprintf("%48s\n", "KEMBALI: Rp " . number_format($transaksi->kembalian, 0, '.', '.')));
 
             // ================= STATUS =================
             $printer->feed();
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->setEmphasis(true);
-            $printer->setTextSize(2, 2);
-
             $printer->text("LUNAS\n");
-
-            $printer->setTextSize(1, 1);
             $printer->setEmphasis(false);
 
             // ================= FOOTER =================
             $printer->feed();
             $printer->text("Barang yang sudah diservis\n");
             $printer->text("memiliki garansi sesuai kesepakatan\n");
-
+            $printer->text("segel rusak garansi hangus\n");
             $printer->feed();
             $printer->setEmphasis(true);
             $printer->text("TERIMA KASIH\n");

@@ -67,7 +67,7 @@ class TransaksiController extends Controller
     {
         $total = 0;
         foreach ($keranjang as $item) {
-            $total += $item['subtotal'];
+            $total += $item->harga_jual * $item->qty;
         }
         return $total;
     }
@@ -76,27 +76,103 @@ class TransaksiController extends Controller
     {
         $transaksi = Transaksi::findOrFail($id);
 
+        // ambil keranjang
         $keranjang = Keranjang::where('id_transaksi', $id)->get();
 
+        // ambil semua member
         $member = Data_member::all();
 
-        $nama_member = Data_member::find($transaksi->id_member);
-        $transaksi->nama_member = $nama_member ? $nama_member->nama_member : null;
+        // ambil nama member
+        $nama_member = null;
+        if ($transaksi->id_member) {
+            $m = Data_member::find($transaksi->id_member);
+            $nama_member = $m ? $m->nama_member : null;
+        }
 
-        $total = $this->calculateTotal($keranjang);
+        // ✅ hitung total dari harga_jual * qty
+        $total = $keranjang->sum(function ($item) {
+            return $item->harga_jual * $item->qty;
+        });
 
+        // data servis
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
-
-        $total_servis = $keranjang->sum('subtotal');
 
         return view('transaksi.proses_transaksi', compact(
             'transaksi',
             'total',
-            'total_servis',
             'keranjang',
             'member',
-            'servis'
+            'servis',
+            'nama_member'
         ));
+    }
+
+    public function tambah_keranjang(Request $request)
+    {
+        $produk = Data_barang::find($request->input('id'));
+        $qty = $request->input('jumlah');
+
+        if ($qty > $produk->qty) {
+            return redirect()->back()->with('error', 'Stok tidak mencukupi.');
+        }
+
+        // Kurangi stok
+        $produk->qty -= $qty;
+        $produk->save();
+
+        // Ambil harga
+        $harga = $request->id_member ? $produk->harga_member : $produk->harga_umum;
+        $harga_modal = $produk->harga_modal;
+
+        // Cek keranjang
+        $keranjang = Keranjang::where('id_barang', $produk->id)
+            ->where('id_transaksi', $request->id_transaksi)
+            ->first();
+
+        if ($keranjang) {
+            $keranjang->qty += $qty;
+            $keranjang->harga_modal = $harga_modal;
+            $keranjang->harga_jual = $harga;
+            $keranjang->save();
+        } else {
+            Keranjang::create([
+                'id_transaksi' => $request->id_transaksi,
+                'id_barang' => $produk->id,
+                'nama' => $produk->nama,
+                'qty' => $qty,
+                'harga_modal' => $harga_modal,
+                'harga_jual' => $harga,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Keranjang berhasil ditambah!');
+    }
+
+    public function edit_qty(Request $request)
+    {
+        $id = $request->input('id');
+        $new_qty = (int) $request->input('qty');
+
+        $item = Keranjang::findOrFail($id);
+        $produk = Data_barang::find($item->id_barang);
+
+        // Hitung selisih qty
+        $diff_qty = $new_qty - $item->qty;
+
+        // ✅ Validasi stok kalau nambah qty
+        if ($diff_qty > 0 && $diff_qty > $produk->qty) {
+            return redirect()->back()->with('error', 'Stok tidak mencukupi!');
+        }
+
+        // Update stok (balikin atau ngurangin)
+        $produk->qty -= $diff_qty;
+        $produk->save();
+
+        // Update qty keranjang
+        $item->qty = $new_qty;
+        $item->save();
+
+        return redirect()->back()->with('success', 'Qty berhasil diperbarui!');
     }
 
     public function scanBarang(Request $request)
@@ -107,80 +183,72 @@ class TransaksiController extends Controller
             return response()->json(['error' => 'Not found'], 404);
         }
 
-        // cek sudah ada di keranjang
+        // Tentukan harga (member / umum)
+        $harga_jual = $request->id_member ? $barang->harga_member : $barang->harga_umum;
+        $harga_modal = $barang->harga_modal;
+
+        // Cek keranjang
         $cek = DB::table('keranjang')
             ->where('id_transaksi', $request->id_transaksi)
             ->where('id_barang', $barang->id)
             ->first();
 
         if ($cek) {
+
+            // Validasi stok
+            if ($barang->qty < 1) {
+                return response()->json(['error' => 'Stok habis'], 400);
+            }
+
             DB::table('keranjang')
                 ->where('id', $cek->id)
                 ->update([
                     'qty' => $cek->qty + 1,
-                    'subtotal' => ($cek->qty + 1) * $barang->harga_umum
+                    'harga_jual' => $harga_jual,
+                    'harga_modal' => $harga_modal
                 ]);
         } else {
+
+            if ($barang->qty < 1) {
+                return response()->json(['error' => 'Stok habis'], 400);
+            }
+
             DB::table('keranjang')->insert([
                 'id_transaksi' => $request->id_transaksi,
                 'id_barang' => $barang->id,
                 'nama' => $barang->nama,
-                'harga' => $barang->harga_umum,
+                'harga_jual' => $harga_jual,
+                'harga_modal' => $harga_modal,
                 'qty' => 1,
-                'subtotal' => $barang->harga_umum
             ]);
         }
+
+        // Kurangi stok
+        $barang->qty -= 1;
+        $barang->save();
 
         return response()->json(['success' => true]);
     }
 
-    public function tambah_keranjang(Request $request)
+    public function tambah_manual(Request $request)
     {
-        $produk = Data_barang::find($request->input('id'));
-        $qty = $request->input('jumlah');
-        if ($qty > $produk->qty) {
-            return redirect()->back()->with('error', 'Stok tidak mencukupi.');
-        }
-        $produk->qty -= $qty;
-        $produk->save();
-        $keranjang = Keranjang::where('id_barang', $produk->id)
-            ->where('id_transaksi', $request->id_transaksi)
-            ->first();
-        $harga = $request->id_member ? $produk->harga_member : $produk->harga_umum;
-        $subtotal = $harga * $qty;
-        if ($keranjang) {
-            $keranjang->qty += $qty;
-            $keranjang->subtotal = $harga * $keranjang->qty;
-            $keranjang->save();
-        } else {
-            $keranjangItem = [
-                'id_transaksi' => $request->id_transaksi,
-                'id_barang' => $produk->id,
-                'nama' => $produk->nama,
-                'qty' => $qty,
-                'harga' => $harga,
-                'subtotal' => $subtotal,
-            ];
-            Keranjang::create($keranjangItem);
-        }
-        return redirect()->back()->with('success', 'Keranjang berhasil ditambah dan diperbaharui!');
-    }
+        $request->validate([
+            'nama' => 'required',
+            'harga' => 'required|numeric',
+            'qty' => 'required|numeric|min:1',
+            'id_transaksi' => 'required'
+        ]);
 
-    public function edit_qty(Request $request)
-    {
-        $id = $request->input('id');
-        $new_qty = $request->input('qty');
-        $item = Keranjang::findOrFail($id);
-        $produk = Data_barang::find($item->id_barang);
-        $diff_qty = $new_qty - $item->qty;
-        $item->qty = $new_qty;
-        $item->save();
-        $produk->qty -= $diff_qty;
-        $produk->save();
-        $new_subtotal = $item->harga * $new_qty;
-        $item->subtotal = $new_subtotal;
-        $item->save();
-        return redirect()->back()->with('success', 'Qty berhasil diperbarui !');
+        Keranjang::create([
+            'id_transaksi' => $request->id_transaksi,
+            'id_barang' => null,
+            'nama' => $request->nama,
+            'harga_jual' => $request->harga,
+            'harga_modal' => 0, // karena manual biasanya jasa / tidak ada modal
+            'qty' => $request->qty,
+        ]);
+
+        return redirect()->back()->with('success', 'Item manual ditambahkan!');
     }
 
     public function hapus_keranjang($id)
@@ -211,16 +279,19 @@ class TransaksiController extends Controller
             return redirect()->back()->with('error', 'Keranjang kosong!');
         }
 
-        $total = $keranjang->sum('subtotal');
+        // Hitung total dari harga_jual × qty
+        $total = $keranjang->sum(function ($item) {
+            return $item->harga_jual * $item->qty;
+        });
 
         foreach ($keranjang as $item) {
             DetailTransaksi::create([
                 'id_transaksi' => $id_transaksi,
                 'id_barang'    => $item->id_barang,
                 'nama_barang'  => $item->nama,
-                'harga'        => $item->harga,
+                'harga_jual'   => $item->harga_jual,
+                'harga_modal'  => $item->harga_modal,
                 'qty'          => $item->qty,
-                'subtotal'     => $item->subtotal,
             ]);
         }
 
@@ -294,11 +365,13 @@ class TransaksiController extends Controller
 
                 $printer->text($nama . "\n");
 
+                $subtotal = $d->harga_jual * $d->qty;
+
                 $printer->text(sprintf(
                     "%d x %-10s %15s\n",
                     $d->qty,
-                    number_format($d->harga, 0, '.', '.'),
-                    number_format($d->subtotal, 0, '.', '.')
+                    number_format($d->harga_jual, 0, '.', '.'),
+                    number_format($subtotal, 0, '.', '.')
                 ));
             }
 
@@ -406,26 +479,5 @@ class TransaksiController extends Controller
         $transaksi->delete();
 
         return redirect()->back()->with('sukses', 'Transaksi berhasil dihapus!');
-    }
-
-    public function tambah_manual(Request $request)
-    {
-        $request->validate([
-            'nama' => 'required',
-            'harga' => 'required|numeric',
-            'qty' => 'required|numeric|min:1',
-            'id_transaksi' => 'required'
-        ]);
-
-        Keranjang::create([
-            'id_transaksi' => $request->id_transaksi,
-            'id_barang' => null,
-            'nama' => $request->nama,
-            'harga' => $request->harga,
-            'qty' => $request->qty,
-            'subtotal' => $request->harga * $request->qty,
-        ]);
-
-        return redirect()->back()->with('sukses', 'Item manual ditambahkan!');
     }
 }

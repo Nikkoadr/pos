@@ -55,7 +55,7 @@
                                     <h6 class="card-title"><b>Kerusakan :</b> {{ $servis->kerusakan }}</h6><br>
 
                                     <h6 class="card-title">
-                                        <b>Estimasi :</b> @rp($total_servis)
+                                        <b>Estimasi :</b> @rp($total)
                                     </h6><br>
 
                                 @else
@@ -176,7 +176,7 @@
                                     <span class="badge badge-warning">Manual</span>
                                 @endif
                             </td>
-                            <td>@rp($data -> harga)</td>
+                            <td>@rp($data -> harga_jual)</td>
                             <td class="col-3">
                                 @if(is_null($data->id_barang))
                                 {{ $data->qty }}
@@ -195,7 +195,7 @@
                                 </form>
                                 @endif
                             </td>
-                            <td>@rp($data -> subtotal)</td>
+                            <td>@rp($data->harga_jual * $data->qty)</td>
                             <td width="10%" style="text-align: center">
                                 <form action="hapus_keranjang_{{ $data->id }}" method="POST">
                                     @csrf

@@ -33,29 +33,31 @@ class HomeController extends Controller
         $bulan_ini = now()->month;
         $tahun_ini = now()->year;
 
-        // --- STATISTIK PENDAPATAN (DIHITUNG DARI DETAIL_TRANSAKSI) ---
+        // --- STATISTIK PENDAPATAN ---
 
         // 1. Pendapatan Hari Ini
         $pendapatan_hari_ini = DetailTransaksi::whereHas('transaksi', function ($q) use ($hari_ini) {
             $q->whereDate('tanggal_transaksi', $hari_ini)
                 ->where('status', 'selesai');
-        })->sum('subtotal');
+        })->selectRaw('SUM(harga_jual * qty) as total')
+            ->value('total');
 
         // 2. Pendapatan Bulan Ini
         $pendapatan_bulan_ini = DetailTransaksi::whereHas('transaksi', function ($q) use ($bulan_ini, $tahun_ini) {
             $q->whereMonth('tanggal_transaksi', $bulan_ini)
                 ->whereYear('tanggal_transaksi', $tahun_ini)
                 ->where('status', 'selesai');
-        })->sum('subtotal');
+        })->selectRaw('SUM(harga_jual * qty) as total')
+            ->value('total');
 
         // 3. Pendapatan Tahun Ini
         $pendapatan_tahun_ini = DetailTransaksi::whereHas('transaksi', function ($q) use ($tahun_ini) {
             $q->whereYear('tanggal_transaksi', $tahun_ini)
                 ->where('status', 'selesai');
-        })->sum('subtotal');
+        })->selectRaw('SUM(harga_jual * qty) as total')
+            ->value('total');
 
-
-        // --- DATA PENDUKUNG LAINNYA ---
+        // --- DATA LAIN ---
         $servis_proses = DetailTransaksiServis::whereIn('status_servis', ['masuk', 'proses'])->count();
         $stok_limit = Data_barang::where('qty', '<', 5)->count();
 

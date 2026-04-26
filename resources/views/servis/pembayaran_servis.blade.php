@@ -131,9 +131,9 @@
                                                     <span class="badge badge-warning">Manual</span>
                                                 @endif
                                             </td>
-                                            <td>@rp($item->harga)</td>
+                                            <td>@rp($item->harga_jual)</td>
                                             <td>{{ $item->qty }}</td>
-                                            <td>@rp($item->subtotal)</td>
+                                            <td>@rp($item->harga_jual * $item->qty)</td>
                                             <td class="text-center">
                                                 <form action="/hapus_keranjang_{{ $item->id }}" method="POST">
                                                     @csrf

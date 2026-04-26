@@ -9,6 +9,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\ServisController;
 use App\Http\Controllers\ArsipController;
+use App\Http\Controllers\UsersController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,7 +33,13 @@ Auth::routes([
 ]);
 
 Route::get('/home',     [HomeController::class, 'index'])->name('home');
-Route::get('/data_karyawan', [HomeController::class, 'data_karyawan'])->name('data_karyawan');
+
+Route::get('/data_karyawan', [UsersController::class, 'index'])->name('karyawan.index');
+Route::post('/data_karyawan/store', [UsersController::class, 'store'])->name('karyawan.store');
+Route::delete('/data_karyawan/delete/{id}', [UsersController::class, 'destroy'])->name('karyawan.destroy');
+Route::get('/data_karyawan/edit/{id}', [UsersController::class, 'edit'])->name('karyawan.edit');
+Route::put('/data_karyawan/update/{id}', [UsersController::class, 'update'])->name('karyawan.update');
+
 Route::get('/data_supplier', [HomeController::class, 'data_supplier'])->name('data_supplier');
 Route::get('/setting', [HomeController::class, 'setting'])->name('setting');
 Route::put('/update_setting_{id}', [HomeController::class, 'update_setting'])->name('update_setting');
@@ -83,3 +90,5 @@ Route::prefix('arsip')->group(function () {
     Route::get('/data', [ArsipController::class, 'data_arsip'])->name('arsip.data');
     Route::get('/detail/{id}', [ArsipController::class, 'show'])->name('arsip.show');
 });
+
+Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan');

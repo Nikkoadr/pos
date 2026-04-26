@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('id_barang')->nullable();
             $table->string('nama');
             $table->string('qty');
-            $table->string('harga');
-            $table->string('subtotal');
+            $table->decimal('harga_modal', 10, 2);
+            $table->decimal('harga_jual', 10, 2);
             $table->timestamps();
         });
     }

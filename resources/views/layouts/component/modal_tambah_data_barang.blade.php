@@ -1,92 +1,114 @@
-    <div class="modal fade" id="modal_tambah_data_barang">
-    <div class="modal-dialog">
+<div class="modal fade" id="modal_tambah_data_barang">
+    <div class="modal-dialog modal-lg"> <!-- dibesarkan -->
         <div class="modal-content">
-        <div class="modal-header">
-            <h4 class="modal-title">Form Tambah Data barang</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">
+            
+            <div class="modal-header ">
+                <h5 class="modal-title">Form Tambah Data Barang</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- ERROR GLOBAL -->
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form method="POST" action="/tambah_data_barang">
-                        @csrf
-                        @method('put')
-                        <input type="hidden" name="id_toko" value="1">
-                        <input type="hidden" name="id_supplier" value="1">
-                        <div class="row mb-3">
-                            <label for="barcode" class="col-sm-5 col-form-label text-md-end">Barcode :</label>
-                            <div class="col-sm-7">
-                                <input id="barcode" type="text" class="form-control @error('barcode') is-invalid @enderror" name="barcode" value="{{ old('barcode')}}" autocomplete="barcode" autofocus>
-                                @error('barcode')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                    @csrf
+                    @method('put')
+
+                    <input type="hidden" name="id_toko" value="1">
+                    <input type="hidden" name="id_supplier" value="1">
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Barcode</label>
+                        <div class="col-sm-8">
+                            <input type="text" name="barcode"
+                                class="form-control @error('barcode') is-invalid @enderror"
+                                value="{{ old('barcode') }}">
+                            @error('barcode')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <div class="row mb-3">
-                            <label for="nama_barang" class="col-sm-5 col-form-label text-md-end">Nama Barang :</label>
-                            <div class="col-sm-7">
-                                <input id="nik" type="text" class="form-control @error('nama_barang') is-invalid @enderror" name="nama_barang" value="{{ old('nama_barang')}}" autocomplete="nama_barang" autofocus>
-                                @error('nama_barang')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Nama Barang</label>
+                        <div class="col-sm-8">
+                            <input type="text" name="nama_barang"
+                                class="form-control @error('nama_barang') is-invalid @enderror"
+                                value="{{ old('nama_barang') }}">
+                            @error('nama_barang')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <div class="row mb-3">
-                            <label for="qty" class="col-sm-5 col-form-label text-md-end">Jumlah Stok :</label>
-                            <div class="col-sm-7">
-                                <input id="qty" type="number" class="form-control @error('qty') is-invalid @enderror" name="qty" value="{{ old('qty')}}" autocomplete="qty" autofocus>
-                                @error('qty')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Qty</label>
+                        <div class="col-sm-8">
+                            <input type="number" name="qty"
+                                class="form-control @error('qty') is-invalid @enderror"
+                                value="{{ old('qty') }}">
+                            @error('qty')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <div class="row mb-3">
-                            <label for="harga_modal" class="col-sm-5 col-form-label text-md-end">Harga Modal :</label>
-                            <div class="col-sm-7">
-                                <input id="harga_modal" type="number" class="form-control @error('harga_modal') is-invalid @enderror" name="harga_modal" value="{{ old('harga_modal')}}" autocomplete="harga_modal" autofocus>
-                                @error('harga_modal')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Harga Modal</label>
+                        <div class="col-sm-8">
+                            <input type="number" name="harga_modal"
+                                class="form-control @error('harga_modal') is-invalid @enderror"
+                                value="{{ old('harga_modal') }}">
+                            @error('harga_modal')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <div class="row mb-3">
-                            <label for="harga_umum" class="col-sm-5 col-form-label text-md-end">Harga Umum :</label>
-                            <div class="col-sm-7">
-                                <input id="harga_umum" type="number" class="form-control @error('harga_umum') is-invalid @enderror" name="harga_umum" value="{{ old('harga_umum')}}" autocomplete="harga_umum" autofocus>
-                                @error('harga_umum')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Harga Umum</label>
+                        <div class="col-sm-8">
+                            <input type="number" name="harga_umum"
+                                class="form-control @error('harga_umum') is-invalid @enderror"
+                                value="{{ old('harga_umum') }}">
+                            @error('harga_umum')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <div class="row mb-3">
-                            <label for="harga_member" class="col-sm-5 col-form-label text-md-end">Harga Member :</label>
-                            <div class="col-sm-7">
-                                <input id="harga_member" type="number" class="form-control @error('harga_member') is-invalid @enderror" name="harga_member" value="{{ old('harga_member')}}" autocomplete="harga_member" autofocus>
-                                @error('harga_member')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Harga Member</label>
+                        <div class="col-sm-8">
+                            <input type="number" name="harga_member"
+                                class="form-control @error('harga_member') is-invalid @enderror"
+                                value="{{ old('harga_member') }}">
+                            @error('harga_member')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
-                                <button style="float: right;" type="submit" class="btn btn-primary">
-                                    Tambah
-                                </button>
-                    </form>
+                    </div>
+
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-primary">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+
         </div>
-        </div>
-        <!-- /.modal-content -->
     </div>
-    <!-- /.modal-dialog -->
-    </div>
-    <!-- /.modal -->
+</div>

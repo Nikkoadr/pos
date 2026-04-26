@@ -33,52 +33,65 @@ class ServisController extends Controller
             'status' => 'required|in:masuk,proses,selesai,dibatalkan,diambil'
         ]);
 
-        $servis = DetailTransaksiServis::findOrFail($request->id);
+        DB::beginTransaction();
 
-        if ($servis->status_servis === $request->status) {
-            return redirect()->back()->with('sukses', 'Status tidak berubah');
-        }
+        try {
+            $servis = DetailTransaksiServis::findOrFail($request->id);
 
-        $servis->status_servis = $request->status;
-
-        if ($request->status == 'dibatalkan') {
-
-            DB::table('transaksi')
-                ->where('id', $servis->id_transaksi)
-                ->update([
-                    'status' => 'dibatalkan',
-                    'updated_at' => now()
-                ]);
-
-            $keranjang = Keranjang::where('id_transaksi', $servis->id_transaksi)->get();
-
-            foreach ($keranjang as $item) {
-                DB::table('detail_transaksi')->insert([
-                    'id_transaksi' => $item->id_transaksi,
-                    'id_barang'    => $item->id_barang,
-                    'nama_barang'  => $item->nama,
-                    'qty'          => 0,
-                    'harga'        => 0,
-                    'subtotal'     => 0,
-                    'status'       => 'dibatalkan',
-                    'created_at'   => now(),
-                    'updated_at'   => now()
-                ]);
+            if ($servis->status_servis === $request->status) {
+                return redirect()->back()->with('success', 'Status tidak berubah');
             }
 
-            DB::table('keranjang')
-                ->where('id_transaksi', $servis->id_transaksi)
-                ->delete();
+            $servis->status_servis = $request->status;
+
+            if ($request->status == 'dibatalkan') {
+
+                DB::table('transaksi')
+                    ->where('id', $servis->id_transaksi)
+                    ->update([
+                        'status' => 'dibatalkan',
+                        'updated_at' => now()
+                    ]);
+
+                $keranjang = Keranjang::where('id_transaksi', $servis->id_transaksi)->get();
+
+                foreach ($keranjang as $item) {
+
+                    if (!is_null($item->id_barang)) {
+                        DB::table('data_barang')
+                            ->where('id', $item->id_barang)
+                            ->increment('qty', $item->qty);
+                    }
+
+                    DB::table('detail_transaksi')->insert([
+                        'id_transaksi' => $item->id_transaksi,
+                        'id_barang'    => $item->id_barang,
+                        'nama_barang'  => $item->nama,
+                        'qty'          => $item->qty,
+                        'harga_jual'   => $item->harga_jual,
+                        'harga_modal'  => $item->harga_modal,
+                        'status'       => 'dibatalkan',
+                        'created_at'   => now(),
+                        'updated_at'   => now()
+                    ]);
+                }
+
+                Keranjang::where('id_transaksi', $servis->id_transaksi)->delete();
+            }
+
+            $servis->updated_at = now();
+            $servis->save();
+
+            DB::commit();
+
+            return redirect()->back()->with(
+                'success',
+                'Status servis berhasil diubah menjadi ' . strtoupper($request->status)
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan!');
         }
-
-        $servis->updated_at = now();
-
-        $servis->save();
-
-        return redirect()->back()->with(
-            'sukses',
-            'Status servis berhasil diubah menjadi ' . strtoupper($request->status)
-        );
     }
 
     public function transaksiServis($id)
@@ -176,13 +189,19 @@ class ServisController extends Controller
         $tanggal = now()->format('d M Y H:i:s');
 
         try {
-            $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
+            $setting = Setting::first();
+            if (!$setting || !$setting->nama_printer) {
+                return;
+            }
+
+            $connector = new WindowsPrintConnector($setting->nama_printer);
             $printer = new Printer($connector);
 
             for ($cetak = 1; $cetak <= 2; $cetak++) {
 
                 $printer->initialize();
 
+                // ================= LOGO =================
                 $logoPath = public_path('assets/dist/img/logo_print.png');
                 if (file_exists($logoPath)) {
                     try {
@@ -199,6 +218,7 @@ class ServisController extends Controller
                     }
                 }
 
+                // ================= HEADER =================
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
                 $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
                 $printer->text("Kecamatan Losarang\n");
@@ -210,6 +230,7 @@ class ServisController extends Controller
                 $printer->text("Kasir  : $namakasir\n");
                 $printer->text("Jenis  : Servis\n");
 
+                // ================= DATA SERVIS =================
                 if ($servis) {
 
                     $tipe = strlen($servis->tipe) > 15
@@ -234,6 +255,7 @@ class ServisController extends Controller
                     $printer->text("Kerusakan : $kerusakan\n\n");
                 }
 
+                // ================= ITEM =================
                 $printer->setEmphasis(true);
                 $printer->text("Sparepart & Jasa\n");
                 $printer->setEmphasis(false);
@@ -246,20 +268,27 @@ class ServisController extends Controller
                     $printer->text("- Belum ada item\n");
                 } else {
                     foreach ($keranjang as $item) {
+
                         $nama = strlen($item->nama) > 25
                             ? substr($item->nama, 0, 25) . '...'
                             : $item->nama;
 
+                        // HITUNG SUBTOTAL (FIX)
+                        $subtotal = $item->harga_jual * $item->qty;
+
+                        // tampilkan qty juga biar jelas
                         $printer->text(sprintf(
-                            "%-25s %10s\n",
+                            "%d x %-20s %10s\n",
+                            $item->qty,
                             $nama,
-                            number_format($item->subtotal, 0, '.', '.')
+                            number_format($subtotal, 0, '.', '.')
                         ));
 
-                        $grandtotal += $item->subtotal;
+                        $grandtotal += $subtotal;
                     }
                 }
 
+                // ================= TOTAL =================
                 $printer->feed();
                 $printer->text("--------------------------------\n");
 
@@ -273,6 +302,7 @@ class ServisController extends Controller
                 $printer->setTextSize(1, 1);
                 $printer->setEmphasis(false);
 
+                // ================= FOOTER =================
                 $printer->feed();
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
 
@@ -297,75 +327,101 @@ class ServisController extends Controller
             $printer->close();
         } catch (\Exception $e) {
             Log::error("Gagal mencetak nota servis: " . $e->getMessage());
-            return back()->with('error', 'Gagal mencetak nota servis. Pastikan printer terhubung dan coba lagi.');
+            return back()->with('error', 'Gagal mencetak nota servis. Pastikan printer terhubung.');
         }
     }
 
     public function pembayaran_servis($id)
     {
-
         $transaksi = Transaksi::findOrFail($id);
 
         $detail_servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
 
         $keranjang = Keranjang::where('id_transaksi', $id)->get();
-        $total_keranjang = $keranjang->sum('subtotal');
+
+        // hitung total dari harga_jual × qty
+        $total_keranjang = $keranjang->sum(function ($item) {
+            return $item->harga_jual * $item->qty;
+        });
 
         $nama_member = null;
+
         if ($transaksi->id_member) {
             $member = Data_member::find($transaksi->id_member);
             $nama_member = $member ? $member->nama_member : null;
         }
 
-        return view('servis.pembayaran_servis', compact(
-            'transaksi',
-            'detail_servis',
-            'keranjang',
-            'total_keranjang',
-            'nama_member'
-        ));
+        return view('servis.pembayaran_servis', [
+            'transaksi' => $transaksi,
+            'detail_servis' => $detail_servis,
+            'keranjang' => $keranjang,
+            'total_keranjang' => $total_keranjang,
+            'nama_member' => $nama_member
+        ]);
     }
 
     public function selesaikan_servis(Request $request)
     {
-        $transaksi = Transaksi::where('id', $request->id_transaksi)->first();
+        $transaksi = Transaksi::find($request->id_transaksi);
+
         if (!$transaksi) {
             return back()->with('error', 'Tidak ada transaksi yang ditemukan!');
         }
 
         $keranjang = Keranjang::where('id_transaksi', $transaksi->id)->get();
+
         if ($keranjang->isEmpty()) {
             return back()->with('error', 'Keranjang masih kosong!');
         }
 
+        // hitung total dari subtotal biar konsisten
+        $total = $keranjang->sum('subtotal');
+
+        // validasi pembayaran
+        if ($request->bayar < $total) {
+            return back()->with('error', 'Pembayaran kurang!');
+        }
+
         foreach ($keranjang as $item) {
+
+            // hitung subtotal ulang (biar aman)
+            $subtotal = $item->harga_jual * $item->qty;
+
             DetailTransaksi::create([
                 'id_transaksi' => $item->id_transaksi,
-                'id_barang'    => $item->id_barang,
-                'nama_barang'         => $item->nama,
-                'harga'        => $item->harga,
+                'id_barang'    => $item->id_barang, // boleh null (manual)
+                'nama_barang'  => $item->nama,
+                'harga_jual'   => $item->harga_jual,
+                'harga_modal'  => $item->harga_modal ?? 0,
                 'qty'          => $item->qty,
-                'subtotal'     => $item->subtotal,
             ]);
         }
 
-        $transaksi->status = 'selesai';
-        $transaksi->bayar = $request->bayar;
-        $transaksi->kembalian = $request->kembalian;
-        $transaksi->save();
+        // update transaksi
+        $transaksi->update([
+            'status'         => 'selesai',
+            'total_belanja'  => $total,
+            'bayar'          => $request->bayar,
+            'kembalian'      => $request->kembalian,
+        ]);
 
+        // update status servis
         $servis = DetailTransaksiServis::where('id_transaksi', $transaksi->id)->first();
+
         if ($servis) {
-            $servis->status_servis = 'diambil';
-            $servis->tanggal_diambil = now();
-            $servis->save();
+            $servis->update([
+                'status_servis'   => 'diambil',
+                'tanggal_diambil' => now()
+            ]);
         }
 
+        // cetak nota
         $this->printServisDiambil($transaksi->id);
 
+        // kosongkan keranjang
         Keranjang::where('id_transaksi', $transaksi->id)->delete();
 
-        return redirect('/transaksi')->with('sukses', 'Servis selesai dan Nota dicetak!');
+        return redirect('/transaksi')->with('sukses', 'Servis selesai dan nota dicetak!');
     }
 
     private function printServisDiambil($id)
@@ -373,14 +429,26 @@ class ServisController extends Controller
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
         $items = DetailTransaksi::where('id_transaksi', $id)->get();
         $transaksi = Transaksi::find($id);
+
         $namakasir = auth()->user()->nama;
         $tanggal = now()->format('d M Y H:i:s');
-        $grandTotal = $items->sum('subtotal');
+
+        // HITUNG TOTAL BARU
+        $grandTotal = $items->sum(function ($item) {
+            return $item->harga_jual * $item->qty;
+        });
 
         try {
-            $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
+            $setting = Setting::first();
+            if (!$setting || !$setting->nama_printer) {
+                return;
+            }
+
+            $connector = new WindowsPrintConnector($setting->nama_printer);
             $printer = new Printer($connector);
             $printer->initialize();
+
+            // ================= LOGO =================
             $logoPath = public_path('assets/dist/img/logo_print.png');
             if (file_exists($logoPath)) {
                 try {
@@ -397,6 +465,7 @@ class ServisController extends Controller
                 }
             }
 
+            // ================= HEADER =================
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
             $printer->text("Kecamatan Losarang\n");
@@ -419,6 +488,7 @@ class ServisController extends Controller
 
             $printer->text("--------------------------------\n");
 
+            // ================= TOTAL =================
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->setEmphasis(true);
             $printer->setTextSize(2, 2);
@@ -431,6 +501,7 @@ class ServisController extends Controller
 
             $printer->feed();
 
+            // ================= BAYAR =================
             $printer->setJustification(Printer::JUSTIFY_LEFT);
 
             $printer->text(sprintf(
@@ -445,6 +516,7 @@ class ServisController extends Controller
                 "Rp " . number_format($transaksi->kembalian, 0, '.', '.')
             ));
 
+            // ================= STATUS =================
             $printer->feed();
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->setEmphasis(true);
@@ -455,6 +527,7 @@ class ServisController extends Controller
             $printer->setTextSize(1, 1);
             $printer->setEmphasis(false);
 
+            // ================= FOOTER =================
             $printer->feed();
             $printer->text("Barang yang sudah diservis\n");
             $printer->text("memiliki garansi sesuai kesepakatan\n");

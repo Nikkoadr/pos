@@ -20,15 +20,14 @@ return new class extends Migration
                 ->constrained('transaksi')
                 ->onDelete('cascade');
 
-            // ✅ FIX INI (nullable aman)
             $table->foreignId('id_barang')
                 ->nullable()
                 ->constrained('data_barang')
                 ->nullOnDelete();
 
             $table->integer('qty');
-            $table->decimal('harga', 10, 2);
-            $table->decimal('subtotal', 10, 2);
+            $table->decimal('harga_modal', 10, 2);
+            $table->decimal('harga_jual', 10, 2);
 
             $table->enum('status', ['dibatalkan', 'selesai'])->default('selesai');
 

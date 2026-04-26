@@ -76,6 +76,7 @@ class Data_barangController extends Controller
         Excel::import(new Import_data_barang, request()->file('import'));
         return back()->with(['success' => 'Data Berhasil Diimport!']);
     }
+    
     public function export_data_barang()
     {
         return Excel::download(new Export_data_barang, 'data_barang.xlsx');

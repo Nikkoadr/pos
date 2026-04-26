@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('barcode')->unique();
             $table->string('nama');
             $table->integer('qty');
-            $table->integer('harga_modal');
-            $table->integer('harga_umum');
-            $table->integer('harga_member');
+            $table->decimal('harga_modal', 10, 2);
+            $table->decimal('harga_umum', 10, 2);
+            $table->decimal('harga_member', 10, 2);
             $table->timestamps();
         });
     }

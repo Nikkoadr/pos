@@ -61,11 +61,6 @@
                                 </tr>
                             </table>
                         </div>
-                        {{-- <div class="card-footer">
-                            <button class="btn btn-secondary btn-block" onclick="printNota({{ $transaksi->id }})">
-                                <i class="fas fa-print"></i> Cetak Ulang Nota
-                            </button>
-                        </div> --}}
                     </div>
                 </div>
 
@@ -90,9 +85,9 @@
                                     <tr>
                                         <td>{{ $index + 1 }}.</td>
                                         <td>{{ $d->nama_barang }}</td>
-                                        <td>@rp($d->harga)</td>
+                                        <td>@rp($d->harga_jual)</td>
                                         <td>{{ $d->qty }}</td>
-                                        <td class="text-right">@rp($d->subtotal)</td>
+                                        <td class="text-right">@rp($d->harga_jual * $d->qty)</td>
                                     </tr>
                                     @endforeach
                                 </tbody>

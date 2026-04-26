@@ -91,6 +91,13 @@ $("#table_data_barang").DataTable({
 }).buttons().container().appendTo('#table_data_barang_wrapper .col-md-6:eq(0)');
 });
 </script>
+@if ($errors->any())
+<script>
+    $(document).ready(function() {
+        $('#modal_tambah_data_barang').modal('show');
+    });
+</script>
+@endif
 <script>
 $(function () {
     bsCustomFileInput.init();

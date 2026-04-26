@@ -25,7 +25,7 @@
                 </li>
 
                 @php
-                    $databaseActive = request()->is('data_barang*') || request()->is('view_edit_data_barang*') || request()->is('data_member*') || request()->is('data_supplier*') || request()->is('data_karyawan*');
+                    $databaseActive = request()->is('data_barang*') || request()->is('view_edit_data_barang*') || request()->is('data_member*') || request()->is('data_supplier*') || request()->is('data_karyawan*') || request()->is('data_kategori*');
                 @endphp
                 <li class="nav-item {{ $databaseActive ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ $databaseActive ? 'active' : '' }}">
@@ -36,6 +36,12 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ url('/data_karyawan') }}" class="nav-link {{ request()->is('data_karyawan*') ? 'active' : '' }}">
+                                <i class="nav-icon fa-solid fa-user text-sm"></i>
+                                <p>Data Karyawan</p>
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a href="{{ url('/data_member') }}" class="nav-link {{ request()->is('data_member*') ? 'active' : '' }}">
                                 <i class="nav-icon fa-solid fa-user-group text-sm"></i>
@@ -69,6 +75,12 @@
                     <a href="{{ url('/arsip') }}" class="nav-link {{ request()->is('arsip*') ? 'active' : '' }}">
                         <i class="nav-icon fa-solid fa-book"></i>
                         <p>Arsip</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url('/laporan') }}" class="nav-link {{ request()->is('laporan*') ? 'active' : '' }}">
+                        <i class="nav-icon fa-solid fa-book"></i>
+                        <p>Laporan</p>
                     </a>
                 </li>
 

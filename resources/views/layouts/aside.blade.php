@@ -36,12 +36,14 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ url('/data_karyawan') }}" class="nav-link {{ request()->is('data_karyawan*') ? 'active' : '' }}">
-                                <i class="nav-icon fa-solid fa-user text-sm"></i>
-                                <p>Data Karyawan</p>
-                            </a>
-                        </li>
+                        @can('isAdmin')
+                            <li class="nav-item">
+                                <a href="{{ url('/data_karyawan') }}" class="nav-link {{ request()->is('data_karyawan*') ? 'active' : '' }}">
+                                    <i class="nav-icon fa-solid fa-users-gear text-sm"></i>
+                                    <p>Data Karyawan</p>
+                                </a>
+                            </li>
+                        @endcan
                         <li class="nav-item">
                             <a href="{{ url('/data_member') }}" class="nav-link {{ request()->is('data_member*') ? 'active' : '' }}">
                                 <i class="nav-icon fa-solid fa-user-group text-sm"></i>
@@ -71,18 +73,20 @@
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <a href="{{ url('/arsip') }}" class="nav-link {{ request()->is('arsip*') ? 'active' : '' }}">
-                        <i class="nav-icon fa-solid fa-book"></i>
-                        <p>Arsip</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ url('/laporan') }}" class="nav-link {{ request()->is('laporan*') ? 'active' : '' }}">
-                        <i class="nav-icon fa-solid fa-book"></i>
-                        <p>Laporan</p>
-                    </a>
-                </li>
+                @can('isAdmin')
+                    <li class="nav-item">
+                        <a href="{{ url('/arsip') }}" class="nav-link {{ request()->is('arsip*') ? 'active' : '' }}">
+                            <i class="nav-icon fa-solid fa-book"></i>
+                            <p>Arsip</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url('/laporan') }}" class="nav-link {{ request()->is('laporan*') ? 'active' : '' }}">
+                            <i class="nav-icon fa-solid fa-file-invoice"></i>
+                            <p>Laporan</p>
+                        </a>
+                    </li>
+                @endcan
 
                 {{-- <li class="nav-item">
                     <a href="{{ url('/setting') }}" class="nav-link {{ request()->is('setting*') ? 'active' : '' }}">

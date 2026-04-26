@@ -13,26 +13,36 @@
         <div class="container-fluid">
 
             {{-- FILTER TANGGAL --}}
-            <div class="card mb-3">
-                <div class="card-body">
-                    <form method="GET" action="{{ route('laporan') }}">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label>Tanggal Awal</label>
-                                <input type="date" name="tanggal_awal" class="form-control" value="{{ $tanggal_awal }}">
-                            </div>
-                            <div class="col-md-4">
-                                <label>Tanggal Akhir</label>
-                                <input type="date" name="tanggal_akhir" class="form-control" value="{{ $tanggal_akhir }}">
-                            </div>
-                            <div class="col-md-4 mt-4">
-                                <button class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
-                                <a href="{{ route('laporan') }}" class="btn btn-secondary">Reset</a>
-                            </div>
-                        </div>
-                    </form>
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="GET" action="{{ route('laporan') }}">
+            <div class="row d-flex align-items-end"> {{-- Sejajarkan vertikal ke bawah --}}
+                <div class="col-md-5">
+                    <div class="form-group mb-0"> {{-- Tambahkan mb-0 agar tidak ada margin bawah --}}
+                        <label><i class="fas fa-calendar-alt"></i> Tanggal Awal</label>
+                        <input type="date" name="tanggal_awal" class="form-control" value="{{ $tanggal_awal }}">
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="form-group mb-0">
+                        <label><i class="fas fa-calendar-alt"></i> Tanggal Akhir</label>
+                        <input type="date" name="tanggal_akhir" class="form-control" value="{{ $tanggal_akhir }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="btn-group w-100"> {{-- w-100 membuat tombol memenuhi kolom --}}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                        <a href="{{ route('laporan') }}" class="btn btn-secondary" title="Reset">
+                            <i class="fas fa-undo"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
+        </form>
+    </div>
+</div>
 
             {{-- RINGKASAN BOX --}}
             <div class="row">

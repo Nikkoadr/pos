@@ -350,28 +350,34 @@ class TransaksiController extends Controller
 
             $printer->setJustification(Printer::JUSTIFY_LEFT);
 
-            $printer->text(sprintf("%-10s: %s\n", "Nota", "#" . $id));
             $printer->text(sprintf("%-10s: %s\n", "Kasir", auth()->user()->nama));
             $printer->text(sprintf("%-10s: %s\n", "Pelanggan", $nama_member));
 
             $printer->text("-----------------------------------------------\n");
 
             foreach ($details as $d) {
-
-                $nama = strlen($d->nama_barang) > 30
-                    ? substr($d->nama_barang, 0, 27) . '...'
+                // 1. Nama Barang (Potong jika terlalu panjang agar tidak merusak baris baru)
+                $nama = strlen($d->nama_barang) > 45
+                    ? substr($d->nama_barang, 0, 42) . '...'
                     : $d->nama_barang;
-
                 $printer->text($nama . "\n");
 
+                // 2. Hitung Subtotal
                 $subtotal = $d->harga_jual * $d->qty;
 
-                $printer->text(sprintf(
-                    "%d x %-10s %15s\n",
-                    $d->qty,
-                    number_format($d->harga_jual, 0, '.', '.'),
-                    number_format($subtotal, 0, '.', '.')
-                ));
+                // 3. Siapkan teks kiri (Qty x Harga) dan teks kanan (Subtotal)
+                $kiri = sprintf(" %d x %s", $d->qty, number_format($d->harga_jual, 0, '.', '.'));
+                $kanan = number_format($subtotal, 0, '.', '.');
+
+                // 4. Hitung spasi dinamis untuk lebar 80mm (Asumsi 48 karakter)
+                $lebar_max = 48; 
+                $jumlah_spasi = $lebar_max - strlen($kiri) - strlen($kanan);
+
+                // Pastikan minimal ada 1 spasi
+                if ($jumlah_spasi < 1) $jumlah_spasi = 1;
+
+                // Cetak baris yang sudah digabung
+                $printer->text($kiri . str_repeat(" ", $jumlah_spasi) . $kanan . "\n");
             }
 
             $printer->text("-----------------------------------------------\n");

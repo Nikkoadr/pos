@@ -109,8 +109,13 @@ class ServisController extends Controller
             'tanggal_masuk' => 'required|date',
             'nama' => 'required',
             'nohp' => 'required',
+            'alamat' => 'required',
             'merk' => 'required',
+            'tipe' => 'required',
             'kerusakan' => 'required',
+            'kondisi' => 'required',
+            'security' => 'required',
+            'waktu_pengambilan' => 'required'
         ]);
 
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
@@ -126,6 +131,7 @@ class ServisController extends Controller
                 'kerusakan' => $request->kerusakan,
                 'kondisi' => $request->kondisi,
                 'security' => $request->security,
+                'waktu_pengambilan' => $request->waktu_pengambilan,
             ]);
 
             $message = 'Servis berhasil diupdate!';
@@ -148,6 +154,7 @@ class ServisController extends Controller
 
                 'kondisi' => $request->kondisi,
                 'security' => $request->security,
+                'waktu_pengambilan' => $request->waktu_pengambilan,
             ]);
 
             $message = 'Servis berhasil ditambahkan!';
@@ -252,7 +259,10 @@ class ServisController extends Controller
                     $printer->text("Kondisi   : {$servis->kondisi}\n");
 
                     $kerusakan = wordwrap($servis->kerusakan, 30, "\n            ");
-                    $printer->text("Kerusakan : $kerusakan\n\n");
+                    $printer->text("Kerusakan : $kerusakan\n");
+                    $waktu_pengambilan = wordwrap($servis->waktu_pengambilan, 30, "\n            ");
+                    $waktu_formatted = \Carbon\Carbon::parse($waktu_pengambilan)->translatedFormat('d M Y H.i');
+                    $printer->text("Pengambilan : $waktu_formatted\n\n");
                 }
 
                 $grandtotal = 0;

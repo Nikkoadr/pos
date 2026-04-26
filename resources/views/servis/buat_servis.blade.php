@@ -109,13 +109,19 @@
                                 </div>
                             </div>
 
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>Waktu Pengambilan</label>
+                                    <input type="datetime-local" name="waktu_pengambilan" class="form-control"
+                                        value="{{ isset($servis->waktu_pengambilan) ? \Carbon\Carbon::parse($servis->waktu_pengambilan)->format('Y-m-d\TH:i') : '' }}">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="card-footer bg-white">
                         <a href="/transaksi" class="btn btn-default">Batal</a>
 
-                        {{-- 🔥 tombol dinamis --}}
                         <button type="submit" class="btn btn-success float-right">
                             <i class="fas fa-save mr-1"></i>
                             {{ isset($servis) ? 'Update Servis' : 'Simpan & Buat Servis' }}

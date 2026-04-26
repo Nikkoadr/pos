@@ -35,9 +35,7 @@ return new class extends Migration
             $table->string('kondisi')->nullable();
             $table->string('security')->nullable();
 
-            $table->integer('harga_modal')->default(0);
-            $table->integer('harga_jual')->default(0);
-
+            $table->datetime('waktu_pengambilan');
             $table->enum('status_servis', ['masuk', 'proses', 'selesai', 'dibatalkan', 'diambil'])
                 ->default('masuk');
 

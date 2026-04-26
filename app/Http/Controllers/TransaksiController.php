@@ -17,6 +17,7 @@ use Mike42\Escpos\EscposImage;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
+use Illuminate\Auth\Events\Validated;
 
 class TransaksiController extends Controller
 {
@@ -46,6 +47,7 @@ class TransaksiController extends Controller
 
     public function buat_transaksi(Request $request)
     {
+
         $transaksi = Transaksi::create([
             'jenis_transaksi' => $request->jenis_transaksi,
             'id_member' => $request->id_member,
@@ -61,15 +63,6 @@ class TransaksiController extends Controller
 
         return redirect('/proses_transaksi_' . $transaksi->id)
             ->with('sukses', 'Transaksi berhasil dibuat');
-    }
-
-    private function calculateTotal($keranjang)
-    {
-        $total = 0;
-        foreach ($keranjang as $item) {
-            $total += $item->harga_jual * $item->qty;
-        }
-        return $total;
     }
 
     public function proses_transaksi(Request $request, $id)
@@ -89,7 +82,6 @@ class TransaksiController extends Controller
             $nama_member = $m ? $m->nama_member : null;
         }
 
-        // ✅ hitung total dari harga_jual * qty
         $total = $keranjang->sum(function ($item) {
             return $item->harga_jual * $item->qty;
         });
@@ -370,7 +362,7 @@ class TransaksiController extends Controller
                 $kanan = number_format($subtotal, 0, '.', '.');
 
                 // 4. Hitung spasi dinamis untuk lebar 80mm (Asumsi 48 karakter)
-                $lebar_max = 48; 
+                $lebar_max = 48;
                 $jumlah_spasi = $lebar_max - strlen($kiri) - strlen($kanan);
 
                 // Pastikan minimal ada 1 spasi
@@ -386,7 +378,7 @@ class TransaksiController extends Controller
 
             // 1. Baris TOTAL (Besar & Tebal)
             $printer->setEmphasis(true);
-            $printer->setTextSize(2, 2); 
+            $printer->setTextSize(2, 2);
             // Pada ukuran (2,2), lebar kertas jadi terbatas (sekitar 22-24 karakter)
             $printer->text("TOTAL: Rp " . number_format($transaksi->total_belanja, 0, '.', '.') . "\n");
 

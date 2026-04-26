@@ -76,7 +76,7 @@ class Data_barangController extends Controller
         Excel::import(new Import_data_barang, request()->file('import'));
         return back()->with(['success' => 'Data Berhasil Diimport!']);
     }
-    
+
     public function export_data_barang()
     {
         return Excel::download(new Export_data_barang, 'data_barang.xlsx');
@@ -87,5 +87,32 @@ class Data_barangController extends Controller
         $data = Data_barang::findOrFail($id);
         $data->delete();
         return redirect()->back()->with(['success' => 'Data Barang Berhasil di Hapus']);
+    }
+    public function hapusMultiple(Request $request)
+    {
+        $ids = $request->ids;
+        // Mengubah string "1,2,3" menjadi array [1, 2, 3]
+        $idArray = explode(",", $ids);
+
+        // Proses hapus
+        Data_Barang::whereIn('id', $idArray)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => "Data barang berhasil dihapus."
+        ]);
+    }
+
+    public function cetakBarcode(Request $request)
+    {
+        // Cek jika ada parameter ids
+        if (!$request->ids) {
+            return redirect()->back()->with('error', 'Tidak ada data yang dipilih');
+        }
+
+        $idArray = explode(',', $request->ids);
+        $data_barang = Data_barang::whereIn('id', $idArray)->get();
+
+        return view('barang.print_barcode', compact('data_barang'));
     }
 }

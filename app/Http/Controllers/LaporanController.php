@@ -24,34 +24,43 @@ class LaporanController extends Controller
         $tanggal_awal = $request->tanggal_awal ?? now()->startOfMonth()->toDateString();
         $tanggal_akhir = $request->tanggal_akhir ?? now()->toDateString();
 
-        // Ambil transaksi selesai
-        $transaksi = Transaksi::where('status', 'selesai')
+        // Ambil transaksi beserta detailnya (Eager Loading)
+        $transaksi = Transaksi::with('detail_transaksi')
+            ->where('status', 'selesai')
             ->whereDate('created_at', '>=', $tanggal_awal)
             ->whereDate('created_at', '<=', $tanggal_akhir)
             ->get();
 
-        // Ambil detail transaksi
-        $detail = DetailTransaksi::whereIn('id_transaksi', $transaksi->pluck('id'))->get();
+        // Transformasi data untuk laporan per transaksi
+        $laporan = $transaksi->map(function ($t) {
+            $omzet = 0;
+            $hpp = 0;
 
-        // ================= HITUNG =================
-        $total_pendapatan = 0;
-        $total_modal = 0;
+            foreach ($t->detail_transaksi as $item) {
+                $omzet += $item->harga_jual * $item->qty;
+                $hpp += ($item->harga_modal ?? 0) * $item->qty;
+            }
 
-        foreach ($detail as $item) {
-            $total_pendapatan += $item->harga_jual * $item->qty;
-            $total_modal += ($item->harga_modal ?? 0) * $item->qty;
-        }
+            return (object) [
+                'id' => $t->id,
+                'kode_transaksi' => $t->kode_transaksi, // Sesuaikan field kode nota kamu
+                'tanggal' => $t->created_at,
+                'omzet' => $omzet,
+                'hpp' => $hpp,
+                'laba_kotor' => $omzet - $hpp,
+            ];
+        });
 
-        $laba_kotor = $total_pendapatan - $total_modal;
-        $laba_bersih = $laba_kotor; // belum ada biaya lain
+        // Ringkasan Total (Summary)
+        $total_pendapatan = $laporan->sum('omzet');
+        $total_hpp = $laporan->sum('hpp');
+        $total_laba_kotor = $laporan->sum('laba_kotor');
 
         return view('laporan.index', compact(
-            'transaksi',
-            'detail',
+            'laporan',
             'total_pendapatan',
-            'total_modal',
-            'laba_kotor',
-            'laba_bersih',
+            'total_hpp',
+            'total_laba_kotor',
             'tanggal_awal',
             'tanggal_akhir'
         ));

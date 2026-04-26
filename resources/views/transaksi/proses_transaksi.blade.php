@@ -37,7 +37,7 @@
                             <h6 class="card-title"><b>Kasir :</b> {{ auth()->user()->nama }}</h6><br>
 
                             @if($transaksi->jenis_transaksi == 'member')
-                                <h6 class="card-title"><b>Member :</b> {{ $transaksi->nama_member ?? 'Tidak ada Member' }}</h6><br>
+                                <h6 class="card-title"><b>Member :</b> {{ $nama_member ?? 'Tidak ada Member' }}</h6><br>
                             @else
                                 <h6 class="card-title"><b>Member :</b> -</h6><br>
                             @endif

@@ -186,6 +186,27 @@ class ServisController extends Controller
         return redirect('/transaksi')
             ->with('sukses', 'Servis berhasil diproses dan nota tercetak!');
     }
+    
+    public function cetak_ulang_servis($id_transaksi)
+    {
+        // Pastikan data transaksi dan servis ada
+        $transaksi = Transaksi::find($id_transaksi);
+        $servis = DetailTransaksiServis::where('id_transaksi', $id_transaksi)->first();
+
+        if (!$transaksi || !$servis) {
+            return back()->with('error', 'Data transaksi atau detail servis tidak ditemukan!');
+        }
+
+        // Panggil fungsi print yang sudah ada
+        // Kita gunakan try-catch di sini agar jika printer error, user tetap di halaman yang sama
+        try {
+            $this->printServis($id_transaksi);
+
+            return back()->with('sukses', 'Nota servis berhasil dicetak ulang!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mencetak: ' . $e->getMessage());
+        }
+    }
 
     private function printServis($id)
     {
@@ -482,7 +503,7 @@ class ServisController extends Controller
 
             // 1. Baris TOTAL (Besar & Tebal)
             $printer->setEmphasis(true);
-            $printer->setTextSize(2, 2); 
+            $printer->setTextSize(2, 2);
             // Pada ukuran (2,2), lebar kertas jadi terbatas (sekitar 22-24 karakter)
             $printer->text("TOTAL: Rp " . number_format($grandTotal, 0, '.', '.') . "\n");
 

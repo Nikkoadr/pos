@@ -68,7 +68,7 @@ class Data_barangController extends Controller
             'harga_member' => ['required', 'numeric'],
         ]);
         $data->update($validatedData);
-        return redirect('barang.data_barang')->with(['success' => 'Data Barang Berhasil Di Update']);
+        return redirect('/data_barang')->with(['success' => 'Data Barang Berhasil Di Update']);
     }
 
     public function import_data_barang()

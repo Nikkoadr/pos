@@ -72,40 +72,59 @@
 
     {{-- ACTION --}}
     <td class="text-center">
+        <div class="d-flex justify-content-center align-items-center" style="gap: 5px;">
+            
+            {{-- TOMBOL STATUS UTAMA --}}
+            @if($status == 'masuk')
+                <button class="btn btn-sm btn-warning text-white btn-update-status shadow-sm"
+                    data-id="{{ $data->id }}"
+                    data-status="proses"
+                    title="Kerjakan Perangkat">
+                    <i class="fas fa-tools mr-1"></i> Kerjakan
+                </button>
 
-        {{-- MASUK → PROSES --}}
-        @if($status == 'masuk')
-            <button class="btn btn-sm btn-warning text-white btn-update-status"
-                data-id="{{ $data->id }}"
-                data-status="proses">
-                <i class="fas fa-tools"></i> Kerjakan
-            </button>
+            @elseif($status == 'proses')
+                <button class="btn btn-sm btn-success btn-update-status shadow-sm"
+                    data-id="{{ $data->id }}"
+                    data-status="selesai"
+                    title="Tandai Selesai">
+                    <i class="fas fa-check mr-1"></i> Selesai
+                </button>
+                
+                {{-- TOMBOL CETAK ULANG (Hanya saat proses/selesai) --}}
+                <a href="{{ route('servis.cetak_ulang', $data->id_transaksi) }}" 
+                class="btn btn-sm btn-default border shadow-sm" 
+                title="Cetak Ulang Nota">
+                    <i class="fas fa-print"></i>
+                </a>
 
-        {{-- PROSES → SELESAI --}}
-        @elseif($status == 'proses')
-            <button class="btn btn-sm btn-success btn-update-status"
-                data-id="{{ $data->id }}"
-                data-status="selesai">
-                <i class="fas fa-check"></i> Selesai
-            </button>
+            @elseif($status == 'selesai')
+                <a href="/pembayaran/servis/{{ $data->id_transaksi }}"
+                class="btn btn-sm btn-info shadow-sm"
+                title="Proses Pembayaran">
+                    <i class="fas fa-money-bill-wave mr-1"></i> Bayar
+                </a>
+                
+                {{-- CETAK ULANG JUGA BISA DISINI --}}
+                <a href="{{ route('servis.cetak_ulang', $data->id_transaksi) }}" 
+                class="btn btn-sm btn-default border shadow-sm" 
+                title="Cetak Ulang Nota">
+                    <i class="fas fa-print"></i>
+                </a>
+            @endif
 
-        {{-- SELESAI → BAYAR --}}
-        @elseif($status == 'selesai')
-            <a href="/pembayaran/servis/{{ $data->id_transaksi }}"
-               class="btn btn-sm btn-info">
-                <i class="fas fa-money-bill-wave"></i> Bayar
-            </a>
-        @endif
+            {{-- TOMBOL BATAL (Tampil jika belum batal/diambil) --}}
+            @if(!in_array($status, ['dibatalkan','diambil']))
+                <div class="border-left ml-1 pl-1" style="height: 24px;"></div> {{-- Garis pemisah tipis --}}
+                <button class="btn btn-sm btn-outline-danger btn-update-status"
+                    data-id="{{ $data->id }}"
+                    data-status="dibatalkan"
+                    title="Batalkan Servis">
+                    <i class="fas fa-times"></i>
+                </button>
+            @endif
 
-        {{-- BATAL (AJAX ONLY) --}}
-        @if(!in_array($status, ['dibatalkan','diambil']))
-            <button class="btn btn-sm btn-outline-danger btn-update-status ml-1"
-                data-id="{{ $data->id }}"
-                data-status="dibatalkan">
-                <i class="fas fa-times"></i>
-            </button>
-        @endif
-
+        </div>
     </td>
 </tr>
 

@@ -47,6 +47,13 @@ class TransaksiController extends Controller
 
     public function buat_transaksi(Request $request)
     {
+        if ($request->jenis_transaksi == 'member') {
+            $request->validate([
+                'id_member' => 'required|exists:data_member,id',
+            ], [
+                'id_member.required' => 'Nama member harus dipilih dari daftar.',
+            ]);
+        }
 
         $transaksi = Transaksi::create([
             'jenis_transaksi' => $request->jenis_transaksi,

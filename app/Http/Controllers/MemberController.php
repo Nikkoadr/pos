@@ -54,7 +54,7 @@ class MemberController extends Controller
             'alamat' => ['required'],
         ]);
         $data->update($validatedData);
-        return redirect('member.data_member')->with(['success' => 'Data Member Berhasil Di Update']);
+        return redirect('/data_member')->with(['success' => 'Data Member Berhasil Di Update']);
     }
     public function hapus_data_member($id)
     {

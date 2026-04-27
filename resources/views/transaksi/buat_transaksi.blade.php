@@ -163,101 +163,126 @@
 @endsection
 
 @section('script')
-    <script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
-    var initialTransaksiValue = document.getElementById('jenis_transaksi').value;
-    var namaMemberField = document.getElementById('nama_member');
+    const jenisTransaksi = document.getElementById('jenis_transaksi');
+    const namaMemberField = document.getElementById('nama_member');
+    const inputMember = document.getElementById('nama_member_input');
+    const idMemberHidden = document.getElementById('id_member');
+    const suggestionsContainer = document.getElementById('member_suggestions');
+    const form = document.querySelector('form[action="buat_transaksi"]');
 
-    if (initialTransaksiValue === 'member') {
-        namaMemberField.style.display = 'block';
-    } else {
-        namaMemberField.style.display = 'none';
-        document.getElementById('nama_member_input').value = '';
-        document.getElementById('id_member').value = '';
-        document.getElementById('member_suggestions').innerHTML = '';
-    }
-
-    document.getElementById('jenis_transaksi').addEventListener('change', function() {
-        var memberValue = this.value;
-        var namaMemberField = document.getElementById('nama_member');
-        if (memberValue === 'member') {
+    // 1. Fungsi Toggle Tampilan & Validasi Required
+    function toggleMemberField(value) {
+        if (value === 'member') {
             namaMemberField.style.display = 'block';
+            inputMember.setAttribute('required', 'required');
         } else {
             namaMemberField.style.display = 'none';
-            document.getElementById('nama_member_input').value = '';
-            document.getElementById('id_member').value = '';
-            document.getElementById('member_suggestions').innerHTML = '';
+            inputMember.removeAttribute('required');
+            // Reset nilai jika pindah ke Umum/Servis
+            inputMember.value = '';
+            idMemberHidden.value = '';
+            suggestionsContainer.innerHTML = '';
+            suggestionsContainer.style.display = 'none';
+        }
+    }
+
+    // Inisialisasi awal
+    toggleMemberField(jenisTransaksi.value);
+
+    // Event saat dropdown berubah
+    jenisTransaksi.addEventListener('change', function() {
+        toggleMemberField(this.value);
+    });
+
+    // 2. Fitur Autocomplete Member
+    inputMember.addEventListener('input', function() {
+        let inputText = this.value;
+        if (inputText.length > 0) {
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    let suggestions = JSON.parse(xhr.responseText);
+                    suggestionsContainer.innerHTML = '';
+                    
+                    if(suggestions.length > 0) {
+                        suggestions.forEach(function(suggestion) {
+                            let option = document.createElement('div');
+                            option.textContent = suggestion.nama_member;
+                            option.className = 'suggestion-item';
+                            option.addEventListener('click', function() {
+                                inputMember.value = suggestion.nama_member;
+                                idMemberHidden.value = suggestion.id; // Simpan ID asli
+                                suggestionsContainer.innerHTML = '';
+                                suggestionsContainer.style.display = 'none';
+                            });
+                            suggestionsContainer.appendChild(option);
+                        });
+                        suggestionsContainer.style.display = 'block';
+                    } else {
+                        suggestionsContainer.style.display = 'none';
+                    }
+                }
+            };
+            xhr.open('GET', '/search/member?keyword=' + encodeURIComponent(inputText), true);
+            xhr.send();
+        } else {
+            suggestionsContainer.style.display = 'none';
+            idMemberHidden.value = '';
+        }
+    });
+
+    // 3. Validasi Form Sebelum Submit
+    // Mencegah lolos jika user mengetik nama tapi tidak klik saran (ID kosong)
+    form.addEventListener('submit', function(e) {
+        if (jenisTransaksi.value === 'member' && !idMemberHidden.value) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Member Tidak Valid',
+                text: 'Silahkan pilih member dari daftar yang muncul!'
+            });
+        }
+    });
+
+    // Sembunyikan saran jika klik di luar area
+    document.addEventListener('click', function(e) {
+        if (!inputMember.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            suggestionsContainer.style.display = 'none';
         }
     });
 });
 
-document.getElementById('nama_member_input').addEventListener('input', function() {
-    var inputText = this.value;
-    if (inputText.length > 0) {
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    var suggestions = JSON.parse(xhr.responseText);
-                    var suggestionsContainer = document.getElementById('member_suggestions');
-                    suggestionsContainer.innerHTML = '';
-                    suggestions.forEach(function(suggestion) {
-                        var option = document.createElement('div');
-                        option.textContent = suggestion.nama_member;
-                        option.className = 'suggestion-item';
-                        option.setAttribute('data-member-id', suggestion.id);
-                        option.addEventListener('click', function() {
-                            document.getElementById('nama_member_input').value = suggestion.nama_member;
-                            document.getElementById('id_member').value = suggestion.id;
-                            suggestionsContainer.innerHTML = '';
-                            suggestionsContainer.style.display = 'none';
-                        });
-                        suggestionsContainer.appendChild(option);
-                    });
-                    suggestionsContainer.style.display = 'block';
-                } else {
-                    console.error('Request failed');
-                }
-            }
-        };
-        xhr.open('GET', '/search/member?keyword=' + inputText, true);
-        xhr.send();
-    } else {
-        document.getElementById('member_suggestions').innerHTML = '';
-        document.getElementById('member_suggestions').style.display = 'none';
-    }
-});
-</script>
-<script>
+// 4. Alert Notifikasi (SweetAlert2)
 @if (session()->has('sukses'))
-var Toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 3000
-});
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+    });
     Toast.fire({
-    icon: 'success',
-    title: '{{ session('sukses') }}'
-    })
+        icon: 'success',
+        title: '{{ session('sukses') }}'
+    });
 @endif
-</script>
-<script>
+
 @if (session()->has('transaksi_sukses'))
-Swal.fire({
-title: "{{ session('transaksi_sukses') }}",
-text: "Apakah anda ingin print nota transaksi ini",
-icon: "success",
-showCancelButton: true,
-confirmButtonColor: "#3085d6",
-cancelButtonColor: "#d33",
-confirmButtonText: "Ya, Print",
-cancelButtonText: "Tidak",
-}).then((result) => {
-if (result.isConfirmed) {
-window.open("/nota_" + {{ session('transaksi_id') }}, '_blank');
-}
-});
+    Swal.fire({
+        title: "{{ session('transaksi_sukses') }}",
+        text: "Apakah anda ingin print nota transaksi ini?",
+        icon: "success",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Ya, Print",
+        cancelButtonText: "Tidak",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.open("/nota_" + "{{ session('transaksi_id') }}", '_blank');
+        }
+    });
 @endif
 </script>
 @endsection

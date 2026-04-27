@@ -35,7 +35,7 @@ return new class extends Migration
             $table->string('kondisi')->nullable();
             $table->string('security')->nullable();
 
-            $table->datetime('waktu_pengambilan');
+            $table->datetime('waktu_pengambilan')->nullable();
             $table->enum('status_servis', ['masuk', 'proses', 'selesai', 'dibatalkan', 'diambil'])
                 ->default('masuk');
 

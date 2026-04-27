@@ -136,7 +136,7 @@
     </div>
 
     <footer class="py-10 text-center text-gray-400 text-sm border-t border-gray-100 mt-20">
-        <p>&copy; 2026 Angel Cell. Built with <span class="text-red-500">&hearts;</span> by Nikkoadr</p>
+        <strong>Copyright &copy; 2025 - {{ date('Y') }} <a href="https://instagram.com/nikkoadr" class="text-blue-500 hover:underline">Nikko Adrian</a>.</strong> All rights reserved.
     </footer>
 
 </body>

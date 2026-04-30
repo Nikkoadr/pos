@@ -66,7 +66,6 @@
                                 @endif
                             @endif
 
-                            {{-- ================= NON SERVIS (ADA TRANSAKSI) ================= --}}
                             @if($transaksi->jenis_transaksi != 'servis')
                                 <h6 class="card-title"><b>Grand Total :</b> @rp($total)</h6><br>
                                 <h6 class="card-title"><b>Kembalian :</b> <span id="kembalian">0</span></h6><br>
@@ -136,20 +135,39 @@
                             @csrf
                             <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
 
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <input type="text" name="nama" class="form-control" placeholder="Nama jasa / item" required>
-                                </div>
+                            <div class="row align-items-end">
+                                <!-- Nama Item -->
                                 <div class="col-md-3">
-                                    <input type="number" name="harga" class="form-control" placeholder="Harga" required>
+                                    <label class="small mb-1">Nama Jasa / Item</label>
+                                    <input type="text" name="nama" class="form-control" placeholder="Contoh: : LCD" required>
                                 </div>
+
+                                <!-- Harga Modal -->
+                                <div class="col-md-3">
+                                    <label class="small mb-1">Harga Modal</label>
+                                    <input type="number" name="harga_modal" class="form-control" placeholder="0" required>
+                                </div>
+
+                                <!-- Harga Jual -->
+                                <div class="col-md-3">
+                                    <label class="small mb-1">Harga Jual</label>
+                                    <input type="number" name="harga_jual" class="form-control" placeholder="0" required>
+                                </div>
+
+                                <!-- Qty -->
                                 <div class="col-md-2">
-                                    <input type="number" name="qty" class="form-control" value="1" min="1" placeholder="qty">
+                                    <label class="small mb-1">Qty</label>
+                                    <input type="number" name="qty" class="form-control" value="1" min="1">
                                 </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-success btn-block" type="submit">
-                                        <i class="fa fa-plus"></i>
-                                    </button>
+
+                                <!-- Tombol Submit -->
+                                <div class="col-md-1">
+                                    <!-- Diberi d-grid agar tombol memenuhi lebar kolom di Bootstrap 5 -->
+                                    <div class="d-grid">
+                                        <button class="btn btn-success" type="submit">
+                                            <i class="fa fa-plus me-1"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </form>

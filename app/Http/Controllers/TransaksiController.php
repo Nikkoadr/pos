@@ -233,7 +233,8 @@ class TransaksiController extends Controller
     {
         $request->validate([
             'nama' => 'required',
-            'harga' => 'required|numeric',
+            'harga_jual' => 'required|numeric',
+            'harga_modal' => 'required|numeric',
             'qty' => 'required|numeric|min:1',
             'id_transaksi' => 'required'
         ]);
@@ -242,8 +243,8 @@ class TransaksiController extends Controller
             'id_transaksi' => $request->id_transaksi,
             'id_barang' => null,
             'nama' => $request->nama,
-            'harga_jual' => $request->harga,
-            'harga_modal' => 0, // karena manual biasanya jasa / tidak ada modal
+            'harga_jual' => $request->harga_jual,
+            'harga_modal' => $request->harga_modal,
             'qty' => $request->qty,
         ]);
 

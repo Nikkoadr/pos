@@ -66,10 +66,47 @@
                         <td>@rp($data->harga_modal)</td>
                         <td>@rp($data->harga_umum)</td>
                         <td>@rp($data->harga_member)</td>
-                        <td style="text-align: center">
-                            <a href="view_edit_data_barang_{{ $data->id }}" class="btn btn-sm btn-primary"><i class="fa-solid fa-pen-to-square"></i></a>
-                            <a href="hapus_data_barang_{{ $data->id }}" class="btn btn-sm btn-danger konfirmasi"><i class="far fa-trash-alt"></i></a>
-                        </td>
+<td style="text-align: center">
+    <!-- Tombol Tambah Stok -->
+    <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#modal_tambah_stok_{{ $data->id }}">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+    
+    <a href="view_edit_data_barang_{{ $data->id }}" class="btn btn-sm btn-primary"><i class="fa-solid fa-pen-to-square"></i></a>
+    <a href="hapus_data_barang_{{ $data->id }}" class="btn btn-sm btn-danger konfirmasi"><i class="far fa-trash-alt"></i></a>
+</td>
+
+<!-- Modal Tambah Stok (Letakkan di dalam foreach agar mendapatkan ID barang) -->
+<div class="modal fade" id="modal_tambah_stok_{{ $data->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Stok: {{ $data->nama }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ route('barang.tambah_stok', $data->id) }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Stok Saat Ini</label>
+                        <input type="text" class="form-control" value="{{ $data->qty }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Jumlah Penambahan</label>
+                        <input type="number" name="jumlah_tambah" class="form-control" placeholder="Contoh: 5" required min="1">
+                        <small class="text-muted">*Stok akan otomatis diakumulasikan.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
                     </tr>
                     @endforeach
                 </tbody>

@@ -53,6 +53,7 @@ Route::put('/update_data_barang_{id}', [Data_barangController::class, 'update_da
 Route::post('/import_data_barang', [Data_barangController::class, 'import_data_barang'])->name('import_data_barang');
 Route::get('/export_data_barang', [Data_BarangController::class, 'export_data_barang'])->name('export_data_barang');
 Route::get('/hapus_data_barang_{id}', [Data_barangController::class, 'hapus_data_barang'])->name('hapus_data_barang');
+Route::post('/barang/tambah-stok/{id}', [Data_barangController::class, 'tambahStok'])->name('barang.tambah_stok');
 
 Route::get('/data_member', [MemberController::class, 'data_member'])->name('data_member');
 Route::get('/search/member', [MemberController::class, 'search'])->name('search');

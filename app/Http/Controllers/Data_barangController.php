@@ -115,4 +115,18 @@ class Data_barangController extends Controller
 
         return view('barang.print_barcode', compact('data_barang'));
     }
+
+    public function tambahStok(Request $request, $id)
+    {
+        $request->validate([
+            'jumlah_tambah' => 'required|integer|min:1'
+        ]);
+
+        $barang = Data_barang::findOrFail($id);
+
+        // Menggunakan increment untuk langsung menambahkan nilai lama dengan nilai baru
+        $barang->increment('qty', $request->jumlah_tambah);
+
+        return redirect()->back()->with('success', 'Stok berhasil ditambahkan!');
+    }
 }

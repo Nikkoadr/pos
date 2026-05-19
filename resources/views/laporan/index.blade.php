@@ -12,13 +12,12 @@
     <div class="content">
         <div class="container-fluid">
 
-            {{-- FILTER TANGGAL --}}
 <div class="card mb-3">
     <div class="card-body">
         <form method="GET" action="{{ route('laporan') }}">
-            <div class="row d-flex align-items-end"> {{-- Sejajarkan vertikal ke bawah --}}
+            <div class="row d-flex align-items-end">
                 <div class="col-md-5">
-                    <div class="form-group mb-0"> {{-- Tambahkan mb-0 agar tidak ada margin bawah --}}
+                    <div class="form-group mb-0">
                         <label><i class="fas fa-calendar-alt"></i> Tanggal Awal</label>
                         <input type="date" name="tanggal_awal" class="form-control" value="{{ $tanggal_awal }}">
                     </div>
@@ -30,7 +29,7 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="btn-group w-100"> {{-- w-100 membuat tombol memenuhi kolom --}}
+                    <div class="btn-group w-100">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-filter"></i>
                         </button>

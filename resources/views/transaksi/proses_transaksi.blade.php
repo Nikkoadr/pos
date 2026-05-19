@@ -30,34 +30,28 @@
                         <div class="card-header">
                             <h5 class="m-0">Administrasi</h5>
                         </div>
-
                         <div class="card-body">
                             <h6 class="card-title"><b>ID Transaksi :</b> {{ $transaksi->id }}</h6><br>
                             <h6 class="card-title"><b>Jenis Transaksi :</b> {{ $transaksi->jenis_transaksi }}</h6><br>
                             <h6 class="card-title"><b>Kasir :</b> {{ auth()->user()->nama }}</h6><br>
-
                             @if($transaksi->jenis_transaksi == 'member')
                                 <h6 class="card-title"><b>Member :</b> {{ $nama_member ?? 'Tidak ada Member' }}</h6><br>
                             @else
                                 <h6 class="card-title"><b>Member :</b> -</h6><br>
                             @endif
-
                             <h6 class="card-title"><b>Tanggal Transaksi :</b> {{ \Carbon\Carbon::now()->locale('id_ID')->isoFormat('D MMMM YYYY') }}</h6><br>
                             @if($transaksi->jenis_transaksi == 'servis')
                                 <hr>
                                 <h6 class="card-title"><b>Data Servis :</b></h6><br>
-
                                 @if(isset($servis))
                                     <h6 class="card-title"><b>Kode :</b> {{ $servis->kode_servis }}</h6><br>
                                     <h6 class="card-title"><b>Customer :</b> {{ $servis->nama }}</h6><br>
                                     <h6 class="card-title"><b>No HP :</b> {{ $servis->nohp }}</h6><br>
                                     <h6 class="card-title"><b>Device :</b> {{ $servis->merk }} - {{ $servis->tipe }}</h6><br>
                                     <h6 class="card-title"><b>Kerusakan :</b> {{ $servis->kerusakan }}</h6><br>
-
                                     <h6 class="card-title">
                                         <b>Estimasi :</b> @rp($total)
                                     </h6><br>
-
                                 @else
                                     <h6 class="text-danger"><b>Data servis belum diisi!</b></h6>
                                     <a href="{{ url('transaksi_servis_'.$transaksi->id) }}" class="btn btn-warning btn-sm">
@@ -65,11 +59,9 @@
                                     </a><br><br>
                                 @endif
                             @endif
-
                             @if($transaksi->jenis_transaksi != 'servis')
                                 <h6 class="card-title"><b>Grand Total :</b> @rp($total)</h6><br>
                                 <h6 class="card-title"><b>Kembalian :</b> <span id="kembalian">0</span></h6><br>
-
                                 <div class="row">
                                     <div class="col-sm-2">
                                         <label class="card-title"><b>Bayar :</b></label>
@@ -79,11 +71,8 @@
                                     </div>
                                 </div>
                             @endif
-
                         </div>
-
                         <div class="card-footer">
-
                             @if($transaksi->jenis_transaksi == 'servis')
                                 @if(isset($servis))
                                     <a href="{{ url('cetak_transaksi_servis/'.$transaksi->id) }}" class="btn btn-primary float-right">
@@ -94,7 +83,6 @@
                                         Isi data servis dulu
                                     </button>
                                 @endif
-
                             @else
                                 @if($total != 0)
                                     <form action="{{ route('checkout') }}" method="POST">
@@ -105,10 +93,8 @@
                                         @if($transaksi->jenis_transaksi == 'member')
                                             <input type="hidden" name="member" value="{{ $transaksi->id_member }}">
                                         @endif
-
                                         <input type="hidden" name="bayar" id="inputBayar">
                                         <input type="hidden" name="kembalian" id="inputKembalian">
-
                                         <button class="btn btn-success float-right konfirmasi" type="submit">
                                             Checkout
                                         </button>
@@ -119,7 +105,6 @@
                                     </button>
                                 @endif
                             @endif
-
                         </div>
                     </div>
                 <div class="card card-primary card-outline">
@@ -134,35 +119,24 @@
                         <form action="/tambah_manual" method="POST">
                             @csrf
                             <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
-
                             <div class="row align-items-end">
-                                <!-- Nama Item -->
                                 <div class="col-md-3">
                                     <label class="small mb-1">Nama Jasa / Item</label>
                                     <input type="text" name="nama" class="form-control" placeholder="Contoh: : LCD" required>
                                 </div>
-
-                                <!-- Harga Modal -->
                                 <div class="col-md-3">
                                     <label class="small mb-1">Harga Modal</label>
                                     <input type="number" name="harga_modal" class="form-control" placeholder="0" required>
                                 </div>
-
-                                <!-- Harga Jual -->
                                 <div class="col-md-3">
                                     <label class="small mb-1">Harga Jual</label>
                                     <input type="number" name="harga_jual" class="form-control" placeholder="0" required>
                                 </div>
-
-                                <!-- Qty -->
                                 <div class="col-md-2">
                                     <label class="small mb-1">Qty</label>
                                     <input type="number" name="qty" class="form-control" value="1" min="1">
                                 </div>
-
-                                <!-- Tombol Submit -->
                                 <div class="col-md-1">
-                                    <!-- Diberi d-grid agar tombol memenuhi lebar kolom di Bootstrap 5 -->
                                     <div class="d-grid">
                                         <button class="btn btn-success" type="submit">
                                             <i class="fa fa-plus me-1"></i>

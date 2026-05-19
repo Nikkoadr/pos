@@ -23,15 +23,11 @@ class LaporanController extends Controller
     {
         $tanggal_awal = $request->tanggal_awal ?? now()->startOfMonth()->toDateString();
         $tanggal_akhir = $request->tanggal_akhir ?? now()->toDateString();
-
-        // Ambil transaksi beserta detailnya (Eager Loading)
         $transaksi = Transaksi::with('detail_transaksi')
             ->where('status', 'selesai')
             ->whereDate('created_at', '>=', $tanggal_awal)
             ->whereDate('created_at', '<=', $tanggal_akhir)
             ->get();
-
-        // Transformasi data untuk laporan per transaksi
         $laporan = $transaksi->map(function ($t) {
             $omzet = 0;
             $hpp = 0;
@@ -43,15 +39,13 @@ class LaporanController extends Controller
 
             return (object) [
                 'id' => $t->id,
-                'kode_transaksi' => $t->kode_transaksi, // Sesuaikan field kode nota kamu
+                'kode_transaksi' => $t->kode_transaksi,
                 'tanggal' => $t->created_at,
                 'omzet' => $omzet,
                 'hpp' => $hpp,
                 'laba_kotor' => $omzet - $hpp,
             ];
         });
-
-        // Ringkasan Total (Summary)
         $total_pendapatan = $laporan->sum('omzet');
         $total_hpp = $laporan->sum('hpp');
         $total_laba_kotor = $laporan->sum('laba_kotor');

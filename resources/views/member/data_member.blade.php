@@ -5,9 +5,7 @@
 <link rel="stylesheet" href="{{ asset('assets/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
 @endsection
 @section('content')
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
-<!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
     <div class="row mb-2">
@@ -21,13 +19,9 @@
         </ol>
         </div>
     </div>
-    </div><!-- /.container-fluid -->
+    </div>
 </section>
-
-<!-- Main content -->
 <section class="content">
-
-    <!-- Default box -->
     <div class="card">
     <div class="card-header">
             <button type="button" class="btn btn-success m-1" data-toggle="modal" data-target="#modal_tambah_data_member"><i class="fa-solid fa-user-plus"></i> Tambah</button>
@@ -61,14 +55,10 @@
                 </tbody>
             </table>
             </div>
-    <!-- /.card-body -->
     </div>
-    <!-- /.card -->
 
 </section>
-<!-- /.content -->
 </div>
-<!-- /.content-wrapper -->
 @endsection
 @section('script')
 <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>

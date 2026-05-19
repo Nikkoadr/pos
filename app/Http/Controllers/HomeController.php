@@ -32,40 +32,28 @@ class HomeController extends Controller
         $hari_ini = now()->today();
         $bulan_ini = now()->month;
         $tahun_ini = now()->year;
-
-        // --- STATISTIK PENDAPATAN ---
-
-        // 1. Pendapatan Hari Ini
         $pendapatan_hari_ini = DetailTransaksi::whereHas('transaksi', function ($q) use ($hari_ini) {
             $q->whereDate('tanggal_transaksi', $hari_ini)
                 ->where('status', 'selesai');
         })->selectRaw('SUM(harga_jual * qty) as total')
             ->value('total');
-
-        // 2. Pendapatan Bulan Ini
         $pendapatan_bulan_ini = DetailTransaksi::whereHas('transaksi', function ($q) use ($bulan_ini, $tahun_ini) {
             $q->whereMonth('tanggal_transaksi', $bulan_ini)
                 ->whereYear('tanggal_transaksi', $tahun_ini)
                 ->where('status', 'selesai');
         })->selectRaw('SUM(harga_jual * qty) as total')
             ->value('total');
-
-        // 3. Pendapatan Tahun Ini
         $pendapatan_tahun_ini = DetailTransaksi::whereHas('transaksi', function ($q) use ($tahun_ini) {
             $q->whereYear('tanggal_transaksi', $tahun_ini)
                 ->where('status', 'selesai');
         })->selectRaw('SUM(harga_jual * qty) as total')
             ->value('total');
-
-        // --- DATA LAIN ---
         $servis_proses = DetailTransaksiServis::whereIn('status_servis', ['masuk', 'proses'])->count();
         $stok_limit = Data_barang::where('qty', '<', 5)->count();
-
         $servis_terbaru = DetailTransaksiServis::whereIn('status_servis', ['masuk', 'proses'])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
-
         return view('home', compact(
             'pendapatan_hari_ini',
             'pendapatan_bulan_ini',
@@ -80,6 +68,7 @@ class HomeController extends Controller
     {
         return view('karyawan.data_karyawan');
     }
+
     public function data_supplier()
     {
         return view('supplier.data_supplier');
@@ -90,6 +79,7 @@ class HomeController extends Controller
         $setting = Setting::first();
         return view('setting', compact('setting'));
     }
+    
     public function update_setting(Request $request, $id)
     {
         $data = Setting::findOrFail($id);

@@ -1,5 +1,4 @@
 @extends('layouts.app')
-
 @section('content')
 <div class="content-wrapper">
     <section class="content-header">
@@ -7,7 +6,6 @@
             <h1>Ringkasan Penjualan Angel Cell</h1>
         </div>
     </section>
-
     <section class="content">
         <div class="container-fluid">
             
@@ -25,7 +23,6 @@
                         <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
                 </div>
-
                 <div class="col-lg-4 col-12">
                     <div class="small-box bg-info">
                         <div class="inner">
@@ -38,7 +35,6 @@
                         <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                     </div>
                 </div>
-
                 <div class="col-lg-4 col-12">
                     <div class="small-box bg-primary">
                         <div class="inner">
@@ -53,7 +49,6 @@
                 </div>
             </div>
             @endcan
-
             <div class="row">
                 <div class="col-lg-6 col-12">
                     <div class="small-box bg-warning">
@@ -78,7 +73,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="row">
                 <div class="col-12">
                     <div class="card card-outline card-primary">
@@ -120,7 +114,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </section>
 </div>

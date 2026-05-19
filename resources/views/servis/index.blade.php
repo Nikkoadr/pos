@@ -8,199 +8,162 @@
 
 @section('content')
 <div class="content-wrapper">
-
 <section class="content-header">
     <div class="container-fluid">
         <h1>Data Transaksi Servis</h1>
     </div>
 </section>
-
 <section class="content">
-<div class="card">
-<div class="card-body">
+    <div class="card">
+        <div class="card-body">
+            <table id="table_servis" class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Info Pelanggan</th>
+                    <th>Unit & Kerusakan</th>
+                    <th>Status</th>
+                    <th class="text-center">Aksi</th>
+                </tr>
+                </thead>
+                <tbody>
+                    @foreach ($data_servis as $index => $data)
+                    @php
+                        $status = $data->status_servis ?? 'masuk';
+                        $badges = [
+                            'masuk' => 'secondary',
+                            'proses' => 'warning',
+                            'selesai' => 'success',
+                            'dibatalkan' => 'danger',
+                            'diambil' => 'info'
+                        ];
+                    @endphp
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>
+                            <strong>{{ $data->nama }}</strong><br>
+                            <small class="text-muted">{{ $data->nohp }}</small><br>
+                            <small>{{ $data->kode_servis }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ $data->merk }} {{ $data->tipe }}</strong><br>
+                            <small class="text-danger">Kerusakan: {{ $data->kerusakan }}</small><br>
+                            <small class="text-secondary">Keamanan: {{ $data->security }}</small>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge badge-{{ $badges[$status] ?? 'dark' }} p-2" style="min-width:80px">
+                                {{ strtoupper($status) }}
+                            </span>
+                        </td>
 
-<table id="table_servis" class="table table-bordered table-striped">
-<thead>
-<tr>
-    <th>No</th>
-    <th>Info Pelanggan</th>
-    <th>Unit & Kerusakan</th>
-    <th>Status</th>
-    <th class="text-center">Aksi</th>
-</tr>
-</thead>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center align-items-center" style="gap: 5px;">
+                                
+                                @if($status == 'masuk')
+                                    <button class="btn btn-sm btn-warning text-white btn-update-status shadow-sm"
+                                        data-id="{{ $data->id }}"
+                                        data-status="proses"
+                                        title="Kerjakan Perangkat">
+                                        <i class="fas fa-tools mr-1"></i> Kerjakan
+                                    </button>
 
-<tbody>
+                                @elseif($status == 'proses')
+                                    <button class="btn btn-sm btn-success btn-update-status shadow-sm"
+                                        data-id="{{ $data->id }}"
+                                        data-status="selesai"
+                                        title="Tandai Selesai">
+                                        <i class="fas fa-check mr-1"></i> Selesai
+                                    </button>
+                                    <a href="{{ route('servis.cetak_ulang', $data->id_transaksi) }}" 
+                                    class="btn btn-sm btn-default border shadow-sm" 
+                                    title="Cetak Ulang Nota">
+                                        <i class="fas fa-print"></i>
+                                    </a>
 
-@foreach ($data_servis as $index => $data)
-
-@php
-    $status = $data->status_servis ?? 'masuk';
-
-    $badges = [
-        'masuk' => 'secondary',
-        'proses' => 'warning',
-        'selesai' => 'success',
-        'dibatalkan' => 'danger',
-        'diambil' => 'info'
-    ];
-@endphp
-
-<tr>
-    <td>{{ $index + 1 }}</td>
-
-    {{-- CUSTOMER --}}
-    <td>
-        <strong>{{ $data->nama }}</strong><br>
-        <small class="text-muted">{{ $data->nohp }}</small><br>
-        <small>{{ $data->kode_servis }}</small>
-    </td>
-
-    {{-- DEVICE --}}
-    <td>
-        <strong>{{ $data->merk }} {{ $data->tipe }}</strong><br>
-        <small class="text-danger">Kerusakan: {{ $data->kerusakan }}</small><br>
-        <small class="text-secondary">Keamanan: {{ $data->security }}</small>
-    </td>
-
-    {{-- STATUS --}}
-    <td class="text-center">
-        <span class="badge badge-{{ $badges[$status] ?? 'dark' }} p-2" style="min-width:80px">
-            {{ strtoupper($status) }}
-        </span>
-    </td>
-
-    {{-- ACTION --}}
-    <td class="text-center">
-        <div class="d-flex justify-content-center align-items-center" style="gap: 5px;">
-            
-            {{-- TOMBOL STATUS UTAMA --}}
-            @if($status == 'masuk')
-                <button class="btn btn-sm btn-warning text-white btn-update-status shadow-sm"
-                    data-id="{{ $data->id }}"
-                    data-status="proses"
-                    title="Kerjakan Perangkat">
-                    <i class="fas fa-tools mr-1"></i> Kerjakan
-                </button>
-
-            @elseif($status == 'proses')
-                <button class="btn btn-sm btn-success btn-update-status shadow-sm"
-                    data-id="{{ $data->id }}"
-                    data-status="selesai"
-                    title="Tandai Selesai">
-                    <i class="fas fa-check mr-1"></i> Selesai
-                </button>
-                
-                {{-- TOMBOL CETAK ULANG (Hanya saat proses/selesai) --}}
-                <a href="{{ route('servis.cetak_ulang', $data->id_transaksi) }}" 
-                class="btn btn-sm btn-default border shadow-sm" 
-                title="Cetak Ulang Nota">
-                    <i class="fas fa-print"></i>
-                </a>
-
-            @elseif($status == 'selesai')
-                <a href="/pembayaran/servis/{{ $data->id_transaksi }}"
-                class="btn btn-sm btn-info shadow-sm"
-                title="Proses Pembayaran">
-                    <i class="fas fa-money-bill-wave mr-1"></i> Bayar
-                </a>
-                
-                {{-- CETAK ULANG JUGA BISA DISINI --}}
-                <a href="{{ route('servis.cetak_ulang', $data->id_transaksi) }}" 
-                class="btn btn-sm btn-default border shadow-sm" 
-                title="Cetak Ulang Nota">
-                    <i class="fas fa-print"></i>
-                </a>
-            @endif
-
-            {{-- TOMBOL BATAL (Tampil jika belum batal/diambil) --}}
-            @if(!in_array($status, ['dibatalkan','diambil']))
-                <div class="border-left ml-1 pl-1" style="height: 24px;"></div> {{-- Garis pemisah tipis --}}
-                <button class="btn btn-sm btn-outline-danger btn-update-status"
-                    data-id="{{ $data->id }}"
-                    data-status="dibatalkan"
-                    title="Batalkan Servis">
-                    <i class="fas fa-times"></i>
-                </button>
-            @endif
-
+                                @elseif($status == 'selesai')
+                                    <a href="/pembayaran/servis/{{ $data->id_transaksi }}"
+                                    class="btn btn-sm btn-info shadow-sm"
+                                    title="Proses Pembayaran">
+                                        <i class="fas fa-money-bill-wave mr-1"></i> Bayar
+                                    </a>
+                                    <a href="{{ route('servis.cetak_ulang', $data->id_transaksi) }}" 
+                                    class="btn btn-sm btn-default border shadow-sm" 
+                                    title="Cetak Ulang Nota">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                @endif
+                                @if(!in_array($status, ['dibatalkan','diambil']))
+                                    <div class="border-left ml-1 pl-1" style="height: 24px;"></div>
+                                    <button class="btn btn-sm btn-outline-danger btn-update-status"
+                                        data-id="{{ $data->id }}"
+                                        data-status="dibatalkan"
+                                        title="Batalkan Servis">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-    </td>
-</tr>
-
-@endforeach
-
-</tbody>
-</table>
-
+    </div>
+    </section>
 </div>
-</div>
-</section>
-</div>
-
-{{-- FORM HIDDEN STATUS UPDATE --}}
 <form id="form-update-status" action="{{ route('updateStatusServis') }}" method="POST" style="display:none;">
     @csrf
     <input type="hidden" name="id" id="input-status-id">
     <input type="hidden" name="status" id="input-status-value">
 </form>
 @endsection
-
 @section('script')
 <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
-
 <script>
-$(function () {
+    $(function () {
 
-    // DATATABLE
-    $("#table_servis").DataTable({
-        responsive: true,
-        autoWidth: false
-    });
-
-    // SUCCESS ALERT
-    @if(session()->has('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil',
-            text: '{{ session("success") }}',
-            timer: 2000,
-            showConfirmButton: false
+        $("#table_servis").DataTable({
+            responsive: true,
+            autoWidth: false
         });
-    @endif
+        @if(session()->has('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: '{{ session("success") }}',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        @endif
+        $(document).on('click', '.btn-update-status', function () {
 
-    // =========================
-    // STATUS UPDATE (SAFE + FIXED)
-    // =========================
-    $(document).on('click', '.btn-update-status', function () {
+            const btn = $(this);
+            const id = btn.data('id');
+            const status = btn.data('status');
 
-        const btn = $(this);
-        const id = btn.data('id');
-        const status = btn.data('status');
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: "Ubah status menjadi " + status.toUpperCase(),
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: status === 'dibatalkan' ? '#d33' : '#3085d6',
+                cancelButtonColor: '#aaa',
+                confirmButtonText: 'Ya, lanjutkan'
+            }).then((result) => {
 
-        Swal.fire({
-            title: 'Konfirmasi',
-            text: "Ubah status menjadi " + status.toUpperCase(),
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: status === 'dibatalkan' ? '#d33' : '#3085d6',
-            cancelButtonColor: '#aaa',
-            confirmButtonText: 'Ya, lanjutkan'
-        }).then((result) => {
+                if (result.isConfirmed) {
 
-            if (result.isConfirmed) {
+                    btn.prop('disabled', true);
 
-                btn.prop('disabled', true);
-
-                $('#input-status-id').val(id);
-                $('#input-status-value').val(status);
-                $('#form-update-status').submit();
-            }
+                    $('#input-status-id').val(id);
+                    $('#input-status-value').val(status);
+                    $('#form-update-status').submit();
+                }
+            });
         });
-    });
 
-});
+    });
 </script>
 @endsection

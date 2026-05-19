@@ -8,38 +8,27 @@
 
 @section('content')
 <div class="content-wrapper">
-
     <div class="content-header">
         <div class="container-fluid">
             <h1 class="m-0">Pembayaran Servis</h1>
         </div>
     </div>
-
     <div class="content">
         <div class="container-fluid">
             <div class="row">
-
-                {{-- ================= KIRI: ADMINISTRASI & KERANJANG ================= --}}
                 <div class="col-lg-6">
-
                     <div class="card card-primary card-outline">
                         <div class="card-header">
                             <h5>Administrasi</h5>
                         </div>
-
                         <div class="card-body">
                             <h6><b>ID Transaksi:</b> {{ $transaksi->id }}</h6>
                             <h6><b>Kasir:</b> {{ auth()->user()->nama }}</h6>
                             <h6><b>Tanggal:</b> {{ \Carbon\Carbon::now()->format('d-m-Y') }}</h6>
-                            
-                            {{-- Tampilkan Nama Member jika ada --}}
                             @if($nama_member)
                                 <h6><b>Member:</b> {{ $nama_member }}</h6>
                             @endif
-
                             <hr>
-
-                            {{-- Perbaikan: Menggunakan $detail_servis sesuai Controller --}}
                             @if(isset($detail_servis))
                                 <h6><b>Data Servis:</b></h6>
                                 <p>
@@ -47,20 +36,15 @@
                                     Pelanggan: {{ $detail_servis->nama }} <br>
                                     Unit: {{ $detail_servis->merk }} - {{ $detail_servis->tipe }}
                                 </p>
-                                {{-- Jika ada biaya jasa servis spesifik, tampilkan di sini --}}
                             @endif
-
                             <hr>
-
                             <h4 class="text-primary"><b>Grand Total:</b> @rp($total_keranjang)</h4>
                             <h6><b>Kembalian:</b> <span id="kembalian" class="text-danger">Rp 0</span></h6>
-
                             <div class="form-group mt-3">
                                 <label><b>Bayar (Nominal)</b></label>
                                 <input type="number" id="bayar" class="form-control form-control-lg" placeholder="0">
                             </div>
                         </div>
-
                         <div class="card-footer">
                             @if($total_keranjang > 0)
                             <form action="/selesaikan_servis" method="POST" id="formTransaksi">
@@ -68,7 +52,6 @@
                                 <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
                                 <input type="hidden" name="bayar" id="inputBayar">
                                 <input type="hidden" name="kembalian" id="inputKembalian">
-
                                 <button type="button" class="btn btn-success btn-block konfirmasi">
                                     <i class="fas fa-check-circle"></i> Selesaikan Transaksi
                                 </button>
@@ -78,8 +61,6 @@
                             @endif
                         </div>
                     </div>
-
-                    {{-- ================= KERANJANG ================= --}}
                     <div class="card card-primary card-outline">
                         <div class="card-header">
                             <h5>Keranjang (Barang & Jasa)</h5>
@@ -106,9 +87,7 @@
                                     </div>
                                 </div>
                             </form>
-
                             <hr>
-
                             <div class="table-responsive">
                                 <table id="table_keranjang" class="table table-sm table-bordered">
                                     <thead>
@@ -149,8 +128,6 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- ================= KANAN: PILIH BARANG ================= --}}
             <div class="col-lg-6">
                 <div class="card card-primary card-outline">
                     <div class="card-header">
@@ -171,13 +148,11 @@
                     </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 @endsection
-
 @section('script')
 <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
@@ -195,12 +170,9 @@
 
 <script>
     $(document).ready(function() {
-        // Global AJAX Setup (Agar tidak perlu panggil token di setiap POST)
         $.ajaxSetup({
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         });
-
-        // --- 1. SCRIPT SCANNER BARCODE ---
         $('#scanner').on('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -218,22 +190,14 @@
                 }
             }
         });
-
-        // --- 2. SCRIPT HITUNG KEMBALIAN ---
         $('#bayar').on('input', function() {
             let total = {{ $total_keranjang }};
             let bayar = parseInt($(this).val()) || 0;
             let kembali = bayar - total;
-
-            // Format Rupiah sederhana untuk tampilan
             $('#kembalian').text('Rp ' + kembali.toLocaleString('id-ID'));
-            
-            // Masukkan ke hidden input untuk form submit
             $('#inputBayar').val(bayar);
             $('#inputKembalian').val(kembali);
         });
-
-        // --- 3. SCRIPT KONFIRMASI TRANSAKSI ---
         $('.konfirmasi').on('click', function(e) {
             e.preventDefault();
             let form = $(this).closest('form');
@@ -259,8 +223,6 @@
                 }
             });
         });
-
-        // --- 4. SCRIPT DATATABLE BARANG ---
         $('#table_data_barang').DataTable({
             responsive: true,
             processing: true,
@@ -281,7 +243,6 @@
                 { data: 'nama', name: 'nama' },
                 { data: 'qty', name: 'qty' },
                 { 
-                    // Menentukan kolom harga berdasarkan jenis transaksi
                     data: '{{ $transaksi->jenis_transaksi == "member" ? "harga_member" : "harga_umum" }}', 
                     render: $.fn.dataTable.render.number('.', ',', 0, 'Rp ') 
                 },

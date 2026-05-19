@@ -1,9 +1,6 @@
 @extends('layouts.app')
-
 @section('content')
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
-<!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
     <div class="row mb-2">
@@ -17,9 +14,8 @@
         </ol>
         </div>
     </div>
-    </div><!-- /.container-fluid -->
+    </div>
 </section>
-
 <section class="content">
         <div class="card">
             <div class="card-header">
@@ -55,21 +51,20 @@
         </div>
     </section>
 </div>
-<!-- /.content-wrapper -->
 @endsection
 @section('script')
     <script>
-@if (session()->has('success'))
-var Toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 3000
-});
-    Toast.fire({
-    icon: 'success',
-    title: '{{ session('success') }}'
-    })
-@endif
-</script>
+        @if (session()->has('success'))
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+            Toast.fire({
+            icon: 'success',
+            title: '{{ session('success') }}'
+            })
+        @endif
+    </script>
 @endsection

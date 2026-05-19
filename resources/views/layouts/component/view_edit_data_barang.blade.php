@@ -8,8 +8,6 @@
 
 @section('content')
 <div class="content-wrapper">
-
-    {{-- HEADER --}}
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
@@ -27,7 +25,6 @@
         </div>
     </section>
 
-    {{-- CONTENT --}}
     <section class="content">
         <div class="card">
             <div class="card-header">
@@ -39,36 +36,28 @@
                 <form method="POST" action="update_data_barang_{{ $data->id }}">
                     @csrf
                     @method('PUT')
-
-                    {{-- BARCODE --}}
                     <div class="form-group">
                         <label>Barcode</label>
                         <input type="text" name="barcode"
                             class="form-control @error('barcode') is-invalid @enderror"
                             value="{{ old('barcode', $data->barcode) }}">
-
                         @error('barcode')
                             <div class="invalid-feedback">
                                 {{ $message }}
                             </div>
                         @enderror
                     </div>
-
-                    {{-- NAMA --}}
                     <div class="form-group">
                         <label>Nama Barang</label>
                         <input type="text" name="nama"
                             class="form-control @error('nama') is-invalid @enderror"
                             value="{{ old('nama', $data->nama) }}">
-
                         @error('nama')
                             <div class="invalid-feedback">
                                 {{ $message }}
                             </div>
                         @enderror
                     </div>
-
-                    {{-- QTY --}}
                     <div class="form-group">
                         <label>Qty</label>
                         <input type="number" name="qty"
@@ -81,8 +70,6 @@
                             </div>
                         @enderror
                     </div>
-
-                    {{-- HARGA MODAL --}}
                     <div class="form-group">
                         <label>Harga Modal</label>
                         <input type="number" name="harga_modal"
@@ -95,8 +82,6 @@
                             </div>
                         @enderror
                     </div>
-
-                    {{-- HARGA UMUM --}}
                     <div class="form-group">
                         <label>Harga Umum</label>
                         <input type="number" name="harga_umum"
@@ -109,8 +94,6 @@
                             </div>
                         @enderror
                     </div>
-
-                    {{-- HARGA GROSIR --}}
                     <div class="form-group">
                         <label>Harga Member</label>
                         <input type="number" name="harga_member"
@@ -123,8 +106,6 @@
                             </div>
                         @enderror
                     </div>
-
-                    {{-- BUTTON --}}
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary">Update</button>
                         <a href="/data_barang" class="btn btn-danger">Kembali</a>
@@ -134,7 +115,6 @@
             </div>
         </div>
     </section>
-
 </div>
 @endsection
 
@@ -147,7 +127,6 @@
         showConfirmButton: false,
         timer: 3000
     });
-
     Toast.fire({
         icon: 'success',
         title: '{{ session('success') }}'

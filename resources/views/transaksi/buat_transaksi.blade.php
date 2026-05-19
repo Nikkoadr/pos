@@ -1,36 +1,30 @@
 @extends('layouts.app')
 @section('link')
-    <style>
-/* Style for member suggestions container */
-.suggestions-container {
-    display: none;
-    position: absolute;
-    width: 50%;
-    max-height: 150px;
-    overflow-y: auto;
-    border: 1px solid #ced4da;
-    border-top: none;
-    border-radius: 0 0 5px 5px;
-    background-color: #fff;
-    z-index: 1000;
-}
-
-/* Style for individual suggestion item */
-.suggestion-item {
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.suggestion-item:hover {
-    background-color: #f0f0f0;
-}
-        </style>
+<style>
+    .suggestions-container {
+        display: none;
+        position: absolute;
+        width: 50%;
+        max-height: 150px;
+        overflow-y: auto;
+        border: 1px solid #ced4da;
+        border-top: none;
+        border-radius: 0 0 5px 5px;
+        background-color: #fff;
+        z-index: 1000;
+    }
+    .suggestion-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .suggestion-item:hover {
+        background-color: #f0f0f0;
+    }
+</style>
 @endsection
 @section('content')
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
@@ -44,19 +38,15 @@
                     </ol>
                 </div>
             </div>
-        </div><!-- /.container-fluid -->
+        </div>
     </section>
-
-    <!-- Main content -->
     <section class="content">
         <div class="row">
-            <!-- Tabel Transaksi Aktif -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Daftar Transaksi Aktif</h3>
                     </div>
-                    <!-- /.card-header -->
                     <div class="card-body">
                         <table class="table table-bordered">
                             <thead>
@@ -86,23 +76,15 @@
                                             Jam {{ \Carbon\Carbon::parse($data->tanggal_transaksi)->translatedFormat('H:i:s') }}</td>
                                         <td style="text-align: center">
                                             <div class="btn-group">
-
                                                 @if($data->jenis_transaksi == 'servis')
-
-                                                    {{-- KHUSUS SERVIS --}}
                                                     <a href="{{ url('transaksi_servis_'.$data->id) }}" class="btn btn-info">
                                                         <i class="fas fa-tools"></i>
                                                     </a>
-
                                                 @else
-
-                                                    {{-- TRANSAKSI BIASA --}}
                                                     <a href="{{ url('proses_transaksi_'.$data->id) }}" class="btn btn-success">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-
                                                 @endif
-
                                                 <form action="{{ url('hapus_transaksi/'.$data->id) }}" method="POST"
                                                     onsubmit="return confirm('Apakah Anda yakin ingin menghapus nota ini? Stok barang akan dikembalikan.')"
                                                     style="display:inline;">
@@ -120,9 +102,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- /.card-body -->
                 </div>
-                <!-- /.card -->
             </div>
 
             <div class="col-md-6">
@@ -130,7 +110,6 @@
                     <div class="card-header">
                         <h3 class="card-title">Buat Transaksi Baru</h3>
                     </div>
-                    <!-- /.card-header -->
                     <div class="card-body">
                         <form action="buat_transaksi" method="POST">
                             @csrf
@@ -151,15 +130,11 @@
                             <button type="submit" class="btn btn-primary">Buat Transaksi</button>
                         </form>
                     </div>
-                    <!-- /.card-body -->
                 </div>
-                <!-- /.card -->
             </div>
         </div>
     </section>
-    <!-- /.content -->
 </div>
-<!-- /.content-wrapper -->
 @endsection
 
 @section('script')
@@ -171,8 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const idMemberHidden = document.getElementById('id_member');
     const suggestionsContainer = document.getElementById('member_suggestions');
     const form = document.querySelector('form[action="buat_transaksi"]');
-
-    // 1. Fungsi Toggle Tampilan & Validasi Required
     function toggleMemberField(value) {
         if (value === 'member') {
             namaMemberField.style.display = 'block';
@@ -180,23 +153,16 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             namaMemberField.style.display = 'none';
             inputMember.removeAttribute('required');
-            // Reset nilai jika pindah ke Umum/Servis
             inputMember.value = '';
             idMemberHidden.value = '';
             suggestionsContainer.innerHTML = '';
             suggestionsContainer.style.display = 'none';
         }
     }
-
-    // Inisialisasi awal
     toggleMemberField(jenisTransaksi.value);
-
-    // Event saat dropdown berubah
     jenisTransaksi.addEventListener('change', function() {
         toggleMemberField(this.value);
     });
-
-    // 2. Fitur Autocomplete Member
     inputMember.addEventListener('input', function() {
         let inputText = this.value;
         if (inputText.length > 0) {
@@ -213,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             option.className = 'suggestion-item';
                             option.addEventListener('click', function() {
                                 inputMember.value = suggestion.nama_member;
-                                idMemberHidden.value = suggestion.id; // Simpan ID asli
+                                idMemberHidden.value = suggestion.id;
                                 suggestionsContainer.innerHTML = '';
                                 suggestionsContainer.style.display = 'none';
                             });
@@ -233,8 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 3. Validasi Form Sebelum Submit
-    // Mencegah lolos jika user mengetik nama tapi tidak klik saran (ID kosong)
     form.addEventListener('submit', function(e) {
         if (jenisTransaksi.value === 'member' && !idMemberHidden.value) {
             e.preventDefault();
@@ -246,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Sembunyikan saran jika klik di luar area
     document.addEventListener('click', function(e) {
         if (!inputMember.contains(e.target) && !suggestionsContainer.contains(e.target)) {
             suggestionsContainer.style.display = 'none';
@@ -254,7 +217,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// 4. Alert Notifikasi (SweetAlert2)
 @if (session()->has('sukses'))
     const Toast = Swal.mixin({
         toast: true,

@@ -31,7 +31,6 @@
                 <form action="{{ url('servis/store/'.$transaksi->id) }}" method="POST">
                     @csrf
                     <div class="card-body">
-                        {{-- INFORMASI PELANGGAN --}}
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <h5 class="text-primary border-bottom pb-2"><i class="fas fa-user mr-1"></i> Informasi Pelanggan</h5>
@@ -73,8 +72,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        {{-- DETAIL PERANGKAT --}}
                         <div class="row mt-4">
                             <div class="col-md-12 mb-3">
                                 <h5 class="text-primary border-bottom pb-2"><i class="fas fa-mobile-alt mr-1"></i> Detail Perangkat & Kerusakan</h5>
@@ -148,8 +145,6 @@
         </div>
     </section>
 </div>
-
-{{-- MODAL PETUNJUK POLA --}}
 <div class="modal fade" id="modalPola" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
         <div class="modal-content">

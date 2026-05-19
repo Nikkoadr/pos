@@ -25,6 +25,7 @@ class Data_barangController extends Controller
         $data_barang = Data_barang::all();
         return view('barang.data_barang', compact(['data_barang']));
     }
+
     public function tambah_data_barang(Request $request)
     {
         $this->validate($request, [
@@ -91,12 +92,8 @@ class Data_barangController extends Controller
     public function hapusMultiple(Request $request)
     {
         $ids = $request->ids;
-        // Mengubah string "1,2,3" menjadi array [1, 2, 3]
         $idArray = explode(",", $ids);
-
-        // Proses hapus
         Data_Barang::whereIn('id', $idArray)->delete();
-
         return response()->json([
             'status' => true,
             'message' => "Data barang berhasil dihapus."
@@ -105,14 +102,11 @@ class Data_barangController extends Controller
 
     public function cetakBarcode(Request $request)
     {
-        // Cek jika ada parameter ids
         if (!$request->ids) {
             return redirect()->back()->with('error', 'Tidak ada data yang dipilih');
         }
-
         $idArray = explode(',', $request->ids);
         $data_barang = Data_barang::whereIn('id', $idArray)->get();
-
         return view('barang.print_barcode', compact('data_barang'));
     }
 
@@ -121,12 +115,8 @@ class Data_barangController extends Controller
         $request->validate([
             'jumlah_tambah' => 'required|integer|min:1'
         ]);
-
         $barang = Data_barang::findOrFail($id);
-
-        // Menggunakan increment untuk langsung menambahkan nilai lama dengan nilai baru
         $barang->increment('qty', $request->jumlah_tambah);
-
         return redirect()->back()->with('success', 'Stok berhasil ditambahkan!');
     }
 }

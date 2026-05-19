@@ -24,19 +24,12 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
-        // 1. Gate khusus Admin
         Gate::define('isAdmin', function (User $user) {
             return $user->role === 'admin';
         });
-
-        // 2. Gate khusus Karyawan
+        
         Gate::define('isKaryawan', function (User $user) {
             return $user->role === 'karyawan';
         });
-
-        // 3. Trik Superadmin (Otomatis lolos semua Gate)
-        // Gate::before(function ($user, $ability) {
-        //     return $user->role === 'admin' ? true : null;
-        // });
     }
 }

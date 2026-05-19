@@ -87,7 +87,6 @@
                 <div class="item-name">{{ substr($item->nama, 0, 20) }}</div>
                 
                 <div class="barcode-img">
-                    {{-- Ukuran 1.0 (lebar batang) dan 20 (tinggi) agar pas di 15mm --}}
                     {!! DNS1D::getBarcodeHTML($item->barcode, 'C128', 1.0, 22) !!}
                 </div>
                 

@@ -17,6 +17,7 @@ class UsersController extends Controller
     {
         $this->middleware('auth');
     }
+
     public function index()
     {
         $karyawan = User::all();
@@ -25,7 +26,6 @@ class UsersController extends Controller
 
     public function store(Request $request)
     {
-        // VALIDASI
         $request->validate([
             'nama' => 'required',
             'role' => 'required|in:admin,karyawan',
@@ -33,8 +33,6 @@ class UsersController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6|confirmed',
         ]);
-
-        // SIMPAN USER
         User::create([
             'nama' => $request->nama,
             'role' => $request->role,
@@ -42,7 +40,6 @@ class UsersController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-
         return back()->with('success', 'Karyawan berhasil ditambahkan');
     }
 
@@ -61,29 +58,22 @@ class UsersController extends Controller
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|min:6|confirmed',
         ]);
-
         $karyawan = User::findOrFail($id);
-
         $karyawan->nama = $request->nama;
         $karyawan->role = $request->role;
         $karyawan->nomor_hp = $request->nomor_hp;
         $karyawan->email = $request->email;
-
         if ($request->password) {
             $karyawan->password = Hash::make($request->password);
         }
-
         $karyawan->save();
-
         return redirect('/data_karyawan')->with('success', 'Data berhasil diupdate');
     }
 
     public function destroy($id)
     {
         $karyawan = User::findOrFail($id);
-
         $karyawan->delete();
-
         return back()->with('success', 'Karyawan berhasil dihapus');
     }
 }

@@ -153,7 +153,7 @@ class ServisController extends Controller
         return redirect('/transaksi')
             ->with('sukses', 'Servis berhasil diproses dan nota tercetak!');
     }
-    
+
     public function cetak_ulang_servis($id_transaksi)
     {
         $transaksi = Transaksi::find($id_transaksi);
@@ -219,7 +219,7 @@ class ServisController extends Controller
                     $printer->text("Alamat : $alamat\n");
                     $printer->text("Security : {$servis->security}\n");
                     $printer->text("-----------------------------------------------\n");
-                    $printer->text("Kondisi   : {$servis->kondisi}\n");
+                    $printer->text("Keterangan   : {$servis->kondisi}\n");
                     $kerusakan = wordwrap($servis->kerusakan, 30, "\n            ");
                     $printer->text("Kerusakan : $kerusakan\n");
                     $waktu_pengambilan = wordwrap($servis->waktu_pengambilan, 30, "\n            ");

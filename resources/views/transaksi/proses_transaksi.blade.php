@@ -376,7 +376,7 @@ $(document).ready(function() {
                                     <input type="hidden" name="id_transaksi" value="${transaksiId}">
                                     <input type="hidden" name="id_member" value="${transaksiMember}">
                                     <input type="hidden" name="id" value="${full.id}">
-                                    <input class="form-control" type="number" name="jumlah" min="1" max="${full.qty}" value="1">
+                                    <input class="form-control" type="number" name="jumlah" min="1" value="1">
                                 </div>
                                 <div class="col-md-4">
                                     <button class="btn btn-info" type="submit">

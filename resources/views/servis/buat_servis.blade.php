@@ -97,7 +97,7 @@
 
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Kondisi Fisik</label>
+                                    <label>Keterangan</label>
                                     <input type="text" name="kondisi" class="form-control @error('kondisi') is-invalid @enderror"
                                         value="{{ old('kondisi', $servis->kondisi ?? '') }}" placeholder="Mulus, Lecet, Pecah, dll">
                                     @error('kondisi') <span class="invalid-feedback">{{ $message }}</span> @enderror

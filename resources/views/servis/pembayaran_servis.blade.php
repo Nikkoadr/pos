@@ -258,7 +258,7 @@
                                 <input type="hidden" name="id_member" value="{{ $transaksi->id_member }}">
                                 <input type="hidden" name="id" value="${full.id}">
                                 <div class="input-group input-group-sm">
-                                    <input class="form-control" type="number" name="jumlah" min="1" max="${full.qty}" value="1">
+                                    <input class="form-control" type="number" name="jumlah" min="1" value="1">
                                     <div class="input-group-append">
                                         <button class="btn btn-info" type="submit">
                                             <i class="fa-solid fa-cart-plus"></i>

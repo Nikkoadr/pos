@@ -95,24 +95,35 @@ class TransaksiController extends Controller
 
     public function tambah_keranjang(Request $request)
     {
-        $produk = Data_barang::find($request->input('id'));
-        $qty = $request->input('jumlah');
-        if ($qty > $produk->qty) {
-            return redirect()->back()->with('error', 'Stok tidak mencukupi.');
-        }
+        $produk = Data_barang::findOrFail($request->input('id'));
+        $qty = (int) $request->input('jumlah');
+
+        // Kurangi stok walaupun hasilnya minus
         $produk->qty -= $qty;
         $produk->save();
-        $harga = $request->id_member ? $produk->harga_member : $produk->harga_umum;
+
+        // Tentukan harga
+        $harga = $request->id_member
+            ? $produk->harga_member
+            : $produk->harga_umum;
+
         $harga_modal = $produk->harga_modal;
+
+        // Cek apakah barang sudah ada di keranjang
         $keranjang = Keranjang::where('id_barang', $produk->id)
             ->where('id_transaksi', $request->id_transaksi)
             ->first();
+
         if ($keranjang) {
+
+            // Tambah qty jika sudah ada
             $keranjang->qty += $qty;
             $keranjang->harga_modal = $harga_modal;
             $keranjang->harga_jual = $harga;
             $keranjang->save();
         } else {
+
+            // Insert baru jika belum ada
             Keranjang::create([
                 'id_transaksi' => $request->id_transaksi,
                 'id_barang' => $produk->id,
@@ -122,7 +133,11 @@ class TransaksiController extends Controller
                 'harga_jual' => $harga,
             ]);
         }
-        return redirect()->back()->with('success', 'Keranjang berhasil ditambah!');
+
+        return redirect()->back()->with(
+            'success',
+            'Keranjang berhasil ditambah!'
+        );
     }
 
     public function edit_qty(Request $request)
@@ -132,14 +147,15 @@ class TransaksiController extends Controller
         $item = Keranjang::findOrFail($id);
         $produk = Data_barang::find($item->id_barang);
         $diff_qty = $new_qty - $item->qty;
-        if ($diff_qty > 0 && $diff_qty > $produk->qty) {
-            return redirect()->back()->with('error', 'Stok tidak mencukupi!');
-        }
         $produk->qty -= $diff_qty;
         $produk->save();
         $item->qty = $new_qty;
         $item->save();
-        return redirect()->back()->with('success', 'Qty berhasil diperbarui!');
+
+        return redirect()->back()->with(
+            'success',
+            'Qty berhasil diperbarui!'
+        );
     }
 
     public function scanBarang(Request $request)

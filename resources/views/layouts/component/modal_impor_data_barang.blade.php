@@ -27,7 +27,7 @@
                         </span>
                     @enderror
                     </div>
-                    <a href="{{ asset('assets/dist/template/format_import_data_barang.xlsx') }}">Download Template</a>
+                    <a href="{{ asset('assets/dist/template/format_data_barang.xlsx') }}">Download Template</a>
                 </div>
                 </form>
         </div>

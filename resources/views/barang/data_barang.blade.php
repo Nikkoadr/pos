@@ -216,10 +216,24 @@ $('#hapus_terpilih').on('click', function(e) {
 </script>
 <script>
 $(function () {
-$("#table_data_barang").DataTable({
-    "responsive": true, "lengthChange": false, "autoWidth": true,
-    "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-}).buttons().container().appendTo('#table_data_barang_wrapper .col-md-6:eq(0)');
+    $("#table_data_barang").DataTable({
+        responsive: true,
+        lengthChange: true,
+        autoWidth: true,
+
+        // pilihan paginate
+        lengthMenu: [
+            [10, 20, 50, 100, -1],
+            [10, 20, 50, 100, "All"]
+        ],
+
+        // default tampil
+        pageLength: 10,
+
+        buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+    }).buttons().container().appendTo(
+        '#table_data_barang_wrapper .col-md-6:eq(0)'
+    );
 });
 </script>
 @if ($errors->any())

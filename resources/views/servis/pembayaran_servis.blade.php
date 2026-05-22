@@ -72,18 +72,29 @@
                             <form action="/tambah_manual" method="POST">
                                 @csrf
                                 <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
-                                <div class="row">
-                                    <div class="col-md-5">
-                                        <input type="text" name="nama" class="form-control" placeholder="Nama jasa/barang manual" required>
+                                <div class="row align-items-end">
+                                    <div class="col-md-3">
+                                        <label class="small mb-1">Nama Jasa / Item</label>
+                                        <input type="text" name="nama" class="form-control" placeholder="Contoh: : LCD" required>
                                     </div>
                                     <div class="col-md-3">
-                                        <input type="number" name="harga" class="form-control" placeholder="Harga" required>
+                                        <label class="small mb-1">Harga Modal</label>
+                                        <input type="number" name="harga_modal" class="form-control" placeholder="0" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="small mb-1">Harga Jual</label>
+                                        <input type="number" name="harga_jual" class="form-control" placeholder="0" required>
                                     </div>
                                     <div class="col-md-2">
-                                        <input type="number" name="qty" class="form-control" value="1">
+                                        <label class="small mb-1">Qty</label>
+                                        <input type="number" name="qty" class="form-control" value="1" min="1">
                                     </div>
-                                    <div class="col-md-2">
-                                        <button class="btn btn-success btn-block"><i class="fas fa-plus"></i></button>
+                                    <div class="col-md-1">
+                                        <div class="d-grid">
+                                            <button class="btn btn-success" type="submit">
+                                                <i class="fa fa-plus me-1"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </form>

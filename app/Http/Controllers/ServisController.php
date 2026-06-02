@@ -174,14 +174,14 @@ class ServisController extends Controller
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
         $keranjang = Keranjang::where('id_transaksi', $id)->get();
         $namakasir = auth()->user()->nama;
-        $tanggal = now()->format('d M Y H:i:s');
+        $tanggal   = now()->format('d M Y H:i:s');
         try {
             $setting = Setting::first();
             if (!$setting || !$setting->nama_printer) {
                 return;
             }
             $connector = new WindowsPrintConnector($setting->nama_printer);
-            $printer = new Printer($connector);
+            $printer   = new Printer($connector);
             for ($cetak = 1; $cetak <= 2; $cetak++) {
                 $printer->initialize();
                 $logoPath = public_path('assets/dist/img/logo_print.png');
@@ -203,28 +203,52 @@ class ServisController extends Controller
                 $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
                 $printer->text("Kecamatan Losarang\n");
                 $printer->text($tanggal . "\n");
-                $printer->text("-----------------------------------------------\n");
+                $printer->text("------------------------------------------------\n");
                 $printer->setJustification(Printer::JUSTIFY_LEFT);
-                $printer->text("Kasir  : $namakasir\n");
-                $printer->text("Jenis  : Servis\n");
+                $printer->text(sprintf("%-10s : %s\n", "Kasir", $namakasir));
+                $printer->text(sprintf("%-10s : %s\n", "Jenis", "Servis"));
                 if ($servis) {
-                    $tipe = strlen($servis->tipe) > 15
-                        ? substr($servis->tipe, 0, 15) . '..'
+                    $tipe = strlen($servis->tipe) > 20
+                        ? substr($servis->tipe, 0, 20) . '..'
                         : $servis->tipe;
-                    $printer->text("Merk   : {$servis->merk}\n");
-                    $printer->text("Tipe   : $tipe\n");
-                    $printer->text("No HP  : {$servis->nohp}\n");
-                    $printer->text("Nama   : {$servis->nama}\n");
-                    $alamat = wordwrap($servis->alamat, 30, "\n          ");
-                    $printer->text("Alamat : $alamat\n");
-                    $printer->text("Security : {$servis->security}\n");
-                    $printer->text("-----------------------------------------------\n");
-                    $printer->text("Keterangan   : {$servis->kondisi}\n");
-                    $kerusakan = wordwrap($servis->kerusakan, 30, "\n            ");
-                    $printer->text("Kerusakan : $kerusakan\n");
-                    $waktu_pengambilan = wordwrap($servis->waktu_pengambilan, 30, "\n            ");
-                    $waktu_formatted = \Carbon\Carbon::parse($waktu_pengambilan)->translatedFormat('d M Y H.i');
-                    $printer->text("Pengambilan : $waktu_formatted\n\n");
+                    $printer->text(sprintf("%-10s : %s\n", "Merk", $servis->merk));
+                    $printer->text(sprintf("%-10s : %s\n", "Tipe", $tipe));
+                    $printer->text(sprintf("%-10s : %s\n", "No HP", $servis->nohp));
+                    $printer->text(sprintf("%-10s : %s\n", "Nama", $servis->nama));
+                    $alamat = wordwrap(
+                        $servis->alamat,
+                        28,
+                        "\n" . str_repeat(' ', 13)
+                    );
+                    $printer->text(
+                        sprintf("%-10s : %s\n", "Alamat", $alamat)
+                    );
+                    $printer->text(
+                        sprintf("%-10s : %s\n", "Security", $servis->security)
+                    );
+                    $printer->text("------------------------------------------------\n");
+                    $kondisi = wordwrap(
+                        $servis->kondisi,
+                        28,
+                        "\n" . str_repeat(' ', 13)
+                    );
+                    $printer->text(
+                        sprintf("%-10s : %s\n", "Keterangan", $kondisi)
+                    );
+                    $kerusakan = wordwrap(
+                        $servis->kerusakan,
+                        28,
+                        "\n" . str_repeat(' ', 13)
+                    );
+                    $printer->text(
+                        sprintf("%-10s : %s\n", "Kerusakan", $kerusakan)
+                    );
+                    $waktu_formatted = \Carbon\Carbon::parse(
+                        $servis->waktu_pengambilan
+                    )->translatedFormat('d M Y H.i');
+                    $printer->text(
+                        sprintf("%-10s : %s\n\n", "Ambil", $waktu_formatted)
+                    );
                 }
                 $grandtotal = 0;
                 if ($keranjang->isEmpty()) {
@@ -239,17 +263,20 @@ class ServisController extends Controller
                 $printer->setJustification(Printer::JUSTIFY_RIGHT);
                 $printer->setEmphasis(true);
                 $printer->setTextSize(2, 2);
-                $printer->text("ESTIMASI: Rp " . number_format($grandtotal, 0, '.', '.') . "\n");
+                $printer->text(
+                    "ESTIMASI: Rp " .
+                    number_format($grandtotal, 0, '.', '.') .
+                    "\n"
+                );
                 $printer->setTextSize(1, 1);
                 $printer->setEmphasis(false);
-                $printer->setJustification(Printer::JUSTIFY_LEFT);
                 $printer->feed();
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
                 $printer->setEmphasis(true);
                 $printer->text("!! PERHATIAN !!\n");
                 $printer->setEmphasis(false);
                 $printer->text("Nota wajib dibawa saat pengambilan\n");
-                $printer->text("Jika hilang wajib KTP\n");
+                $printer->text("Jika hilang wajib membawa KTP\n");
                 $printer->text("1 bulan tidak diambil bukan tanggung jawab kami\n");
                 $printer->feed();
                 $printer->setEmphasis(true);
@@ -258,10 +285,19 @@ class ServisController extends Controller
                 $printer->feed(3);
                 $printer->cut();
             }
+
             $printer->close();
+
         } catch (\Exception $e) {
-            Log::error("Gagal mencetak nota servis: " . $e->getMessage());
-            return back()->with('error', 'Gagal mencetak nota servis. Pastikan printer terhubung.');
+
+            Log::error(
+                "Gagal mencetak nota servis: " . $e->getMessage()
+            );
+
+            return back()->with(
+                'error',
+                'Gagal mencetak nota servis. Pastikan printer terhubung.'
+            );
         }
     }
 

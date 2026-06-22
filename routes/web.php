@@ -76,17 +76,17 @@ Route::delete('/hapus_transaksi/{id}', [TransaksiController::class, 'hapus_trans
 Route::get('/laporan', [LaporanController::class, 'laporan'])->name('laporan');
 Route::POST('/laporan_filter', [LaporanController::class, 'filter'])->name('laporan.filter');
 
-Route::post('/scan-barang', [TransaksiController::class, 'scanBarang']);
+Route::post('/scan-barang', [TransaksiController::class, 'scanBarang'])->name('scan-barang');
 
 Route::get('/servis', [ServisController::class, 'index'])->name('servis');
 Route::post('/update_status_servis', [ServisController::class, 'updateStatusServis'])->name('updateStatusServis');
-Route::get('/transaksi_servis_{id}', [ServisController::class, 'transaksiServis']);
-Route::post('/servis/store/{id}', [ServisController::class, 'store_servis']);
-Route::get('/cetak_transaksi_servis/{id}', [ServisController::class, 'proses_servis']);
+Route::get('/transaksi_servis_{id}', [ServisController::class, 'transaksiServis'])->name('transaksi_servis');
+Route::post('/servis/store/{id}', [ServisController::class, 'store_servis'])->name('servis.store');
+Route::get('/cetak_transaksi_servis/{id}', [ServisController::class, 'proses_servis'])->name('proses_servis');
 Route::get('/servis/cetak-ulang/{id}', [ServisController::class, 'cetak_ulang_servis'])->name('servis.cetak_ulang');
-Route::post('/tambah_manual', [TransaksiController::class, 'tambah_manual']);
+Route::post('/tambah_manual', [TransaksiController::class, 'tambah_manual'])->name('tambah_manual');
 
-Route::get('/pembayaran/servis/{id}', [ServisController::class, 'pembayaran_servis']);
+Route::get('/pembayaran/servis/{id}', [ServisController::class, 'pembayaran_servis'])->name('pembayaran.servis');
 Route::post('/selesaikan_servis', [ServisController::class, 'selesaikan_servis'])->name('selesaikan_servis');
 
 Route::prefix('arsip')->group(function () {

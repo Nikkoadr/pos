@@ -116,7 +116,7 @@
                             <input type="text" id="scanner" class="form-control" placeholder="Scan Barcode di sini..." autofocus>
                         </div>
                         <div class="mb-3">
-                        <form action="/tambah_manual" method="POST">
+                        <form action="{{ route('tambah_manual') }}" method="POST">
                             @csrf
                             <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
                             <div class="row align-items-end">
@@ -173,7 +173,7 @@
                                 @if(is_null($data->id_barang))
                                 {{ $data->qty }}
                                 @else
-                                <form action="/edit_qty" method="POST">
+                                <form action="{{ route('edit_qty') }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="id" value="{{ $data->id }}">
                                     <div class="row">
@@ -189,7 +189,7 @@
                             </td>
                             <td>@rp($data->harga_jual * $data->qty)</td>
                             <td width="10%" style="text-align: center">
-                                <form action="hapus_keranjang_{{ $data->id }}" method="POST">
+                                <form action="{{ route('hapus_keranjang', $data->id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <button class="btn btn-danger" type="submit"><i class="fa-solid fa-trash"></i></button>
@@ -252,7 +252,7 @@ $('#scanner').on('keydown', function(e) {
         if (barcode === '') return;
 
         $.ajax({
-            url: '/scan-barang',
+            url: '{{ route('scan-barang') }}',
             method: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
@@ -369,7 +369,7 @@ $(document).ready(function() {
                     let transaksiId = '{{ $transaksi->id }}';
                     let transaksiMember = '{{ $transaksi->id_member }}';
                     return `
-                        <form method="post" action="/tambah_keranjang">
+                        <form method="post" action="{{ route('tambah_keranjang') }}">
                             <div class="row">
                                 <div class="col-md-8">
                                     <input type="hidden" name="_token" value="${csrfToken}">

@@ -216,7 +216,7 @@
             let total = {{ $total_keranjang }};
 
             if (bayar < total) {
-                Swal.fire('Opps!', 'Pembayaran masih kurang!', 'warning');
+                Swal.fire('Pembayaran Kurang!!', 'Uang yang dibayarkan kurang. JANGAN HUTANG !', 'warning');
                 return;
             }
 

@@ -241,7 +241,6 @@
 <script src="{{ asset('assets/plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/sweetalert2/sweetalert2.all.min.js') }}"></script>
-
 <script>
 $('#scanner').on('keydown', function(e) {
     if (e.key === 'Enter') {
@@ -292,9 +291,22 @@ $("#table_keranjang").DataTable({
     inputBayar.addEventListener('input', function() {
         var bayar = parseInt(inputBayar.value.replace(/\D/g, "")) || 0;
         inputBayar.value = formatUang(bayar);
+
         var total = {{ $total }};
         var kembalian = bayar - total;
-        spanKembalian.textContent = 'Rp. ' + formatUang(kembalian);
+
+        if (kembalian < 0) {
+            spanKembalian.innerHTML =
+                '<span class="text-danger">Kurang Rp. ' +
+                formatUang(Math.abs(kembalian)) +
+                '</span>';
+        } else {
+            spanKembalian.innerHTML =
+                '<span class="text-success">Rp. ' +
+                formatUang(kembalian) +
+                '</span>';
+        }
+
         document.getElementById('inputBayar').value = bayar;
         document.getElementById('inputKembalian').value = kembalian;
     });
@@ -303,6 +315,20 @@ $("#table_keranjang").DataTable({
 $('.konfirmasi').on('click', function (event) {
     event.preventDefault();
     const form = $(this).closest('form');
+
+    let bayar = parseInt($('#inputBayar').val()) || 0;
+    let total = {{ $total }};
+
+    if (bayar < total) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Pembayaran Kurang!',
+            text: 'Uang yang dibayarkan kurang. JANGAN HUTANG !',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
     Swal.fire({
         text: "Apakah Anda yakin ingin menyelesaikan transaksi ini?",
         icon: 'info',

@@ -56,7 +56,7 @@ Route::get('/hapus_data_barang_{id}', [Data_barangController::class, 'hapus_data
 Route::post('/barang/tambah-stok/{id}', [Data_barangController::class, 'tambahStok'])->name('barang.tambah_stok');
 
 Route::get('/data_member', [MemberController::class, 'data_member'])->name('data_member');
-Route::get('/search/member', [MemberController::class, 'search'])->name('search');
+Route::get('/search/member', [MemberController::class, 'search'])->name('member.search');
 Route::post('/tambah_data_member', [MemberController::class, 'tambah_data_member'])->name('tambah_data_member');
 Route::get('/view_edit_data_member_{id}', [MemberController::class, 'view_edit_data_member'])->name('view_edit_data_member');
 Route::put('/update_data_member_{id}', [MemberController::class, 'update_data_member'])->name('update_data_member');
@@ -86,7 +86,7 @@ Route::get('/cetak_transaksi_servis/{id}', [ServisController::class, 'proses_ser
 Route::get('/servis/cetak-ulang/{id}', [ServisController::class, 'cetak_ulang_servis'])->name('servis.cetak_ulang');
 Route::post('/tambah_manual', [TransaksiController::class, 'tambah_manual'])->name('tambah_manual');
 
-Route::get('/pembayaran/servis/{id}', [ServisController::class, 'pembayaran_servis'])->name('pembayaran.servis');
+Route::get('/pembayaran/servis/{id}', [ServisController::class, 'pembayaran_servis'])->name('servis.pembayaran');
 Route::post('/selesaikan_servis', [ServisController::class, 'selesaikan_servis'])->name('selesaikan_servis');
 
 Route::prefix('arsip')->group(function () {

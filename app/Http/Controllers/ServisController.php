@@ -169,7 +169,7 @@ class ServisController extends Controller
         }
     }
 
-    private function printServis($id)
+private function printServis($id)
     {
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
         $keranjang = Keranjang::where('id_transaksi', $id)->get();
@@ -213,48 +213,52 @@ class ServisController extends Controller
                 $printer->text("------------------------------------------------\n");
 
                 $printer->setJustification(Printer::JUSTIFY_LEFT);
-                $printer->text(sprintf("%-10s : %s\n", "Kasir", $namakasir));
-                $printer->text(sprintf("%-10s : %s\n", "Jenis", "Servis"));
+                
+                // --- BAGIAN KASIR SAMPAI SECURITY (DIBAGI 2 KOLOM KANAN KIRI) ---
+                $printer->text(sprintf("%-24s%-24s\n", "Kasir: " . substr($namakasir, 0, 16), "Jenis: Servis"));
 
                 if ($servis) {
-                    $tipe = strlen($servis->tipe) > 20
-                        ? substr($servis->tipe, 0, 20) . '..'
-                        : $servis->tipe;
+                    $tipe = strlen($servis->tipe) > 17 ? substr($servis->tipe, 0, 15) . '..' : $servis->tipe;
+                    $merk = strlen($servis->merk) > 17 ? substr($servis->merk, 0, 15) . '..' : $servis->merk;
+                    $namaPelanggan = strlen($servis->nama) > 17 ? substr($servis->nama, 0, 15) . '..' : $servis->nama;
 
-                    $printer->text(sprintf("%-10s : %s\n", "Merk", $servis->merk));
-                    $printer->text(sprintf("%-10s : %s\n", "Tipe", $tipe));
-                    $printer->text(sprintf("%-10s : %s\n", "No HP", $servis->nohp));
-                    $printer->text(sprintf("%-10s : %s\n", "Nama", $servis->nama));
-
-                    $alamat = wordwrap(
-                        $servis->alamat,
-                        28,
-                        "\n" . str_repeat(' ', 13)
-                    );
-
-                    $printer->text(sprintf("%-10s : %s\n", "Alamat", $alamat));
-                    $printer->text(sprintf("%-10s : %s\n", "Security", $servis->security));
+                    $printer->text(sprintf("%-24s%-24s\n", "Merk : " . $merk, "Tipe : " . $tipe));
+                    $printer->text(sprintf("%-24s%-24s\n", "Nama : " . $namaPelanggan, "HP   : " . $servis->nohp));
+                    
+                    $alamatSingkat = strlen($servis->alamat) > 15 ? substr($servis->alamat, 0, 13) . '..' : $servis->alamat;
+                    $securitySingkat = strlen($servis->security) > 15 ? substr($servis->security, 0, 13) . '..' : $servis->security;
+                    
+                    $printer->text(sprintf("%-24s%-24s\n", "Almt : " . $alamatSingkat, "Sec  : " . $securitySingkat));
                     $printer->text("------------------------------------------------\n");
 
-                    $kondisi = wordwrap(
-                        $servis->kondisi,
-                        28,
-                        "\n" . str_repeat(' ', 13)
-                    );
+                    // Kondisi & Kerusakan
+                    $kondisi = wordwrap($servis->kondisi, 34, "\n" . str_repeat(' ', 13));
+                    $printer->text(sprintf("%-10s : %s\n", "Kondisi", $kondisi));
 
-                    $printer->text(sprintf("%-10s : %s\n", "Keterangan", $kondisi));
-
-                    $kerusakan = wordwrap(
-                        $servis->kerusakan,
-                        28,
-                        "\n" . str_repeat(' ', 13)
-                    );
-
+                    $kerusakan = wordwrap($servis->kerusakan, 34, "\n" . str_repeat(' ', 13));
                     $printer->text(sprintf("%-10s : %s\n", "Kerusakan", $kerusakan));
+                    
+                    // --- BAGIAN SPAREPART (SEJAJAR DI AWAL & INDEN KE BAWAH) ---
+                    if ($keranjang->isEmpty()) {
+                        $printer->text(sprintf("%-10s : %s\n", "Sparepart", "- Belum ada item"));
+                    } else {
+                        $sparepartList = [];
+                        foreach ($keranjang as $item) {
+                            $itemName = $item->nama ?? 'Sparepart';
+                            $itemQty = (int) $item->qty;
+                            $line = "- " . $itemName;
+                            if ($itemQty > 1) {
+                                $line .= ' x' . $itemQty;
+                            }
+                            $sparepartList[] = $line;
+                        }
+                        
+                        // Gabungkan item dengan baris baru + spasi 13 agar sejajar ke kanan
+                        $sparepartTeks = implode("\n" . str_repeat(' ', 13), $sparepartList);
+                        $printer->text(sprintf("%-10s : %s\n", "Sparepart", $sparepartTeks));
+                    }
 
-                    $waktu_formatted = \Carbon\Carbon::parse(
-                        $servis->waktu_pengambilan
-                    )->translatedFormat('d M Y H.i');
+                    $waktu_formatted = \Carbon\Carbon::parse($servis->waktu_pengambilan)->translatedFormat('d M Y H.i');
 
                     $printer->text("------------------------------------------------\n");
 
@@ -273,14 +277,9 @@ class ServisController extends Controller
                 }
 
                 $grandtotal = 0;
-
-                if ($keranjang->isEmpty()) {
-                    $printer->text("- Belum ada item\n");
-                } else {
-                    foreach ($keranjang as $item) {
-                        $subtotal = $item->harga_jual * $item->qty;
-                        $grandtotal += $subtotal;
-                    }
+                foreach ($keranjang as $item) {
+                    $subtotal = $item->harga_jual * $item->qty;
+                    $grandtotal += $subtotal;
                 }
 
                 $printer->text("------------------------------------------------\n");
@@ -288,18 +287,13 @@ class ServisController extends Controller
                 $printer->setJustification(Printer::JUSTIFY_RIGHT);
                 $printer->setEmphasis(true);
                 $printer->setTextSize(2, 2);
-                $printer->text(
-                    "ESTIMASI: Rp " .
-                        number_format($grandtotal, 0, '.', '.') .
-                        "\n"
-                );
+                $printer->text("ESTIMASI: Rp " . number_format($grandtotal, 0, '.', '.') . "\n");
 
                 $printer->setTextSize(1, 1);
                 $printer->setEmphasis(false);
                 $printer->feed();
 
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
-                $printer->setEmphasis(true);
                 $printer->text("!! PERHATIAN !!\n");
 
                 $printer->setEmphasis(false);
@@ -392,7 +386,7 @@ class ServisController extends Controller
         return redirect('/transaksi')->with('sukses', 'Servis selesai dan nota dicetak!');
     }
 
-    private function printServisDiambil($id)
+private function printServisDiambil($id)
     {
         $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
         $items = DetailTransaksi::where('id_transaksi', $id)->get();
@@ -402,6 +396,7 @@ class ServisController extends Controller
         $grandTotal = $items->sum(function ($item) {
             return $item->harga_jual * $item->qty;
         });
+
         try {
             $setting = Setting::first();
             if (!$setting || !$setting->nama_printer) {
@@ -410,6 +405,7 @@ class ServisController extends Controller
             $connector = new WindowsPrintConnector($setting->nama_printer);
             $printer = new Printer($connector);
             $printer->initialize();
+            
             $logoPath = public_path('assets/dist/img/logo_print.png');
             if (file_exists($logoPath)) {
                 try {
@@ -425,43 +421,81 @@ class ServisController extends Controller
                     $printer->setEmphasis(false);
                 }
             }
+            
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
             $printer->text("Kecamatan Losarang\n");
             $printer->text($tanggal . "\n");
-            $printer->text("-----------------------------------------------\n");
+            $printer->text("------------------------------------------------\n");
+            
             $printer->setJustification(Printer::JUSTIFY_LEFT);
-            $printer->text("No. Nota : #$id\n");
-            $printer->text("Kasir    : $namakasir\n");
-            $printer->text("Pelanggan: " . ($servis->nama ?? 'Umum') . "\n");
+            
+            // --- BAGIAN DETAIL NOTA & KASIR (DIBAGI 2 KOLOM KANAN KIRI) ---
+            $printer->text(sprintf("%-24s%-24s\n", "No. Nota : #" . $id, "Kasir: " . substr($namakasir, 0, 16)));
+            
+            $namaPelanggan = $servis->nama ?? 'Umum';
+            $namaFormat = strlen($namaPelanggan) > 14 ? substr($namaPelanggan, 0, 12) . '..' : $namaPelanggan;
+            
             if ($servis) {
-                $tipe = strlen($servis->tipe) > 15
-                    ? substr($servis->tipe, 0, 15) . '..'
-                    : $servis->tipe;
-                $printer->text("Unit     : {$servis->merk} - $tipe\n");
+                $tipe = strlen($servis->tipe) > 14 ? substr($servis->tipe, 0, 12) . '..' : $servis->tipe;
+                $unitFormat = $servis->merk . " - " . $tipe;
+                $unitFormat = strlen($unitFormat) > 16 ? substr($unitFormat, 0, 14) . '..' : $unitFormat;
+                
+                $printer->text(sprintf("%-24s%-24s\n", "Plg      : " . $namaFormat, "Unit : " . $unitFormat));
+            } else {
+                $printer->text(sprintf("%-24s\n", "Plg      : " . $namaFormat));
             }
-            $printer->text("-----------------------------------------------\n");
+            
+            $printer->text("------------------------------------------------\n");
+
+            // --- BAGIAN DETAIL RINCIAN BARANG/SPAREPART KE BAWAH ---
+            if ($items->isEmpty()) {
+                $printer->text(sprintf("%-10s : %s\n", "Sparepart", "-"));
+            } else {
+                $itemList = [];
+                foreach ($items as $item) {
+                    // Menggunakan $item->nama_barang sesuai data Eloquent yang diberikan
+                    $itemName = $item->nama_barang ?? 'Item';
+                    $itemQty = (int) $item->qty;
+                    $line = "- " . $itemName;
+                    if ($itemQty > 1) {
+                        $line .= ' x' . $itemQty;
+                    }
+                    $itemList[] = $line;
+                }
+                
+                $itemTeks = implode("\n" . str_repeat(' ', 13), $itemList);
+                $printer->text(sprintf("%-10s : %s\n", "Rincian", $itemTeks));
+            }
+            
+            $printer->text("------------------------------------------------\n");
+            
             $printer->setJustification(Printer::JUSTIFY_RIGHT);
             $printer->setEmphasis(true);
             $printer->setTextSize(2, 2);
             $printer->text("TOTAL: Rp " . number_format($grandTotal, 0, '.', '.') . "\n");
+            
             $printer->setTextSize(1, 1);
             $printer->setEmphasis(false);
             $printer->text(sprintf("%48s\n", "BAYAR: Rp " . number_format($transaksi->bayar, 0, '.', '.')));
             $printer->text(sprintf("%48s\n", "KEMBALI: Rp " . number_format($transaksi->kembalian, 0, '.', '.')));
             $printer->feed();
+            
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->setEmphasis(true);
             $printer->text("LUNAS\n");
             $printer->setEmphasis(false);
             $printer->feed();
+            
             $printer->text("Barang yang sudah diservis\n");
             $printer->text("memiliki garansi sesuai kesepakatan\n");
             $printer->text("segel rusak garansi hangus\n");
             $printer->feed();
+            
             $printer->setEmphasis(true);
             $printer->text("TERIMA KASIH\n");
             $printer->setEmphasis(false);
+            
             $printer->feed(3);
             $printer->cut();
             $printer->close();

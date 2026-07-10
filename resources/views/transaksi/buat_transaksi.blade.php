@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             };
-            xhr.open('GET', '/search/member?keyword=' + encodeURIComponent(inputText), true);
+            xhr.open('GET', '{{ route('member.search') }}?keyword=' + encodeURIComponent(inputText), true);
             xhr.send();
         } else {
             suggestionsContainer.style.display = 'none';

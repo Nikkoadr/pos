@@ -81,7 +81,7 @@
                                     </a>
 
                                 @elseif($status == 'selesai')
-                                    <a href="/pembayaran/servis/{{ $data->id_transaksi }}"
+                                    <a href="{{ route('servis.pembayaran', $data->id_transaksi) }}"
                                     class="btn btn-sm btn-info shadow-sm"
                                     title="Proses Pembayaran">
                                         <i class="fas fa-money-bill-wave mr-1"></i> Bayar

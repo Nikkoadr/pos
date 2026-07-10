@@ -8,7 +8,7 @@
                     </button>
                 </div>
             <div class="modal-body">
-                <form method="POST" action="/tambah_data_member">
+                <form method="POST" action="{{ route('tambah_data_member') }}">
                     @csrf
                     <input type="hidden" name="id_toko" value="1">
                     <div class="row mb-3">

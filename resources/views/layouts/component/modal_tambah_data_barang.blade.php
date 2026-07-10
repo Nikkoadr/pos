@@ -21,7 +21,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="/tambah_data_barang">
+                <form method="POST" action="{{ route('tambah_data_barang') }}">
                     @csrf
                     @method('put')
 

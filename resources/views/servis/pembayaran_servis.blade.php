@@ -47,7 +47,7 @@
                         </div>
                         <div class="card-footer">
                             @if($total_keranjang > 0)
-                            <form action="/selesaikan_servis" method="POST" id="formTransaksi">
+                            <form action="{{ route('selesaikan_servis') }}" method="POST" id="formTransaksi">
                                 @csrf
                                 <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
                                 <input type="hidden" name="bayar" id="inputBayar">
@@ -69,7 +69,7 @@
                         <div class="card-body">
                             <input type="text" id="scanner" class="form-control mb-3" placeholder="Scan barcode di sini...">
 
-                            <form action="/tambah_manual" method="POST">
+                            <form action="{{ route('tambah_manual') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
                                 <div class="row align-items-end">
@@ -125,7 +125,7 @@
                                             <td>{{ $item->qty }}</td>
                                             <td>@rp($item->harga_jual * $item->qty)</td>
                                             <td class="text-center">
-                                                <form action="/hapus_keranjang_{{ $item->id }}" method="POST">
+                                                <form action="{{ route('hapus_keranjang', $item->id) }}" method="POST">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
@@ -190,7 +190,7 @@
                 let barcodeValue = $(this).val();
 
                 if (barcodeValue) {
-                    $.post('/scan-barang', {
+                    $.post('{{ route('scan-barang') }}', {
                         barcode: barcodeValue,
                         id_transaksi: '{{ $transaksi->id }}'
                     }, function() {
@@ -263,7 +263,7 @@
                     searchable: false,
                     render: function(data, type, full, meta) {
                         return `
-                            <form method="post" action="/tambah_keranjang">
+                            <form method="post" action="{{ route('tambah_keranjang') }}">
                                 @csrf
                                 <input type="hidden" name="id_transaksi" value="{{ $transaksi->id }}">
                                 <input type="hidden" name="id_member" value="{{ $transaksi->id_member }}">

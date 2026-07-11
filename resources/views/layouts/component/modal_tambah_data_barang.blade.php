@@ -11,16 +11,6 @@
 
             <div class="modal-body">
 
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <form method="POST" action="{{ route('tambah_data_barang') }}">
                     @csrf
                     @method('put')
@@ -39,7 +29,21 @@
                             @enderror
                         </div>
                     </div>
-
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Kategori</label>
+                        <div class="col-sm-8">
+                            <select name="kategori" class="form-control @error('kategori') is-invalid @enderror">
+                                <option value="">Pilih Kategori</option>
+                                <option value="umum" {{ old('kategori') == 'umum' ? 'selected' : '' }}>Umum</option>
+                                <option value="vocer" {{ old('kategori') == 'vocer' ? 'selected' : '' }}>Vocer</option>
+                                <option value="sparepart" {{ old('kategori') == 'sparepart' ? 'selected' : '' }}>Sparepart</option>
+                                <option value="aksesoris" {{ old('kategori') == 'aksesoris' ? 'selected' : '' }}>Aksesoris</option>
+                            </select>
+                            @error('kategori')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Nama Barang</label>
                         <div class="col-sm-8">

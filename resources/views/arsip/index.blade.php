@@ -28,8 +28,33 @@
             <div class="card card-outline card-primary">
                 <div class="card-header">
                     <h3 class="card-title">Riwayat Penjualan & Servis Selesai</h3>
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm" style="width: 200px;">
+                            <input type="date" id="filterTanggal" class="form-control float-right" value="{{ date('Y-m-d') }}">
+                            <div class="input-group-append">
+                                <button type="button" id="btnFilter" class="btn btn-primary">
+                                    <i class="fas fa-filter"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
+                    <ul class="nav nav-pills mb-3" id="arsipTab">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" data-jenis="">Semua</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-jenis="umum">Penjualan Umum</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-jenis="member">Penjualan Member</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-jenis="servis">Servis</a>
+                        </li>
+                    </ul>
+
                     <table id="table-arsip" class="table table-bordered table-striped table-hover w-100">
                         <thead>
                             <tr>
@@ -41,12 +66,11 @@
                                 <th width="15%">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
-                </div>
             </div>
+        </div>
     </section>
 </div>
 @endsection
@@ -58,28 +82,55 @@
 
 <script>
     $(function () {
-        $('#table-arsip').DataTable({
+        let jenis = "";
+        let tanggal = $('#filterTanggal').val();
+
+        var table = $('#table-arsip').DataTable({
             processing: true,
             serverSide: true,
             responsive: true,
             autoWidth: false,
-            ajax: "{{ route('arsip.data') }}", // Menuju ke fungsi data_arsip di controller
-            columns: [
-                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                { data: 'tanggal_transaksi', name: 'tanggal_transaksi' },
-                { data: 'jenis_transaksi', name: 'jenis_transaksi' },
-                { data: 'kasir', name: 'kasir' },
-                { data: 'total_belanja', name: 'total_belanja' },
-                { data: 'action', name: 'action', orderable: false, searchable: false },
-            ],
-            language: {
-                url: "//cdn.datatables.net/plug-ins/1.10.25/i18n/Indonesian.json"
+            ajax: {
+                url: "{{ route('arsip.data') }}",
+                data: function(d){
+                    d.jenis = jenis;
+                    d.tanggal = tanggal;
+                }
             },
-            order: [[1, 'desc']] // Default urut berdasarkan tanggal terbaru
+            columns: [
+                { data: 'DT_RowIndex', orderable:false, searchable:false },
+                { data: 'tanggal_transaksi' },
+                { data: 'jenis_transaksi' },
+                { data: 'kasir' },
+                { data: 'total_belanja' },
+                { data: 'action', orderable:false, searchable:false },
+            ]
+        });
+
+        // Filter jenis
+        $('#arsipTab .nav-link').click(function(e){
+            e.preventDefault();
+            $('#arsipTab .nav-link').removeClass('active');
+            $(this).addClass('active');
+            jenis = $(this).data('jenis');
+            table.ajax.reload();
+        });
+
+        // Filter tanggal
+        $('#btnFilter').click(function(){
+            tanggal = $('#filterTanggal').val();
+            table.ajax.reload();
+        });
+
+        // Enter key pada input tanggal
+        $('#filterTanggal').on('keypress', function(e){
+            if(e.which === 13) {
+                $('#btnFilter').click();
+            }
         });
     });
 
-    // Fungsi placeholder untuk cetak nota dari arsip
+    // Fungsi placeholder untuk cetak nota
     function printNota(id) {
         Swal.fire({
             title: 'Cetak Ulang?',
@@ -97,7 +148,7 @@
                     toastr.error('Gagal menghubungkan ke printer.');
                 });
             }
-        })
+        });
     }
 </script>
 @endsection

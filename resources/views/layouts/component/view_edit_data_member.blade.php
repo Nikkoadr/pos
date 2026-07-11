@@ -29,7 +29,7 @@
         <h5 class="m-0">Form Update Barang</h5>
         </div>
             <div class="card-body">
-                <form method="POST" action="update_data_member_{{ $data->id }}">
+                <form method="POST" action="{{ route('update_data_member', $data->id) }}">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="id_toko" value="1">
@@ -46,7 +46,7 @@
                         <input type="text" class="form-control" id="alamat" name="alamat" value="{{ $data->alamat }}" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Update</button>
-                    <a href="/data_member" class="btn btn-danger">Kembali</a>
+                    <a href="{{ route('data_member') }}" class="btn btn-danger">Kembali</a>
                 </form>
             </div>
     </div>

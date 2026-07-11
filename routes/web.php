@@ -95,4 +95,7 @@ Route::prefix('arsip')->group(function () {
     Route::get('/detail/{id}', [ArsipController::class, 'show'])->name('arsip.show');
 });
 
-Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan');
+Route::get('/laporan/penjualan-umum', [App\Http\Controllers\LaporanController::class, 'penjualanUmum'])->name('laporan.penjualan_umum');
+Route::get('/laporan/penjualan-member', [App\Http\Controllers\LaporanController::class, 'penjualanMember'])->name('laporan.penjualan_member');
+Route::get('/laporan/servis', [App\Http\Controllers\LaporanController::class, 'servis'])->name('laporan.servis');
+Route::get('/laporan/pembelian', [App\Http\Controllers\LaporanController::class, 'pembelian'])->name('laporan.pembelian');

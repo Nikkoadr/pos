@@ -36,7 +36,7 @@
                             <td>{{ $k->nomor_hp }}</td>
                             <td>{{ $k->email }}</td>
                             <td>
-                                <a href="/data_karyawan/edit/{{ $k->id }}" class="btn btn-warning btn-sm">
+                                <a href="{{ route('karyawan.edit', $k->id) }}" class="btn btn-warning btn-sm">
                                     Edit
                                 </a>
                                 <button class="btn btn-danger btn-sm btn-delete"
@@ -59,7 +59,7 @@
                 <h4 class="modal-title">TAMBAH KARYAWAN</h4>
                 <button class="close text-white" data-dismiss="modal">&times;</button>
             </div>
-            <form method="POST" action="/data_karyawan/store">
+            <form method="POST" action="{{ route('karyawan.store') }}">
                 @csrf
                 <div class="modal-body">
                     @if ($errors->any())

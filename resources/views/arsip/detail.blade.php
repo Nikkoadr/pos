@@ -21,6 +21,7 @@
     <section class="content">
         <div class="container-fluid">
             <div class="row">
+                {{-- Kolom kiri: Informasi utama --}}
                 <div class="col-md-4">
                     <div class="card card-primary card-outline">
                         <div class="card-header">
@@ -38,9 +39,11 @@
                             <strong><i class="fas fa-tag mr-1"></i> Jenis Transaksi</strong>
                             <p>
                                 @if($transaksi->jenis_transaksi == 'servis')
-                                    <span class="badge badge-primary">SERVIS</span>
+                                    <span class="badge badge-primary"><i class="fas fa-tools"></i> SERVIS</span>
+                                @elseif($transaksi->jenis_transaksi == 'member')
+                                    <span class="badge badge-warning"><i class="fas fa-user"></i> PENJUALAN MEMBER</span>
                                 @else
-                                    <span class="badge badge-success">PENJUALAN</span>
+                                    <span class="badge badge-success"><i class="fas fa-shopping-cart"></i> PENJUALAN UMUM</span>
                                 @endif
                             </p>
                             <hr>
@@ -64,7 +67,9 @@
                     </div>
                 </div>
 
+                {{-- Kolom kanan: Rincian item dan detail servis --}}
                 <div class="col-md-8">
+                    {{-- Tabel rincian item --}}
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Rincian Item</h3>
@@ -81,15 +86,19 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($detail as $index => $d)
+                                    @forelse($detailItems as $index => $item)
                                     <tr>
                                         <td>{{ $index + 1 }}.</td>
-                                        <td>{{ $d->nama_barang }}</td>
-                                        <td>@rp($d->harga_jual)</td>
-                                        <td>{{ $d->qty }}</td>
-                                        <td class="text-right">@rp($d->harga_jual * $d->qty)</td>
+                                        <td>{{ $item->nama_barang }}</td>
+                                        <td>@rp($item->harga_jual)</td>
+                                        <td>{{ $item->qty }}</td>
+                                        <td class="text-right">@rp($item->subtotal)</td>
                                     </tr>
-                                    @endforeach
+                                    @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Tidak ada item</td>
+                                    </tr>
+                                    @endforelse
                                 </tbody>
                                 <tfoot>
                                     <tr>
@@ -103,11 +112,8 @@
                         </div>
                     </div>
 
-                    @if($transaksi->jenis_transaksi == 'servis')
-                    @php 
-                        $servis = \App\Models\DetailTransaksiServis::where('id_transaksi', $transaksi->id)->first();
-                    @endphp
-                    @if($servis)
+                    {{-- Detail unit servis (jika ada) --}}
+                    @if($transaksi->jenis_transaksi == 'servis' && isset($servisData) && $servisData)
                     <div class="card card-warning card-outline">
                         <div class="card-header">
                             <h3 class="card-title"><i class="fas fa-tools mr-1"></i> Detail Unit Servis</h3>
@@ -115,18 +121,17 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-6">
-                                    <strong>Unit:</strong> {{ $servis->merk }} {{ $servis->tipe }}<br>
-                                    <strong>Pelanggan:</strong> {{ $servis->nama }} ({{ $servis->nohp }})<br>
-                                    <strong>Alamat:</strong> {{ $servis->alamat }}
+                                    <strong>Unit:</strong> {{ $servisData->merk }} {{ $servisData->tipe }}<br>
+                                    <strong>Pelanggan:</strong> {{ $servisData->nama }} ({{ $servisData->nohp }})<br>
+                                    <strong>Alamat:</strong> {{ $servisData->alamat }}
                                 </div>
                                 <div class="col-sm-6">
                                     <strong>Kerusakan:</strong><br>
-                                    <p class="text-danger">{{ $servis->kerusakan }}</p>
+                                    <p class="text-danger">{{ $servisData->kerusakan }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    @endif
                     @endif
                 </div>
             </div>
@@ -136,4 +141,5 @@
 @endsection
 
 @section('script')
+{{-- Tidak ada script tambahan untuk halaman ini --}}
 @endsection

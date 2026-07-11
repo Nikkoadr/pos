@@ -24,6 +24,7 @@
                     </a>
                 </li>
 
+                {{-- Database --}}
                 @php
                     $databaseActive = request()->is('data_barang*') || request()->is('view_edit_data_barang*') || request()->is('data_member*') || request()->is('data_supplier*') || request()->is('data_karyawan*') || request()->is('data_kategori*');
                 @endphp
@@ -59,6 +60,7 @@
                     </ul>
                 </li>
 
+                {{-- Transaksi --}}
                 <li class="nav-item">
                     <a href="{{ url('/transaksi') }}" class="nav-link {{ request()->is('transaksi*') || request()->is('proses_transaksi*') ? 'active' : '' }}">
                         <i class="nav-icon fa-solid fa-handshake"></i>
@@ -66,6 +68,7 @@
                     </a>
                 </li>
 
+                {{-- Servis --}}
                 <li class="nav-item">
                     <a href="{{ url('/servis') }}" class="nav-link {{ request()->is('servis*') || request()->is('proses_servis*') || request()->is('pembayaran_servis*') ? 'active' : '' }}">
                         <i class="nav-icon fa-solid fa-screwdriver-wrench"></i>
@@ -74,20 +77,54 @@
                 </li>
 
                 @can('isAdmin')
+                    {{-- Arsip --}}
                     <li class="nav-item">
                         <a href="{{ url('/arsip') }}" class="nav-link {{ request()->is('arsip*') ? 'active' : '' }}">
                             <i class="nav-icon fa-solid fa-book"></i>
                             <p>Arsip</p>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/laporan') }}" class="nav-link {{ request()->is('laporan*') ? 'active' : '' }}">
+
+                    {{-- Laporan (treeview) --}}
+                    @php
+                        $laporanActive = request()->is('laporan*') || request()->is('laporan/penjualan-umum*') || request()->is('laporan/penjualan-member*') || request()->is('laporan/servis*') || request()->is('laporan/pembelian*');
+                    @endphp
+                    <li class="nav-item {{ $laporanActive ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ $laporanActive ? 'active' : '' }}">
                             <i class="nav-icon fa-solid fa-file-invoice"></i>
-                            <p>Laporan</p>
+                            <p>
+                                Laporan
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
                         </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('laporan.penjualan_umum') }}" class="nav-link {{ request()->routeIs('laporan.penjualan_umum') ? 'active' : '' }}">
+                                    <i class="nav-icon fa-solid fa-cart-shopping text-sm"></i>
+                                    <p>Penjualan Umum</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('laporan.penjualan_member') }}" class="nav-link {{ request()->routeIs('laporan.penjualan_member') ? 'active' : '' }}">
+                                    <i class="nav-icon fa-solid fa-user text-sm"></i>
+                                    <p>Penjualan Member</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('laporan.servis') }}" class="nav-link {{ request()->routeIs('laporan.servis') ? 'active' : '' }}">
+                                    <i class="nav-icon fa-solid fa-tools text-sm"></i>
+                                    <p>Servis</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('laporan.pembelian') }}" class="nav-link {{ request()->routeIs('laporan.pembelian') ? 'active' : '' }}">
+                                    <i class="nav-icon fa-solid fa-truck text-sm"></i>
+                                    <p>Pembelian</p>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 @endcan
-
                 
             </ul>
         </nav>

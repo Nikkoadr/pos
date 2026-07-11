@@ -22,7 +22,7 @@
                         </ul>
                     </div>
                 @endif
-                <form method="POST" action="/data_karyawan/update/{{ $karyawan->id }}">
+                <form method="POST" action="{{ route('karyawan.update', $karyawan->id) }}">
                     @csrf
                     @method('PUT')
                     <div class="form-group">
@@ -89,7 +89,7 @@
                     <button type="submit" class="btn btn-primary">
                         Update Data
                     </button>
-                    <a href="/karyawan" class="btn btn-secondary">
+                    <a href="{{ route('karyawan.index') }}" class="btn btn-secondary">
                         Kembali
                     </a>
                 </form>

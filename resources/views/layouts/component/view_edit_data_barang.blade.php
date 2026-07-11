@@ -33,7 +33,7 @@
 
             <div class="card-body">
 
-                <form method="POST" action="update_data_barang_{{ $data->id }}">
+                <form method="POST" action="{{ route('update_data_barang', $data->id) }}">
                     @csrf
                     @method('PUT')
                     <div class="form-group">
@@ -47,6 +47,20 @@
                             </div>
                         @enderror
                     </div>
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select name="kategori" class="form-control @error('kategori') is-invalid @enderror">
+                            <option value="">Pilih Kategori</option>
+                            <option value="umum" {{ old('kategori', $data->kategori) == 'umum' ? 'selected' : '' }}>Umum</option>
+                            <option value="vocer" {{ old('kategori', $data->kategori) == 'vocer' ? 'selected' : '' }}>Vocer</option>
+                            <option value="sparepart" {{ old('kategori', $data->kategori) == 'sparepart' ? 'selected' : '' }}>Sparepart</option>
+                            <option value="aksesoris" {{ old('kategori', $data->kategori) == 'aksesoris' ? 'selected' : '' }}>Aksesoris</option>
+                        </select>
+                        @error('kategori')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                        @enderror
                     <div class="form-group">
                         <label>Nama Barang</label>
                         <input type="text" name="nama"

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('id_toko');
             $table->integer('id_supplier');
+            $table->enum('kategori', ['umum', 'vocer', 'sparepart', 'aksesoris']);
             $table->string('barcode')->unique();
             $table->string('nama');
             $table->integer('qty');

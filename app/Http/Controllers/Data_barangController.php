@@ -85,7 +85,7 @@ class Data_barangController extends Controller
 
         $validatedData = $request->validate([
             'barcode'      => ['required'],
-            'kategori'     => ['required', 'in:umum,vocer,sparepart,aksesoris'],
+            'kategori'     => ['required', 'in:umum,member,sparepart,aksesoris'],
             'nama'         => ['required'],
             'qty'          => ['required', 'numeric'],
             'harga_modal'  => ['required', 'numeric'],

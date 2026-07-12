@@ -32,7 +32,7 @@ class Import_data_barang implements ToModel, WithHeadingRow, WithValidation
         }
         $kat = strtolower(trim($value));
         // Daftar kategori yang diizinkan
-        $allowed = ['umum', 'vocer', 'sparepart', 'aksesoris'];
+        $allowed = ['umum', 'member', 'sparepart', 'aksesoris'];
         return in_array($kat, $allowed) ? $kat : 'umum';
     }
 

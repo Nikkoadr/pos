@@ -57,7 +57,7 @@
                                 <label class="mr-2"><i class="fas fa-tag"></i> <strong>Filter Kategori:</strong></label>
                                 <select name="kategori" class="form-control" onchange="this.form.submit()" style="min-width: 200px;">
                                     <option value="">-- Semua Kategori --</option>
-                                    @foreach(['umum', 'vocer', 'sparepart', 'aksesoris'] as $kat)
+                                    @foreach(['umum', 'member', 'sparepart', 'aksesoris'] as $kat)
                                         <option value="{{ $kat }}" {{ request('kategori') == $kat ? 'selected' : '' }}>
                                             {{ ucfirst($kat) }}
                                         </option>
@@ -105,8 +105,8 @@
                             <td>
                                 @if($data->kategori == 'umum')
                                     <span class="badge badge-success">Umum</span>
-                                @elseif($data->kategori == 'vocer')
-                                    <span class="badge badge-warning">Vocer</span>
+                                @elseif($data->kategori == 'member')
+                                    <span class="badge badge-warning">Member</span>
                                 @elseif($data->kategori == 'sparepart')
                                     <span class="badge badge-primary">Sparepart</span>
                                 @elseif($data->kategori == 'aksesoris')

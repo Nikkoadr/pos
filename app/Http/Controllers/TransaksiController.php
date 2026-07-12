@@ -438,37 +438,46 @@ class TransaksiController extends Controller
     //     }
     // }
 
-    public function dataBarang(Request $request)
-    {
-        $dataBarang = Data_barang::select('*');
-        if ($request->has('search') && !empty($request->search['value'])) {
-            $keyword = $request->search['value'];
-            $dataBarang->where(function ($query) use ($keyword) {
-                $query->where('nama', 'like', "%{$keyword}%")
-                    ->orWhere('qty', 'like', "%{$keyword}%")
-                    ->orWhere('harga_umum', 'like', "%{$keyword}%")
-                    ->orWhere('harga_member', 'like', "%{$keyword}%");
-            });
-        }
-        return DataTables::of($dataBarang)
-            ->addColumn('action', function ($data) {
-                return
-                    '<form method="post" action="/tambah_keranjang">' .
-                    '<div class="row">' .
-                    '<div class="col-md-8">' .
-                    '<input type="hidden" name="_token" value="' . csrf_token() . '">' .
-                    '<input type="hidden" name="id" value="' . $data->id . '">' .
-                    '<input class="form-control" type="number" name="jumlah" min="1" max="' . $data->qty . '" value="1">' .
-                    '</div>' .
-                    '<div class="col-md-4">' .
-                    '<button class="btn btn-info" type="submit"><i class="fa-solid fa-cart-plus"></i></button>' .
-                    '</div>' .
-                    '</div>' .
-                    '</form>';
-            })
-            ->rawColumns(['action'])
-            ->make(true);
+public function dataBarang(Request $request)
+{
+    $dataBarang = Data_barang::select('*');
+
+    // PERBAIKAN: Jika ada request tipe 'member', filter barang yang hanya berkategori member
+    // Catatan: Sesuaikan nama kolom 'kategori' dengan kolom asli di tabel Data_barang Anda
+    if ($request->has('tipe') && $request->tipe === 'member') {
+        $dataBarang->where('kategori', 'member');
     }
+
+    // Pencarian bawaan DataTables
+    if ($request->has('search') && !empty($request->search['value'])) {
+        $keyword = $request->search['value'];
+        $dataBarang->where(function ($query) use ($keyword) {
+            $query->where('nama', 'like', "%{$keyword}%")
+                ->orWhere('qty', 'like', "%{$keyword}%")
+                ->orWhere('harga_umum', 'like', "%{$keyword}%")
+                ->orWhere('harga_member', 'like', "%{$keyword}%");
+        });
+    }
+
+    return DataTables::of($dataBarang)
+        ->addColumn('action', function ($data) {
+            return
+                '<form method="post" action="/tambah_keranjang">' .
+                '<div class="row">' .
+                '<div class="col-md-8">' .
+                '<input type="hidden" name="_token" value="' . csrf_token() . '">' .
+                '<input type="hidden" name="id" value="' . $data->id . '">' .
+                '<input class="form-control" type="number" name="jumlah" min="1" max="' . $data->qty . '" value="1">' .
+                '</div>' .
+                '<div class="col-md-4">' .
+                '<button class="btn btn-info" type="submit"><i class="fa-solid fa-cart-plus"></i></button>' .
+                '</div>' .
+                '</div>' .
+                '</form>';
+        })
+        ->rawColumns(['action'])
+        ->make(true);
+}
 
     public function hapus_transaksi($id)
     {

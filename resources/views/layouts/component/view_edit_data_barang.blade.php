@@ -52,7 +52,7 @@
                         <select name="kategori" class="form-control @error('kategori') is-invalid @enderror">
                             <option value="">Pilih Kategori</option>
                             <option value="umum" {{ old('kategori', $data->kategori) == 'umum' ? 'selected' : '' }}>Umum</option>
-                            <option value="vocer" {{ old('kategori', $data->kategori) == 'vocer' ? 'selected' : '' }}>Vocer</option>
+                            <option value="member" {{ old('kategori', $data->kategori) == 'member' ? 'selected' : '' }}>Member</option>
                             <option value="sparepart" {{ old('kategori', $data->kategori) == 'sparepart' ? 'selected' : '' }}>Sparepart</option>
                             <option value="aksesoris" {{ old('kategori', $data->kategori) == 'aksesoris' ? 'selected' : '' }}>Aksesoris</option>
                         </select>

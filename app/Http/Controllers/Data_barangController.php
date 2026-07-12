@@ -28,7 +28,7 @@ class Data_barangController extends Controller
 
         $data_barang = $query->get();
         $suppliers = Supplier::all();
-        $kategori_list = ['umum', 'vocer', 'sparepart', 'aksesoris'];
+        $kategori_list = ['umum', 'member', 'sparepart', 'aksesoris'];
 
         return view('barang.data_barang', compact('data_barang', 'suppliers', 'kategori_list'));
     }
@@ -39,7 +39,7 @@ class Data_barangController extends Controller
             'id_toko'      => ['required'],
             'id_supplier'  => ['required'],
             'barcode'      => ['required', 'unique:data_barang,barcode'],
-            'kategori'     => ['required', 'in:umum,vocer,sparepart,aksesoris'],
+            'kategori'     => ['required', 'in:umum,member,sparepart,aksesoris'],
             'nama_barang'  => ['required'],
             'qty'          => ['required', 'string'],
             'harga_modal'  => ['required'],

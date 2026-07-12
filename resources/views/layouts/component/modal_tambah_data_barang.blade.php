@@ -35,7 +35,7 @@
                             <select name="kategori" class="form-control @error('kategori') is-invalid @enderror">
                                 <option value="">Pilih Kategori</option>
                                 <option value="umum" {{ old('kategori') == 'umum' ? 'selected' : '' }}>Umum</option>
-                                <option value="vocer" {{ old('kategori') == 'vocer' ? 'selected' : '' }}>Vocer</option>
+                                <option value="member" {{ old('kategori') == 'member' ? 'selected' : '' }}>Member</option>
                                 <option value="sparepart" {{ old('kategori') == 'sparepart' ? 'selected' : '' }}>Sparepart</option>
                                 <option value="aksesoris" {{ old('kategori') == 'aksesoris' ? 'selected' : '' }}>Aksesoris</option>
                             </select>

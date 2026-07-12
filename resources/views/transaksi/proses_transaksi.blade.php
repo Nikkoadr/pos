@@ -366,12 +366,15 @@ $(document).ready(function() {
         processing: true,
         serverSide: true,
         searching: true,
-        ajax: {
-            url: '{{ route('data-barang') }}',
-            type: 'GET'
-        },
-        
-        columns: [
+ajax: {
+        url: "{{ route('data-barang') }}",
+        data: function (d) {
+            // Mengirimkan parameter 'tipe' berdasarkan data transaksi
+            // Anda bisa mengambil nilainya dari variable php, contoh: '{{ $transaksi->id_member ? "member" : "umum" }}'
+            d.tipe = '{{ $transaksi->id_member ? "member" : "umum" }}'; 
+        }
+    },
+    columns: [
             { data: null, orderable: false, searchable: false, 
                 render: function (data, type, row, meta) {
                     return meta.row + meta.settings._iDisplayStart + 1;

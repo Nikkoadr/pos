@@ -283,7 +283,7 @@ class TransaksiController extends Controller
 
             // Tentukan printer berdasarkan jenis transaksi
             if ($transaksi->jenis_transaksi == 'member') {
-                $printerName = "printer_member"; // ganti sesuai nama printer di Windows
+                $printerName = "PANDA80"; // ganti sesuai nama printer di Windows
             } else {
                 $printerName = $setting->nama_printer;
             }

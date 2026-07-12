@@ -280,20 +280,13 @@ class TransaksiController extends Controller
 
         try {
             $setting = Setting::first();
-
-            // Tentukan printer berdasarkan jenis transaksi
-            if ($transaksi->jenis_transaksi == 'member') {
-                $printerName = "smb://192.168.1.200/PANDA80"; // ganti sesuai nama printer di Windows
-            } else {
-                $printerName = $setting->nama_printer;
-            }
+            $printerName = $setting->nama_printer;
 
             $connector = new WindowsPrintConnector($printerName);
             $printer = new Printer($connector);
             $printer->initialize();
             $printer->setJustification(Printer::JUSTIFY_CENTER);
 
-            // Logo (tetap seperti kode Anda)
             $logoPath = public_path('assets/dist/img/logo_print.png');
             if (file_exists($logoPath)) {
                 try {
@@ -359,13 +352,10 @@ class TransaksiController extends Controller
     {
         $dataBarang = Data_barang::select('*');
 
-        // PERBAIKAN: Jika ada request tipe 'member', filter barang yang hanya berkategori member
-        // Catatan: Sesuaikan nama kolom 'kategori' dengan kolom asli di tabel Data_barang Anda
         if ($request->has('tipe') && $request->tipe === 'member') {
             $dataBarang->where('kategori', 'member');
         }
 
-        // Pencarian bawaan DataTables
         if ($request->has('search') && !empty($request->search['value'])) {
             $keyword = $request->search['value'];
             $dataBarang->where(function ($query) use ($keyword) {

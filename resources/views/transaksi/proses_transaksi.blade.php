@@ -369,8 +369,6 @@ $(document).ready(function() {
 ajax: {
         url: "{{ route('data-barang') }}",
         data: function (d) {
-            // Mengirimkan parameter 'tipe' berdasarkan data transaksi
-            // Anda bisa mengambil nilainya dari variable php, contoh: '{{ $transaksi->id_member ? "member" : "umum" }}'
             d.tipe = '{{ $transaksi->id_member ? "member" : "umum" }}'; 
         }
     },

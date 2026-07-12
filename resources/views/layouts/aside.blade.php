@@ -124,6 +124,12 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('setting.index') }}" class="nav-link {{ request()->routeIs('setting.index') ? 'active' : '' }}">
+                            <i class="nav-icon fa-solid fa-cog"></i>
+                            <p>Pengaturan</p>
+                        </a>
+                    </li>
                 @endcan
                 
             </ul>

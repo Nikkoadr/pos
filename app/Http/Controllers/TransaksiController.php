@@ -269,7 +269,6 @@ class TransaksiController extends Controller
 
     private function printNotaUmum($id)
     {
-        //printer 80mm
         $transaksi = Transaksi::find($id);
         $details = DetailTransaksi::where('id_transaksi', $id)->get();
         $tanggal = now()->format('d M Y H:i:s');
@@ -278,11 +277,23 @@ class TransaksiController extends Controller
             $m = Data_member::find($transaksi->id_member);
             $nama_member = $m ? $m->nama_member : "Umum";
         }
+
         try {
-            $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
+            $setting = Setting::first();
+
+            // Tentukan printer berdasarkan jenis transaksi
+            if ($transaksi->jenis_transaksi == 'member') {
+                $printerName = "printer_member"; // ganti sesuai nama printer di Windows
+            } else {
+                $printerName = $setting->nama_printer;
+            }
+
+            $connector = new WindowsPrintConnector($printerName);
             $printer = new Printer($connector);
             $printer->initialize();
             $printer->setJustification(Printer::JUSTIFY_CENTER);
+
+            // Logo (tetap seperti kode Anda)
             $logoPath = public_path('assets/dist/img/logo_print.png');
             if (file_exists($logoPath)) {
                 try {
@@ -296,6 +307,7 @@ class TransaksiController extends Controller
                     $printer->setEmphasis(false);
                 }
             }
+
             $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
             $printer->text($tanggal . "\n");
             $printer->text("-----------------------------------------------\n");
@@ -303,6 +315,7 @@ class TransaksiController extends Controller
             $printer->text(sprintf("%-10s: %s\n", "Kasir", auth()->user()->nama));
             $printer->text(sprintf("%-10s: %s\n", "Pelanggan", $nama_member));
             $printer->text("-----------------------------------------------\n");
+
             foreach ($details as $d) {
                 $nama = strlen($d->nama_barang) > 45
                     ? substr($d->nama_barang, 0, 42) . '...'
@@ -316,6 +329,7 @@ class TransaksiController extends Controller
                 if ($jumlah_spasi < 1) $jumlah_spasi = 1;
                 $printer->text($kiri . str_repeat(" ", $jumlah_spasi) . $kanan . "\n");
             }
+
             $printer->text("-----------------------------------------------\n");
             $printer->setJustification(Printer::JUSTIFY_RIGHT);
             $printer->setEmphasis(true);
@@ -337,147 +351,50 @@ class TransaksiController extends Controller
             $printer->cut();
             $printer->close();
         } catch (\Exception $e) {
-            Log::error("Gagal Cetak Nota Umum: " . $e->getMessage());
+            Log::error("Gagal Cetak Nota: " . $e->getMessage());
         }
     }
 
-    // private function printNotaUmum($id)
-    // {
-    //     //printer 58mm
-    //     $transaksi = Transaksi::find($id);
-    //     $details = DetailTransaksi::where('id_transaksi', $id)->get();
-    //     $tanggal = now()->format('d M Y H:i:s');
-    //     $nama_member = "Umum";
-    //     if ($transaksi->id_member) {
-    //         $m = Data_member::find($transaksi->id_member);
-    //         $nama_member = $m ? $m->nama_member : "Umum";
-    //     }
+    public function dataBarang(Request $request)
+    {
+        $dataBarang = Data_barang::select('*');
 
-    //     try {
-    //         $connector = new WindowsPrintConnector(Setting::first()->nama_printer);
-    //         $printer = new Printer($connector);
-    //         $printer->initialize();
+        // PERBAIKAN: Jika ada request tipe 'member', filter barang yang hanya berkategori member
+        // Catatan: Sesuaikan nama kolom 'kategori' dengan kolom asli di tabel Data_barang Anda
+        if ($request->has('tipe') && $request->tipe === 'member') {
+            $dataBarang->where('kategori', 'member');
+        }
 
-    //         // Lebar printer 58mm umumnya aman di 32 karakter
-    //         $lebar_max = 32;
-    //         $garis = str_repeat("-", $lebar_max) . "\n";
+        // Pencarian bawaan DataTables
+        if ($request->has('search') && !empty($request->search['value'])) {
+            $keyword = $request->search['value'];
+            $dataBarang->where(function ($query) use ($keyword) {
+                $query->where('nama', 'like', "%{$keyword}%")
+                    ->orWhere('qty', 'like', "%{$keyword}%")
+                    ->orWhere('harga_umum', 'like', "%{$keyword}%")
+                    ->orWhere('harga_member', 'like', "%{$keyword}%");
+            });
+        }
 
-    //         $printer->setJustification(Printer::JUSTIFY_CENTER);
-    //         $logoPath = public_path('assets/dist/img/logo_print.png');
-    //         if (file_exists($logoPath)) {
-    //             try {
-    //                 $logo = EscposImage::load($logoPath, true);
-    //                 $printer->bitImage($logo);
-    //             } catch (\Exception $e) {
-    //                 $printer->setTextSize(2, 1); // Lebar x2 tapi tinggi x1 agar proporsional di 58mm
-    //                 $printer->setEmphasis(true);
-    //                 $printer->text("ANGEL CELL\n");
-    //                 $printer->setTextSize(1, 1);
-    //                 $printer->setEmphasis(false);
-    //             }
-    //         }
-
-    //         $printer->text("Jalan Jangga-Terisi Desa Jangga\n");
-    //         $printer->text($tanggal . "\n");
-    //         $printer->text($garis);
-
-    //         $printer->setJustification(Printer::JUSTIFY_LEFT);
-    //         // Menyesuaikan padding string agar pas di 58mm
-    //         $printer->text(sprintf("%-10s: %s\n", "Kasir", auth()->user()->nama));
-    //         $printer->text(sprintf("%-10s: %s\n", "Pelanggan", $nama_member));
-    //         $printer->text($garis);
-
-    //         foreach ($details as $d) {
-    //             // Potong nama barang jika lebih dari 32 karakter agar tidak merusak baris berikutnya
-    //             $nama = strlen($d->nama_barang) > $lebar_max
-    //                 ? substr($d->nama_barang, 0, $lebar_max - 3) . '...'
-    //                 : $d->nama_barang;
-    //             $printer->text($nama . "\n");
-
-    //             $subtotal = $d->harga_jual * $d->qty;
-    //             $kiri = sprintf(" %d x %s", $d->qty, number_format($d->harga_jual, 0, '.', '.'));
-    //             $kanan = number_format($subtotal, 0, '.', '.');
-
-    //             // Hitung ulang spasi berdasarkan lebar maksimal 32 karakter
-    //             $jumlah_spasi = $lebar_max - strlen($kiri) - strlen($kanan);
-    //             if ($jumlah_spasi < 1) $jumlah_spasi = 1;
-
-    //             $printer->text($kiri . str_repeat(" ", $jumlah_spasi) . $kanan . "\n");
-    //         }
-
-    //         $printer->text($garis);
-
-    //         // TOTAL menggunakan ukuran standar karena TEXT SIZE (2,2) di printer 58mm 
-    //         // seringkali memakan tempat terlalu besar dan memotong teks ke bawah.
-    //         $printer->setJustification(Printer::JUSTIFY_RIGHT);
-    //         $printer->setEmphasis(true);
-    //         $printer->text("TOTAL: Rp " . number_format($transaksi->total_belanja, 0, '.', '.') . "\n");
-    //         $printer->setEmphasis(false);
-
-    //         // Menggunakan format statis sesuai lebar printer 58mm
-    //         $bayarText = "BAYAR: Rp " . number_format($transaksi->bayar, 0, '.', '.');
-    //         $kembaliText = "KEMBALI: Rp " . number_format($transaksi->kembalian, 0, '.', '.');
-
-    //         $printer->text(sprintf("%" . $lebar_max . "s\n", $bayarText));
-    //         $printer->text(sprintf("%" . $lebar_max . "s\n", $kembaliText));
-
-    //         $printer->feed();
-    //         $printer->setJustification(Printer::JUSTIFY_CENTER);
-    //         $printer->setEmphasis(true);
-    //         $printer->text("TERIMA KASIH\n");
-    //         $printer->setEmphasis(false);
-    //         $printer->text("Atas Kunjungan Anda\n");
-    //         $printer->text("Barang yang sudah dibeli\n");
-    //         $printer->text("tidak dapat ditukar/dikembalikan\n");
-
-    //         $printer->feed(3);
-    //         $printer->cut();
-    //         $printer->close();
-    //     } catch (\Exception $e) {
-    //         Log::error("Gagal Cetak Nota Umum: " . $e->getMessage());
-    //     }
-    // }
-
-public function dataBarang(Request $request)
-{
-    $dataBarang = Data_barang::select('*');
-
-    // PERBAIKAN: Jika ada request tipe 'member', filter barang yang hanya berkategori member
-    // Catatan: Sesuaikan nama kolom 'kategori' dengan kolom asli di tabel Data_barang Anda
-    if ($request->has('tipe') && $request->tipe === 'member') {
-        $dataBarang->where('kategori', 'member');
+        return DataTables::of($dataBarang)
+            ->addColumn('action', function ($data) {
+                return
+                    '<form method="post" action="/tambah_keranjang">' .
+                    '<div class="row">' .
+                    '<div class="col-md-8">' .
+                    '<input type="hidden" name="_token" value="' . csrf_token() . '">' .
+                    '<input type="hidden" name="id" value="' . $data->id . '">' .
+                    '<input class="form-control" type="number" name="jumlah" min="1" max="' . $data->qty . '" value="1">' .
+                    '</div>' .
+                    '<div class="col-md-4">' .
+                    '<button class="btn btn-info" type="submit"><i class="fa-solid fa-cart-plus"></i></button>' .
+                    '</div>' .
+                    '</div>' .
+                    '</form>';
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
-
-    // Pencarian bawaan DataTables
-    if ($request->has('search') && !empty($request->search['value'])) {
-        $keyword = $request->search['value'];
-        $dataBarang->where(function ($query) use ($keyword) {
-            $query->where('nama', 'like', "%{$keyword}%")
-                ->orWhere('qty', 'like', "%{$keyword}%")
-                ->orWhere('harga_umum', 'like', "%{$keyword}%")
-                ->orWhere('harga_member', 'like', "%{$keyword}%");
-        });
-    }
-
-    return DataTables::of($dataBarang)
-        ->addColumn('action', function ($data) {
-            return
-                '<form method="post" action="/tambah_keranjang">' .
-                '<div class="row">' .
-                '<div class="col-md-8">' .
-                '<input type="hidden" name="_token" value="' . csrf_token() . '">' .
-                '<input type="hidden" name="id" value="' . $data->id . '">' .
-                '<input class="form-control" type="number" name="jumlah" min="1" max="' . $data->qty . '" value="1">' .
-                '</div>' .
-                '<div class="col-md-4">' .
-                '<button class="btn btn-info" type="submit"><i class="fa-solid fa-cart-plus"></i></button>' .
-                '</div>' .
-                '</div>' .
-                '</form>';
-        })
-        ->rawColumns(['action'])
-        ->make(true);
-}
 
     public function hapus_transaksi($id)
     {

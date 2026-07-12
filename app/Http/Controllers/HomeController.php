@@ -79,16 +79,30 @@ class HomeController extends Controller
         $setting = Setting::first();
         return view('setting', compact('setting'));
     }
-    
+
     public function update_setting(Request $request, $id)
     {
-        $data = Setting::findOrFail($id);
+        // Validasi data, sesuaikan nama field dengan yang ada di form (nama_perinter)
         $validatedData = $request->validate([
-            'nama_toko' => ['required'],
-            'alamat_toko' => ['required',],
-            'printer' => ['required',],
+            'nama_toko'    => ['required', 'string', 'max:255'],
+            'alamat_toko'  => ['required', 'string', 'max:255'],
+            'nama_printer' => ['required', 'string', 'max:255'], // sesuaikan dengan nama di form
         ]);
-        $data->update($validatedData);
-        return redirect('setting')->with(['success' => 'pengaturan berhasil di ubah']);
+
+        try {
+            // Cari data atau gagal (404)
+            $setting = Setting::findOrFail($id);
+
+            // Update data
+            $setting->update($validatedData);
+
+            // Redirect ke halaman setting dengan pesan sukses
+            return redirect('setting')->with('success', 'Pengaturan berhasil diubah.');
+        } catch (\Exception $e) {
+            // Jika terjadi error (misal database error), redirect back dengan pesan error
+            return redirect()->back()
+                ->withInput() // agar data yang sudah diisi tetap ada
+                ->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
+        }
     }
 }

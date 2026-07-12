@@ -41,8 +41,8 @@ Route::get('/data_karyawan/edit/{id}', [UsersController::class, 'edit'])->name('
 Route::put('/data_karyawan/update/{id}', [UsersController::class, 'update'])->name('karyawan.update');
 
 Route::get('/data_supplier', [HomeController::class, 'data_supplier'])->name('data_supplier');
-Route::get('/setting', [HomeController::class, 'setting'])->name('setting');
-Route::put('/update_setting_{id}', [HomeController::class, 'update_setting'])->name('update_setting');
+Route::get('/setting', [HomeController::class, 'setting'])->name('setting.index');
+Route::put('/update_setting/{id}', [HomeController::class, 'update_setting'])->name('update_setting');
 
 Route::get('/data_barang', [Data_barangController::class, 'data_barang'])->name('data_barang');
 Route::delete('/hapus-barang-multiple', [Data_barangController::class, 'hapusMultiple'])->name('barang.hapus_multiple');

@@ -352,8 +352,12 @@ class TransaksiController extends Controller
     {
         $dataBarang = Data_barang::select('*');
 
-        if ($request->has('tipe') && $request->tipe === 'member') {
-            $dataBarang->where('kategori', 'member');
+        if ($request->has('tipe')) {
+            if ($request->tipe === 'member') {
+                $dataBarang->where('kategori', 'member');
+            } else {
+                $dataBarang->where('kategori', '!=', 'member');
+            }
         }
 
         if ($request->has('search') && !empty($request->search['value'])) {

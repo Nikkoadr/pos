@@ -128,10 +128,10 @@
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
 
-                                <a href="view_edit_data_barang_{{ $data->id }}" class="btn btn-sm btn-primary">
+                                <a href="{{ route('edit_data_barang', $data->id) }}" class="btn btn-sm btn-primary">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
-                                <a href="hapus_data_barang_{{ $data->id }}" class="btn btn-sm btn-danger konfirmasi">
+                                <a href="{{ route('hapus_data_barang', $data->id) }}" class="btn btn-sm btn-danger konfirmasi">
                                     <i class="far fa-trash-alt"></i>
                                 </a>
                             </td>

@@ -48,7 +48,7 @@ Route::get('/data_barang', [Data_barangController::class, 'data_barang'])->name(
 Route::delete('/hapus-barang-multiple', [Data_barangController::class, 'hapusMultiple'])->name('barang.hapus_multiple');
 Route::get('/data_barang/cetak-barcode', [Data_barangController::class, 'cetakBarcode'])->name('barang.cetak_barcode');
 Route::put('/tambah_data_barang', [Data_barangController::class, 'tambah_data_barang'])->name('tambah_data_barang');
-Route::get('/view_edit_data_barang_{id}', [Data_barangController::class, 'view_edit_data_barang'])->name('view_edit_data_barang');
+Route::get('/view_edit_data_barang_{id}', [Data_barangController::class, 'view_edit_data_barang'])->name('edit_data_barang');
 Route::put('/update_data_barang_{id}', [Data_barangController::class, 'update_data_barang'])->name('update_data_barang');
 Route::post('/import_data_barang', [Data_barangController::class, 'import_data_barang'])->name('import_data_barang');
 Route::get('/export_data_barang', [Data_BarangController::class, 'export_data_barang'])->name('export_data_barang');

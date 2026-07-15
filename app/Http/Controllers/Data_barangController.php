@@ -150,8 +150,11 @@ class Data_barangController extends Controller
     public function hapus_data_barang($id)
     {
         $data = Data_barang::findOrFail($id);
+
+        $data->pembelian()->delete();
         $data->delete();
-        return redirect()->back()->with('success', 'Data Barang Berhasil di Hapus');
+
+        return redirect()->back()->with('success', 'Data Barang berhasil dihapus.');
     }
 
     public function hapusMultiple(Request $request)

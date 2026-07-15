@@ -122,7 +122,7 @@
                     </div>
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary">Update</button>
-                        <a href="/data_barang" class="btn btn-danger">Kembali</a>
+                        <a href="{{ route('data_barang') }}" class="btn btn-danger">Kembali</a>
                     </div>
 
                 </form>

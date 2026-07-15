@@ -188,23 +188,46 @@ class Data_barangController extends Controller
             'harga_modal' => 'required|numeric|min:0',
         ]);
 
+        // Ambil data barang
         $barang = Data_barang::findOrFail($id);
 
-        $kode = 'PO-' . date('Ymd') . '-' . str_pad(PembelianBarang::count() + 1, 4, '0', STR_PAD_LEFT);
+        // Format tanggal untuk kode pembelian
+        $today = now()->format('Ymd');
+
+        // Ambil pembelian terakhir hari ini
+        $lastPembelian = PembelianBarang::whereDate('tanggal_pembelian', today())
+            ->orderByDesc('id')
+            ->first();
+
+        // Tentukan nomor urut berikutnya
+        if ($lastPembelian) {
+            $lastNumber = (int) substr($lastPembelian->kode_pembelian, -4);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        // Generate kode pembelian
+        $kode = 'PO-' . $today . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        // Simpan riwayat pembelian
         PembelianBarang::create([
-            'id_supplier'      => 1,
-            'kode_pembelian'   => $kode,
+            'id_supplier'       => 1,
+            'kode_pembelian'    => $kode,
             'tanggal_pembelian' => now(),
-            'id_barang'        => $id,
-            'qty'              => $request->qty,
-            'harga_modal'      => $request->harga_modal,
+            'id_barang'         => $barang->id,
+            'qty'               => $request->qty,
+            'harga_modal'       => $request->harga_modal,
         ]);
 
-        $barang = Data_barang::findOrFail($id);
+        // Update stok barang
         $barang->qty += $request->qty;
         $barang->harga_modal = $request->harga_modal;
         $barang->save();
 
-        return redirect()->back()->with('success', "Stok barang '{$barang->nama}' berhasil ditambahkan!");
+        return redirect()->back()->with(
+            'success',
+            "Stok barang '{$barang->nama}' berhasil ditambahkan!"
+        );
     }
 }

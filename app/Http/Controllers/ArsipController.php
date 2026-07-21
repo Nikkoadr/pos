@@ -76,6 +76,13 @@ class ArsipController extends Controller
                 }
                 return 'Rp ' . number_format($total, 0, ',', '.');
             })
+            ->editColumn('pelanggan', function ($row) {
+                if ($row->jenis_transaksi == 'servis') {
+                    return $row->detailTransaksiServis ? $row->detailTransaksiServis->nama : '-';
+                } else {
+                    return $row->pelanggan ? $row->pelanggan->nama : '-';
+                }
+            })
             ->addColumn('action', function ($row) {
                 return '
             <div class="btn-group">

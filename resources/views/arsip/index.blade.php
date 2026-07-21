@@ -62,6 +62,7 @@
                                 <th>Tanggal</th>
                                 <th>Jenis</th>
                                 <th>Kasir</th>
+                                <th>Pelanggan</th>
                                 <th>Total</th>
                                 <th width="15%">Aksi</th>
                             </tr>
@@ -102,6 +103,7 @@
                 { data: 'tanggal_transaksi' },
                 { data: 'jenis_transaksi' },
                 { data: 'kasir' },
+                { data: 'pelanggan', orderable:false, searchable:false },
                 { data: 'total_belanja' },
                 { data: 'action', orderable:false, searchable:false },
             ]

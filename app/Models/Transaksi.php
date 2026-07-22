@@ -13,7 +13,7 @@ class Transaksi extends Model
 
     public function member()
     {
-        return $this->belongsTo(Data_member::class, 'member_id');
+        return $this->belongsTo(Data_member::class, 'id_member', 'id');
     }
 
     public function servis()
@@ -28,6 +28,6 @@ class Transaksi extends Model
 
     public function detailTransaksiServis()
     {
-        return $this->hasOne(DetailTransaksiServis::class, 'id_transaksi');
+        return $this->hasOne(DetailTransaksiServis::class, 'id_transaksi', 'id');
     }
 }

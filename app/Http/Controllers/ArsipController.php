@@ -5,26 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Transaksi;
 use App\Models\DetailTransaksi;
-use Yajra\DataTables\DataTables;
 use App\Models\DetailTransaksiServis;
+use Illuminate\Support\Facades\DB;
 
 class ArsipController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('auth');
     }
 
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
     public function index()
     {
         return view('arsip.index');
@@ -32,76 +22,141 @@ class ArsipController extends Controller
 
     public function data_arsip(Request $request)
     {
-        $query = Transaksi::with('detail_transaksi')
-            ->where('status', 'selesai');
+        // Ambil parameter DataTables
+        $draw = $request->input('draw', 1);
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+        $search = $request->input('search.value', '');
+        $orderColumn = $request->input('order.0.column', 0);
+        $orderDir = $request->input('order.0.dir', 'asc');
 
-        // Filter jenis transaksi
+        // Mapping kolom untuk sorting
+        $columnMap = [
+            0 => 'id',
+            1 => 'tanggal_transaksi',
+            2 => 'jenis_transaksi',
+            3 => 'kasir',
+            4 => 'nama_pelanggan',
+            5 => 'total_belanja',
+            6 => 'id'
+        ];
+        $orderBy = isset($columnMap[$orderColumn]) ? $columnMap[$orderColumn] : 'tanggal_transaksi';
+        if ($orderBy == 'nama_pelanggan') {
+            $orderBy = 'tanggal_transaksi'; // fallback
+        }
+
+        // Query dasar
+        $query = Transaksi::with([
+            'member',
+            'detailTransaksiServis',
+            'detail_transaksi'
+        ])->where('status', 'selesai');
+
+        // Filter jenis
         if ($request->filled('jenis')) {
             $query->where('jenis_transaksi', $request->jenis);
         }
 
-        // Filter tanggal (format YYYY-MM-DD)
+        // Filter tanggal
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal_transaksi', $request->tanggal);
         }
 
-        $query->orderBy('tanggal_transaksi', 'desc');
+        // Total records (tanpa filter search)
+        $totalQuery = clone $query;
+        $recordsTotal = $totalQuery->count();
 
-        return DataTables::of($query)
-            ->addIndexColumn()
-            ->editColumn('tanggal_transaksi', function ($row) {
-                return \Carbon\Carbon::parse($row->tanggal_transaksi)
-                    ->format('d/m/Y H:i');
-            })
-            ->editColumn('jenis_transaksi', function ($row) {
-                switch ($row->jenis_transaksi) {
-                    case 'umum':
-                        return '<span class="badge badge-success"><i class="fas fa-shopping-cart"></i> Penjualan Umum</span>';
-                    case 'member':
-                        return '<span class="badge badge-warning"><i class="fas fa-user"></i> Penjualan Member</span>';
-                    case 'servis':
-                        return '<span class="badge badge-primary"><i class="fas fa-tools"></i> Servis</span>';
-                    default:
-                        return '';
-                }
-            })
-            ->editColumn('total_belanja', function ($row) {
-                if ($row->jenis_transaksi == 'servis') {
-                    $servis = DetailTransaksiServis::where('id_transaksi', $row->id)->first();
-                    $total = $servis ? $servis->harga_jual : 0;
-                } else {
-                    $total = $row->detail_transaksi->sum(function ($item) {
-                        return $item->harga_jual * $item->qty;
+        // Search filter
+        if (!empty($search)) {
+            $searchLower = strtolower($search);
+            $query->where(function ($q) use ($search, $searchLower) {
+                $q->where('transaksi.id', 'like', "%{$search}%")
+                    ->orWhere('transaksi.kasir', 'like', "%{$search}%")
+                    ->orWhereHas('member', function ($m) use ($searchLower) {
+                        $m->whereRaw('LOWER(nama_member) LIKE ?', ['%' . $searchLower . '%']);
+                    })
+                    ->orWhereHas('detailTransaksiServis', function ($s) use ($searchLower) {
+                        $s->whereRaw('LOWER(nama) LIKE ?', ['%' . $searchLower . '%']);
                     });
-                }
-                return 'Rp ' . number_format($total, 0, ',', '.');
-            })
-            ->editColumn('pelanggan', function ($row) {
-                if ($row->jenis_transaksi == 'servis') {
-                    return $row->detailTransaksiServis ? $row->detailTransaksiServis->nama : '-';
-                } else {
-                    return $row->pelanggan ? $row->pelanggan->nama : '-';
-                }
-            })
-            ->addColumn('action', function ($row) {
-                return '
-            <div class="btn-group">
-                <a href="' . route('arsip.show', $row->id) . '" class="btn btn-info btn-xs">
-                    <i class="fas fa-eye"></i> Detail
-                </a>
-            </div>';
-            })
-            ->rawColumns(['jenis_transaksi', 'action'])
-            ->make(true);
+            });
+        }
+
+        // Count filtered
+        $filteredQuery = clone $query;
+        $recordsFiltered = $filteredQuery->count();
+
+        // Sorting
+        if (in_array($orderBy, ['tanggal_transaksi', 'kasir', 'total_belanja', 'id'])) {
+            $query->orderBy($orderBy, $orderDir);
+        } else {
+            $query->orderBy('tanggal_transaksi', 'desc');
+        }
+
+        // Pagination
+        $data = $query->skip($start)->take($length)->get();
+
+        // Format data
+        $result = [];
+        $counter = $start + 1;
+        foreach ($data as $row) {
+            // Nama pelanggan
+            if ($row->jenis_transaksi == 'servis') {
+                $pelanggan = optional($row->detailTransaksiServis)->nama ?? '-';
+            } elseif ($row->jenis_transaksi == 'member') {
+                $pelanggan = optional($row->member)->nama_member ?? '-';
+            } else {
+                $pelanggan = 'Umum';
+            }
+
+            // Jenis transaksi dengan badge
+            switch ($row->jenis_transaksi) {
+                case 'umum':
+                    $jenis = '<span class="badge badge-success"><i class="fas fa-shopping-cart"></i> Penjualan Umum</span>';
+                    break;
+                case 'member':
+                    $jenis = '<span class="badge badge-warning"><i class="fas fa-user"></i> Penjualan Member</span>';
+                    break;
+                case 'servis':
+                    $jenis = '<span class="badge badge-primary"><i class="fas fa-tools"></i> Servis</span>';
+                    break;
+                default:
+                    $jenis = '-';
+            }
+
+            // Total
+            if ($row->jenis_transaksi == 'servis') {
+                $total = optional($row->detailTransaksiServis)->harga_jual ?? 0;
+            } else {
+                $total = $row->detail_transaksi->sum(function ($item) {
+                    return $item->harga_jual * $item->qty;
+                });
+            }
+
+            $result[] = [
+                'DT_RowIndex' => $counter++,
+                'tanggal_transaksi' => \Carbon\Carbon::parse($row->tanggal_transaksi)->format('d/m/Y H:i'),
+                'jenis_transaksi' => $jenis,
+                'kasir' => $row->kasir,
+                'nama_pelanggan' => $pelanggan,
+                'total_belanja' => 'Rp ' . number_format($total, 0, ',', '.'),
+                'action' => '<a href="' . route('arsip.show', $row->id) . '" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> Detail</a>',
+            ];
+        }
+
+        return response()->json([
+            'draw' => intval($draw),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $result,
+        ]);
     }
 
     public function show($id)
     {
         $transaksi = Transaksi::findOrFail($id);
-
         $detailItems = collect();
-        $servisData  = null;
-        $grandTotal  = 0;
+        $servisData = null;
+        $grandTotal = 0;
 
         if ($transaksi->jenis_transaksi == 'servis') {
             $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
@@ -127,11 +182,6 @@ class ArsipController extends Controller
             });
         }
 
-        return view('arsip.detail', compact(
-            'transaksi',
-            'detailItems',
-            'servisData',
-            'grandTotal'
-        ));
+        return view('arsip.detail', compact('transaksi', 'detailItems', 'servisData', 'grandTotal'));
     }
 }

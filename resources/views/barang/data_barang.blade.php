@@ -46,33 +46,30 @@
                     </div>
                 </div>
             </div>
-            <!-- /.card-header -->
 
             <div class="card-body">
                 {{-- FILTER KATEGORI --}}
                 <div class="row mb-3">
                     <div class="col-md-12">
-                        <form method="GET" action="{{ url('/data_barang') }}" class="form-inline">
+                        <div class="form-inline">
                             <div class="form-group mr-2">
                                 <label class="mr-2"><i class="fas fa-tag"></i> <strong>Filter Kategori:</strong></label>
-                                <select name="kategori" class="form-control" onchange="this.form.submit()" style="min-width: 200px;">
+                                <select name="kategori" id="filter_kategori" class="form-control" style="min-width: 200px;">
                                     <option value="">-- Semua Kategori --</option>
-                                    @foreach(['umum', 'member', 'sparepart', 'aksesoris'] as $kat)
+                                    @foreach($kategori_list as $kat)
                                         <option value="{{ $kat }}" {{ request('kategori') == $kat ? 'selected' : '' }}>
                                             {{ ucfirst($kat) }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-                            @if(request('kategori'))
-                                <a href="{{ url('/data_barang') }}" class="btn btn-sm btn-secondary">
-                                    <i class="fas fa-times"></i> Reset Filter
-                                </a>
-                            @endif
+                            <button type="button" class="btn btn-sm btn-secondary" id="reset_filter">
+                                <i class="fas fa-times"></i> Reset Filter
+                            </button>
                             <div class="ml-auto">
-                                <span class="text-muted">Total Barang: <strong>{{ $data_barang->count() }}</strong></span>
+                                <span class="text-muted">Total Barang: <strong id="total_barang">0</strong></span>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
 
@@ -96,91 +93,49 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($data_barang as $data)
-                        <tr>
-                            <td>
-                                <input type="checkbox" class="sub_chk" data-id="{{ $data->id }}">
-                            </td>
-                            <td>{{ $data->barcode }}</td>
-                            <td>
-                                @if($data->kategori == 'umum')
-                                    <span class="badge badge-success">Umum</span>
-                                @elseif($data->kategori == 'member')
-                                    <span class="badge badge-warning">Member</span>
-                                @elseif($data->kategori == 'sparepart')
-                                    <span class="badge badge-primary">Sparepart</span>
-                                @elseif($data->kategori == 'aksesoris')
-                                    <span class="badge badge-info">Aksesoris</span>
-                                @else
-                                    <span class="badge badge-secondary">{{ ucfirst($data->kategori) }}</span>
-                                @endif
-                            </td>
-                            <td>{{ $data->nama }}</td>
-                            <td>{{ $data->qty }}</td>
-                            @can('isAdmin')
-                            <td>@rp($data->harga_modal)</td>
-                            @endcan
-                            <td>@rp($data->harga_umum)</td>
-                            <td>@rp($data->harga_member)</td>
-                            <td style="text-align: center">
-                                <!-- Tombol Tambah Stok -->
-                                <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#modal_tambah_stok_{{ $data->id }}">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-
-                                <a href="{{ route('edit_data_barang', $data->id) }}" class="btn btn-sm btn-primary">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </a>
-                                <a href="{{ route('hapus_data_barang', $data->id) }}" class="btn btn-sm btn-danger konfirmasi">
-                                    <i class="far fa-trash-alt"></i>
-                                </a>
-                            </td>
-                        </tr>
-
-                        <!-- Modal Tambah Stok per barang -->
-                        <div class="modal fade" id="modal_tambah_stok_{{ $data->id }}" tabindex="-1" role="dialog" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Tambah Stok: {{ $data->nama }}</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <form action="{{ route('barang.tambah_stok', $data->id) }}" method="POST">
-                                        @csrf
-                                        <div class="modal-body">
-                                            <div class="form-group">
-                                                <label>Stok Saat Ini</label>
-                                                <input type="text" class="form-control" value="{{ $data->qty }}" readonly>
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Jumlah Tambah (Qty)</label>
-                                                <input type="number" name="qty" class="form-control" placeholder="Contoh: 5" required min="1">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Harga Modal (per unit)</label>
-                                                <input type="number" name="harga_modal" class="form-control" step="0.01" min="0" value="{{ $data->harga_modal }}" required>
-                                                <small class="text-muted">*Harga modal terbaru untuk barang ini.</small>
-                                            </div>
-                                            <input type="hidden" name="id_supplier" value="1">
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                                            <button type="submit" class="btn btn-primary">Tambah Stok</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
+                        <!-- Data diisi oleh DataTables server-side -->
                     </tbody>
                 </table>
             </div>
-            <!-- /.card-body -->
         </div>
-        <!-- /.card -->
     </section>
+</div>
+
+{{-- MODAL TAMBAH STOK GENERIK --}}
+<div class="modal fade" id="modal_tambah_stok" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Stok: <span id="stok_barang_nama"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="form_tambah_stok" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Stok Saat Ini</label>
+                        <input type="text" id="stok_saat_ini" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Jumlah Tambah (Qty)</label>
+                        <input type="number" name="qty" class="form-control" placeholder="Contoh: 5" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Harga Modal (per unit)</label>
+                        <input type="number" name="harga_modal" class="form-control" step="0.01" min="0" required>
+                        <small class="text-muted">*Harga modal terbaru untuk barang ini.</small>
+                    </div>
+                    <input type="hidden" name="id_supplier" value="1">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Tambah Stok</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -201,20 +156,76 @@
 
 <script>
 $(document).ready(function () {
-    // --- CENTANG SEMUA ---
-    $('#select_all').on('click', function(e) {
-        if ($(this).is(':checked', true)) {
-            $(".sub_chk").prop('checked', true);
-        } else {
-            $(".sub_chk").prop('checked', false);
-        }
+    // Inisialisasi DataTables server-side
+    var table = $('#table_data_barang').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('data_barang.json') }}",
+            type: 'GET',
+            data: function (d) {
+                d.kategori = $('#filter_kategori').val();
+            }
+        },
+        columns: [
+            { data: 'checkbox', name: 'checkbox', orderable: false, searchable: false },
+            { data: 'barcode', name: 'barcode' },
+            { data: 'kategori', name: 'kategori' },
+            { data: 'nama', name: 'nama' },
+            { data: 'qty', name: 'qty' },
+            @can('isAdmin')
+            { data: 'harga_modal', name: 'harga_modal' },
+            @endcan
+            { data: 'harga_umum', name: 'harga_umum' },
+            { data: 'harga_member', name: 'harga_member' },
+            { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
+        ],
+        @cannot('isAdmin')
+        columnDefs: [
+            { visible: false, targets: [5] }
+        ],
+        @endcan
+        order: [[1, 'asc']],
+        drawCallback: function(settings) {
+            var info = this.api().page.info();
+            $('#total_barang').text(info.recordsTotal);
+        },
+        responsive: true,
+        lengthChange: true,
+        autoWidth: true,
+        lengthMenu: [
+            [10, 20, 50, 100, 1000],
+            [10, 20, 50, 100, "1000"]
+        ],
+        pageLength: 10,
+        buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
     });
 
-    // --- PRINT TERPILIH ---
+    // Tambahkan tombol ke wrapper
+    table.buttons().container().appendTo('#table_data_barang_wrapper .col-md-6:eq(0)');
+
+    // Filter kategori -> reload DataTable
+    $('#filter_kategori').on('change', function() {
+        table.ajax.reload();
+    });
+
+    // Reset filter
+    $('#reset_filter').on('click', function() {
+        $('#filter_kategori').val('');
+        table.ajax.reload();
+    });
+
+    // Select all checkbox
+    $('#select_all').on('click', function(e) {
+        var isChecked = $(this).is(':checked');
+        $(".sub_chk").prop('checked', isChecked);
+    });
+
+    // Print terpilih
     $('.btn-multiple-print').on('click', function(e) {
         var allVals = [];
         $(".sub_chk:checked").each(function() {
-            allVals.push($(this).attr('data-id'));
+            allVals.push($(this).data('id'));
         });
 
         if (allVals.length <= 0) {
@@ -228,11 +239,11 @@ $(document).ready(function () {
         }
     });
 
-    // --- HAPUS TERPILIH ---
+    // Hapus terpilih
     $('#hapus_terpilih').on('click', function(e) {
         var allVals = [];
         $(".sub_chk:checked").each(function() {
-            allVals.push($(this).attr('data-id'));
+            allVals.push($(this).data('id'));
         });
 
         if (allVals.length <= 0) {
@@ -261,7 +272,7 @@ $(document).ready(function () {
                         success: function (data) {
                             if (data['status'] == true) {
                                 Swal.fire('Berhasil!', data['message'], 'success').then(() => {
-                                    location.reload();
+                                    table.ajax.reload(null, false);
                                 });
                             } else {
                                 Swal.fire('Gagal!', 'Terjadi kesalahan sistem.', 'error');
@@ -275,56 +286,24 @@ $(document).ready(function () {
             });
         }
     });
-});
 
-// --- DATATABLES ---
-$(function () {
-    $("#table_data_barang").DataTable({
-        responsive: true,
-        lengthChange: true,
-        autoWidth: true,
-        lengthMenu: [
-            [10, 20, 50, 100, -1],
-            [10, 20, 50, 100, "All"]
-        ],
-        pageLength: 10,
-        buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
-    }).buttons().container().appendTo(
-        '#table_data_barang_wrapper .col-md-6:eq(0)'
-    );
-});
+    // Event klik tombol tambah stok (delegasi)
+    $(document).on('click', '.btn-tambah-stok', function() {
+        var id = $(this).data('id');
+        var nama = $(this).data('nama');
+        var qty = $(this).data('qty');
+        var hargaModal = $(this).data('harga_modal');
 
-// --- CUSTOM FILE INPUT ---
-$(function () {
-    bsCustomFileInput.init();
-});
-
-// --- TAMPILKAN MODAL JIKA ERROR ---
-@if ($errors->any())
-    $(document).ready(function() {
-        $('#modal_tambah_data_barang').modal('show');
+        $('#stok_barang_nama').text(nama);
+        $('#stok_saat_ini').val(qty);
+        $('#form_tambah_stok input[name="harga_modal"]').val(hargaModal);
+        $('#form_tambah_stok').attr('action', "{{ url('barang/tambah-stok') }}/" + id);
     });
-@endif
 
-// --- TOAST NOTIFIKASI SUKSES ---
-@if (session()->has('success'))
-    var Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000
-    });
-    Toast.fire({
-        icon: 'success',
-        title: '{{ session('success') }}'
-    });
-@endif
-
-// --- KONFIRMASI HAPUS PER ITEM ---
-document.querySelectorAll('.konfirmasi').forEach(function(element) {
-    element.addEventListener('click', function (event) {
+    // Konfirmasi hapus per item (delegasi)
+    $(document).on('click', '.konfirmasi', function(event) {
         event.preventDefault();
-        const url = this.getAttribute('href');
+        const url = $(this).attr('href');
         Swal.fire({
             text: "Anda yakin ingin menghapus data ini?",
             icon: 'warning',
@@ -338,6 +317,28 @@ document.querySelectorAll('.konfirmasi').forEach(function(element) {
             }
         });
     });
+
+    // Toast notifikasi sukses
+    @if (session()->has('success'))
+        var Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        Toast.fire({
+            icon: 'success',
+            title: '{{ session('success') }}'
+        });
+    @endif
+
+    // Tampilkan modal tambah jika ada error
+    @if ($errors->any())
+        $('#modal_tambah_data_barang').modal('show');
+    @endif
+
+    // Custom file input
+    bsCustomFileInput.init();
 });
 </script>
 @endsection

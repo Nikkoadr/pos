@@ -17,22 +17,122 @@ class Data_barangController extends Controller
         $this->middleware('auth');
     }
 
+    /**
+     * Halaman utama data barang (tanpa data koleksi)
+     */
     public function data_barang(Request $request)
     {
-        $query = Data_barang::query();
-
-        // Filter kategori (jika ada)
-        if ($request->filled('kategori')) {
-            $query->where('kategori', $request->kategori);
-        }
-
-        $data_barang = $query->get();
         $suppliers = Supplier::all();
         $kategori_list = ['umum', 'member', 'sparepart', 'aksesoris'];
 
-        return view('barang.data_barang', compact('data_barang', 'suppliers', 'kategori_list'));
+        return view('barang.data_barang', compact('suppliers', 'kategori_list'));
     }
 
+    /**
+     * Server-side DataTables JSON
+     */
+    public function data_barang_json(Request $request)
+    {
+        $draw = $request->get('draw');
+        $start = $request->get('start');
+        $length = $request->get('length');
+        $searchValue = $request->get('search')['value'] ?? '';
+        $orderColumn = $request->get('order')[0]['column'] ?? 0;
+        $orderDir = $request->get('order')[0]['dir'] ?? 'asc';
+        $kategori = $request->get('kategori');
+
+        // Kolom yang bisa diurutkan (sesuai urutan di tabel)
+        $columns = ['barcode', 'kategori', 'nama', 'qty', 'harga_modal', 'harga_umum', 'harga_member'];
+
+        $query = Data_barang::query();
+
+        // Filter kategori
+        if ($kategori) {
+            $query->where('kategori', $kategori);
+        }
+
+        // Pencarian global
+        if (!empty($searchValue)) {
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('barcode', 'like', "%{$searchValue}%")
+                    ->orWhere('nama', 'like', "%{$searchValue}%")
+                    ->orWhere('kategori', 'like', "%{$searchValue}%");
+            });
+        }
+
+        $totalRecords = Data_barang::count();
+        $filteredRecords = $query->count();
+
+        // Sorting
+        if (isset($columns[$orderColumn])) {
+            $query->orderBy($columns[$orderColumn], $orderDir);
+        }
+
+        // Pagination
+        $data = $query->skip($start)->take($length)->get();
+
+        // Format response
+        $response = [];
+        foreach ($data as $item) {
+            // Tombol aksi
+            $aksi = '<button type="button" class="btn btn-sm btn-success btn-tambah-stok" 
+                            data-id="' . $item->id . '" 
+                            data-nama="' . $item->nama . '" 
+                            data-qty="' . $item->qty . '" 
+                            data-harga_modal="' . $item->harga_modal . '" 
+                            data-toggle="modal" data-target="#modal_tambah_stok">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <a href="' . route('edit_data_barang', $item->id) . '" class="btn btn-sm btn-primary">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </a>
+                    <a href="' . route('hapus_data_barang', $item->id) . '" class="btn btn-sm btn-danger konfirmasi">
+                        <i class="far fa-trash-alt"></i>
+                    </a>';
+
+            // Badge kategori
+            $badge = '';
+            switch ($item->kategori) {
+                case 'umum':
+                    $badge = '<span class="badge badge-success">Umum</span>';
+                    break;
+                case 'member':
+                    $badge = '<span class="badge badge-warning">Member</span>';
+                    break;
+                case 'sparepart':
+                    $badge = '<span class="badge badge-primary">Sparepart</span>';
+                    break;
+                case 'aksesoris':
+                    $badge = '<span class="badge badge-info">Aksesoris</span>';
+                    break;
+                default:
+                    $badge = '<span class="badge badge-secondary">' . ucfirst($item->kategori) . '</span>';
+            }
+
+            $response[] = [
+                'checkbox' => '<input type="checkbox" class="sub_chk" data-id="' . $item->id . '">',
+                'barcode'  => $item->barcode,
+                'kategori' => $badge,
+                'nama'     => $item->nama,
+                'qty'      => $item->qty,
+                'harga_modal'  => 'Rp ' . number_format($item->harga_modal, 0, ',', '.'),
+                'harga_umum'   => 'Rp ' . number_format($item->harga_umum, 0, ',', '.'),
+                'harga_member' => 'Rp ' . number_format($item->harga_member, 0, ',', '.'),
+                'aksi'     => $aksi,
+            ];
+        }
+
+        return response()->json([
+            'draw'            => intval($draw),
+            'recordsTotal'    => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data'            => $response,
+        ]);
+    }
+
+    /**
+     * Tambah data barang
+     */
     public function tambah_data_barang(Request $request)
     {
         $this->validate($request, [
@@ -73,12 +173,18 @@ class Data_barangController extends Controller
         return redirect()->back()->with('success', 'Data barang berhasil ditambahkan!');
     }
 
+    /**
+     * View edit data barang
+     */
     public function view_edit_data_barang($id)
     {
         $data = Data_barang::findOrFail($id);
         return view('layouts.component.view_edit_data_barang', compact('data'));
     }
 
+    /**
+     * Update data barang
+     */
     public function update_data_barang(Request $request, $id)
     {
         $data = Data_barang::findOrFail($id);
@@ -93,15 +199,11 @@ class Data_barangController extends Controller
             'harga_member' => ['required', 'numeric'],
         ]);
 
-        // Simpan nilai lama
         $qty_lama = $data->qty;
-
-        // Update data
         $data->update($validatedData);
 
-        // Jika qty berubah, catat selisihnya sebagai penyesuaian
+        // Jika qty berubah, catat selisihnya
         $selisih_qty = $validatedData['qty'] - $qty_lama;
-
         if ($selisih_qty != 0) {
             $kode = 'ADJ-' . date('Ymd') . '-' . str_pad(PembelianBarang::count() + 1, 4, '0', STR_PAD_LEFT);
             PembelianBarang::create([
@@ -109,7 +211,7 @@ class Data_barangController extends Controller
                 'kode_pembelian'   => $kode,
                 'tanggal_pembelian' => now(),
                 'id_barang'        => $id,
-                'qty'              => $selisih_qty, // bisa negatif
+                'qty'              => $selisih_qty,
                 'harga_modal'      => $validatedData['harga_modal'],
             ]);
         }
@@ -117,6 +219,35 @@ class Data_barangController extends Controller
         return redirect('/data_barang')->with('success', 'Data Barang Berhasil Di Update');
     }
 
+    /**
+     * Hapus data barang
+     */
+    public function hapus_data_barang($id)
+    {
+        $data = Data_barang::findOrFail($id);
+        $data->pembelian()->delete();
+        $data->delete();
+
+        return redirect()->back()->with('success', 'Data Barang berhasil dihapus.');
+    }
+
+    /**
+     * Hapus multiple
+     */
+    public function hapusMultiple(Request $request)
+    {
+        $ids = $request->ids;
+        $idArray = explode(",", $ids);
+        Data_barang::whereIn('id', $idArray)->delete();
+        return response()->json([
+            'status'  => true,
+            'message' => "Data barang berhasil dihapus."
+        ]);
+    }
+
+    /**
+     * Import data barang
+     */
     public function import_data_barang(Request $request)
     {
         $request->validate([
@@ -142,44 +273,16 @@ class Data_barangController extends Controller
         }
     }
 
+    /**
+     * Export data barang
+     */
     public function export_data_barang()
     {
         return Excel::download(new Export_data_barang, 'data_barang.xlsx');
     }
 
-    public function hapus_data_barang($id)
-    {
-        $data = Data_barang::findOrFail($id);
-
-        $data->pembelian()->delete();
-        $data->delete();
-
-        return redirect()->back()->with('success', 'Data Barang berhasil dihapus.');
-    }
-
-    public function hapusMultiple(Request $request)
-    {
-        $ids = $request->ids;
-        $idArray = explode(",", $ids);
-        Data_barang::whereIn('id', $idArray)->delete();
-        return response()->json([
-            'status'  => true,
-            'message' => "Data barang berhasil dihapus."
-        ]);
-    }
-
-    public function cetakBarcode(Request $request)
-    {
-        if (!$request->ids) {
-            return redirect()->back()->with('error', 'Tidak ada data yang dipilih');
-        }
-        $idArray = explode(',', $request->ids);
-        $data_barang = Data_barang::whereIn('id', $idArray)->get();
-        return view('barang.print_barcode', compact('data_barang'));
-    }
-
     /**
-     * Tambah stok barang + catat pembelian
+     * Tambah stok barang
      */
     public function tambahStok(Request $request, $id)
     {
@@ -188,18 +291,13 @@ class Data_barangController extends Controller
             'harga_modal' => 'required|numeric|min:0',
         ]);
 
-        // Ambil data barang
         $barang = Data_barang::findOrFail($id);
 
-        // Format tanggal untuk kode pembelian
         $today = now()->format('Ymd');
-
-        // Ambil pembelian terakhir hari ini
         $lastPembelian = PembelianBarang::whereDate('tanggal_pembelian', today())
             ->orderByDesc('id')
             ->first();
 
-        // Tentukan nomor urut berikutnya
         if ($lastPembelian) {
             $lastNumber = (int) substr($lastPembelian->kode_pembelian, -4);
             $nextNumber = $lastNumber + 1;
@@ -207,10 +305,8 @@ class Data_barangController extends Controller
             $nextNumber = 1;
         }
 
-        // Generate kode pembelian
         $kode = 'PO-' . $today . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
-        // Simpan riwayat pembelian
         PembelianBarang::create([
             'id_supplier'       => 1,
             'kode_pembelian'    => $kode,
@@ -220,14 +316,23 @@ class Data_barangController extends Controller
             'harga_modal'       => $request->harga_modal,
         ]);
 
-        // Update stok barang
         $barang->qty += $request->qty;
         $barang->harga_modal = $request->harga_modal;
         $barang->save();
 
-        return redirect()->back()->with(
-            'success',
-            "Stok barang '{$barang->nama}' berhasil ditambahkan!"
-        );
+        return redirect()->back()->with('success', "Stok barang '{$barang->nama}' berhasil ditambahkan!");
+    }
+
+    /**
+     * Cetak barcode
+     */
+    public function cetakBarcode(Request $request)
+    {
+        if (!$request->ids) {
+            return redirect()->back()->with('error', 'Tidak ada data yang dipilih');
+        }
+        $idArray = explode(',', $request->ids);
+        $data_barang = Data_barang::whereIn('id', $idArray)->get();
+        return view('barang.print_barcode', compact('data_barang'));
     }
 }

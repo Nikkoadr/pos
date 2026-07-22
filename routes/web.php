@@ -44,16 +44,28 @@ Route::get('/data_supplier', [HomeController::class, 'data_supplier'])->name('da
 Route::get('/setting', [HomeController::class, 'setting'])->name('setting.index');
 Route::put('/update_setting/{id}', [HomeController::class, 'update_setting'])->name('update_setting');
 
+// Data Barang
 Route::get('/data_barang', [Data_barangController::class, 'data_barang'])->name('data_barang');
-Route::delete('/hapus-barang-multiple', [Data_barangController::class, 'hapusMultiple'])->name('barang.hapus_multiple');
-Route::get('/data_barang/cetak-barcode', [Data_barangController::class, 'cetakBarcode'])->name('barang.cetak_barcode');
+Route::get('/data_barang/json', [Data_barangController::class, 'data_barang_json'])->name('data_barang.json');
+
+// CRUD
 Route::put('/tambah_data_barang', [Data_barangController::class, 'tambah_data_barang'])->name('tambah_data_barang');
 Route::get('/view_edit_data_barang_{id}', [Data_barangController::class, 'view_edit_data_barang'])->name('edit_data_barang');
 Route::put('/update_data_barang_{id}', [Data_barangController::class, 'update_data_barang'])->name('update_data_barang');
-Route::post('/import_data_barang', [Data_barangController::class, 'import_data_barang'])->name('import_data_barang');
-Route::get('/export_data_barang', [Data_BarangController::class, 'export_data_barang'])->name('export_data_barang');
 Route::get('/hapus_data_barang_{id}', [Data_barangController::class, 'hapus_data_barang'])->name('hapus_data_barang');
+
+// Multiple delete
+Route::delete('/hapus-barang-multiple', [Data_barangController::class, 'hapusMultiple'])->name('barang.hapus_multiple');
+
+// Import/Export
+Route::post('/import_data_barang', [Data_barangController::class, 'import_data_barang'])->name('import_data_barang');
+Route::get('/export_data_barang', [Data_barangController::class, 'export_data_barang'])->name('export_data_barang');
+
+// Tambah Stok
 Route::post('/barang/tambah-stok/{id}', [Data_barangController::class, 'tambahStok'])->name('barang.tambah_stok');
+
+// Cetak Barcode
+Route::get('/data_barang/cetak-barcode', [Data_barangController::class, 'cetakBarcode'])->name('barang.cetak_barcode');
 
 Route::get('/data_member', [MemberController::class, 'data_member'])->name('data_member');
 Route::get('/search/member', [MemberController::class, 'search'])->name('member.search');

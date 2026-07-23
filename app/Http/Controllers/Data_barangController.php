@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\Import_data_barang;
 use App\Exports\Export_data_barang;
 use App\Models\Supplier;
+use Illuminate\Support\Facades\Gate;
 
 class Data_barangController extends Controller
 {
@@ -28,9 +29,6 @@ class Data_barangController extends Controller
         return view('barang.data_barang', compact('suppliers', 'kategori_list'));
     }
 
-    /**
-     * Server-side DataTables JSON
-     */
     public function data_barang_json(Request $request)
     {
         $draw = $request->get('draw');
@@ -41,13 +39,22 @@ class Data_barangController extends Controller
         $orderDir = $request->get('order')[0]['dir'] ?? 'asc';
         $kategori = $request->get('kategori');
 
-        // Kolom yang bisa diurutkan (sesuai urutan di tabel)
-        $columns = ['barcode', 'kategori', 'nama', 'qty', 'harga_modal', 'harga_umum', 'harga_member'];
+        $isAdmin = Gate::allows('isAdmin');
+
+        // Kolom yang bisa diurutkan (disesuaikan berdasarkan role)
+        if ($isAdmin) {
+            $columns = ['checkbox', 'barcode', 'kategori', 'nama', 'qty', 'harga_modal', 'harga_umum', 'harga_member', 'aksi'];
+        } else {
+            $columns = ['checkbox', 'barcode', 'kategori', 'nama', 'qty', 'harga_umum'];
+        }
 
         $query = Data_barang::query();
 
-        // Filter kategori
-        if ($kategori) {
+        // Jika BUKAN admin (karyawan), paksa filter hanya kategori 'umum'
+        if (!$isAdmin) {
+            $query->where('kategori', 'umum');
+        } else if ($kategori) {
+            // Jika Admin, gunakan filter kategori dari request
             $query->where('kategori', $kategori);
         }
 
@@ -74,24 +81,8 @@ class Data_barangController extends Controller
         // Format response
         $response = [];
         foreach ($data as $item) {
-            // Tombol aksi
-            $aksi = '<button type="button" class="btn btn-sm btn-success btn-tambah-stok" 
-                            data-id="' . $item->id . '" 
-                            data-nama="' . $item->nama . '" 
-                            data-qty="' . $item->qty . '" 
-                            data-harga_modal="' . $item->harga_modal . '" 
-                            data-toggle="modal" data-target="#modal_tambah_stok">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <a href="' . route('edit_data_barang', $item->id) . '" class="btn btn-sm btn-primary">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </a>
-                    <a href="' . route('hapus_data_barang', $item->id) . '" class="btn btn-sm btn-danger konfirmasi">
-                        <i class="far fa-trash-alt"></i>
-                    </a>';
 
             // Badge kategori
-            $badge = '';
             switch ($item->kategori) {
                 case 'umum':
                     $badge = '<span class="badge badge-success">Umum</span>';
@@ -109,17 +100,39 @@ class Data_barangController extends Controller
                     $badge = '<span class="badge badge-secondary">' . ucfirst($item->kategori) . '</span>';
             }
 
-            $response[] = [
-                'checkbox' => '<input type="checkbox" class="sub_chk" data-id="' . $item->id . '">',
-                'barcode'  => $item->barcode,
-                'kategori' => $badge,
-                'nama'     => $item->nama,
-                'qty'      => $item->qty,
-                'harga_modal'  => 'Rp ' . number_format($item->harga_modal, 0, ',', '.'),
-                'harga_umum'   => 'Rp ' . number_format($item->harga_umum, 0, ',', '.'),
-                'harga_member' => 'Rp ' . number_format($item->harga_member, 0, ',', '.'),
-                'aksi'     => $aksi,
+            // Data dasar untuk semua user
+            $row = [
+                'checkbox'   => '<input type="checkbox" class="sub_chk" data-id="' . $item->id . '">',
+                'barcode'    => $item->barcode,
+                'kategori'   => $badge,
+                'nama'       => $item->nama,
+                'qty'        => $item->qty,
+                'harga_umum' => 'Rp ' . number_format($item->harga_umum, 0, ',', '.'),
             ];
+
+            // Tambahkan kolom rahasia & aksi HANYA jika Admin
+            if ($isAdmin) {
+                $aksi = '<button type="button" class="btn btn-sm btn-success btn-tambah-stok" 
+                        data-id="' . $item->id . '" 
+                        data-nama="' . $item->nama . '" 
+                        data-qty="' . $item->qty . '" 
+                        data-harga_modal="' . $item->harga_modal . '" 
+                        data-toggle="modal" data-target="#modal_tambah_stok">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <a href="' . route('edit_data_barang', $item->id) . '" class="btn btn-sm btn-primary">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+                <a href="' . route('hapus_data_barang', $item->id) . '" class="btn btn-sm btn-danger konfirmasi">
+                    <i class="far fa-trash-alt"></i>
+                </a>';
+
+                $row['harga_modal']  = 'Rp ' . number_format($item->harga_modal, 0, ',', '.');
+                $row['harga_member'] = 'Rp ' . number_format($item->harga_member, 0, ',', '.');
+                $row['aksi']         = $aksi;
+            }
+
+            $response[] = $row;
         }
 
         return response()->json([
@@ -238,7 +251,17 @@ class Data_barangController extends Controller
     {
         $ids = $request->ids;
         $idArray = explode(",", $ids);
-        Data_barang::whereIn('id', $idArray)->delete();
+
+        // Ambil data barang berdasarkan ID yang dipilih
+        $dataBarang = Data_barang::whereIn('id', $idArray)->get();
+
+        foreach ($dataBarang as $barang) {
+            // Hapus relasi pembelian terlebih dahulu
+            $barang->pembelian()->delete();
+            // Hapus data barang
+            $barang->delete();
+        }
+
         return response()->json([
             'status'  => true,
             'message' => "Data barang berhasil dihapus."

@@ -26,6 +26,7 @@
 
     <section class="content">
         <div class="card">
+            @can('isAdmin')
             <div class="card-header">
                 <div class="row">
                     <div class="col-md-12">
@@ -46,9 +47,11 @@
                     </div>
                 </div>
             </div>
+            @endcan
 
             <div class="card-body">
-                {{-- FILTER KATEGORI --}}
+                {{-- FILTER KATEGORI (Hanya untuk Admin) --}}
+                @can('isAdmin')
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <div class="form-inline">
@@ -72,6 +75,7 @@
                         </div>
                     </div>
                 </div>
+                @endcan
 
                 {{-- TABEL --}}
                 <table id="table_data_barang" class="table table-bordered table-striped">
@@ -88,8 +92,10 @@
                             <th>Harga Modal</th>
                             @endcan
                             <th>Harga Umum</th>
+                            @can('isAdmin')
                             <th>Harga Member</th>
                             <th style="text-align: center" data-orderable="false">Menu</th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
@@ -101,6 +107,7 @@
     </section>
 </div>
 
+@can('isAdmin')
 {{-- MODAL TAMBAH STOK GENERIK --}}
 <div class="modal fade" id="modal_tambah_stok" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -137,6 +144,7 @@
         </div>
     </div>
 </div>
+@endcan
 @endsection
 
 @section('script')
@@ -177,14 +185,11 @@ $(document).ready(function () {
             { data: 'harga_modal', name: 'harga_modal' },
             @endcan
             { data: 'harga_umum', name: 'harga_umum' },
+            @can('isAdmin')
             { data: 'harga_member', name: 'harga_member' },
             { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
+            @endcan
         ],
-        @cannot('isAdmin')
-        columnDefs: [
-            { visible: false, targets: [5] }
-        ],
-        @endcan
         order: [[1, 'asc']],
         drawCallback: function(settings) {
             var info = this.api().page.info();
@@ -198,11 +203,8 @@ $(document).ready(function () {
             [10, 20, 50, 100, "1000"]
         ],
         pageLength: 10,
-        buttons: ["copy", "csv", "excel", "pdf", "print", "colvis"]
+        dom: 'frtip' // Memastikan hanya kotak pencarian (f), tabel (r & t), informasi (i), dan paginasi (p) yang tampil
     });
-
-    // Tambahkan tombol ke wrapper
-    table.buttons().container().appendTo('#table_data_barang_wrapper .col-md-6:eq(0)');
 
     // Filter kategori -> reload DataTable
     $('#filter_kategori').on('change', function() {
@@ -221,6 +223,7 @@ $(document).ready(function () {
         $(".sub_chk").prop('checked', isChecked);
     });
 
+    @can('isAdmin')
     // Print terpilih
     $('.btn-multiple-print').on('click', function(e) {
         var allVals = [];
@@ -317,6 +320,7 @@ $(document).ready(function () {
             }
         });
     });
+    @endcan
 
     // Toast notifikasi sukses
     @if (session()->has('success'))

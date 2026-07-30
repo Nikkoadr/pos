@@ -159,21 +159,20 @@ class LaporanController extends Controller
 
         $pembelianQuery = PembelianBarang::with(['barang', 'supplier'])
             ->whereDate('tanggal_pembelian', '>=', $tanggal_awal)
-            ->whereDate('tanggal_pembelian', '<=', $tanggal_akhir)
-            ->where('kode_pembelian', 'LIKE', 'PO-%');
+            ->whereDate('tanggal_pembelian', '<=', $tanggal_akhir);
 
         $pembelian = $pembelianQuery->get();
 
         $detailPembelian = $pembelian->map(function ($p) {
             return (object) [
-                'id' => $p->id,
+                'id'             => $p->id,
                 'kode_pembelian' => $p->kode_pembelian,
-                'tanggal' => $p->tanggal_pembelian,
-                'nama_barang' => $p->barang ? $p->barang->nama : '-',
-                'qty' => $p->qty,
-                'harga_modal' => $p->harga_modal,
-                'subtotal' => $p->qty * $p->harga_modal,
-                'supplier' => $p->supplier ? $p->supplier->nama : '-',
+                'tanggal'        => $p->tanggal_pembelian,
+                'nama_barang'    => $p->barang ? $p->barang->nama : '-',
+                'qty'            => $p->qty,
+                'harga_modal'    => $p->harga_modal,
+                'subtotal'       => $p->qty * $p->harga_modal,
+                'supplier'       => $p->supplier ? $p->supplier->nama_supplier ?? $p->supplier->nama : '-',
             ];
         });
 

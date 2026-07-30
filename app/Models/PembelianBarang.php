@@ -11,14 +11,7 @@ class PembelianBarang extends Model
 
     protected $table = 'pembelian_barang';
 
-    protected $fillable = [
-        'id_supplier',
-        'kode_pembelian',
-        'tanggal_pembelian',
-        'id_barang',
-        'qty',
-        'harga_modal',
-    ];
+    protected $guarded = [];
 
     public function barang()
     {

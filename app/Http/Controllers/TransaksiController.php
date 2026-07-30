@@ -14,10 +14,9 @@ use App\Models\DetailTransaksiServis;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\EscposImage;
-use Exception;
 use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
-use Illuminate\Auth\Events\Validated;
+use App\Models\PembelianBarang;
 
 class TransaksiController extends Controller
 {
@@ -237,34 +236,101 @@ class TransaksiController extends Controller
     {
         $id_transaksi = $request->input('id_transaksi');
         $keranjang = Keranjang::where('id_transaksi', $id_transaksi)->get();
+
         if ($keranjang->isEmpty()) {
             return redirect()->back()->with('error', 'Keranjang kosong!');
         }
+
         $total = $keranjang->sum(function ($item) {
             return $item->harga_jual * $item->qty;
         });
-        foreach ($keranjang as $item) {
-            DetailTransaksi::create([
-                'id_transaksi' => $id_transaksi,
-                'id_barang'    => $item->id_barang,
-                'nama_barang'  => $item->nama,
-                'harga_jual'   => $item->harga_jual,
-                'harga_modal'  => $item->harga_modal,
-                'qty'          => $item->qty,
+
+        DB::beginTransaction();
+
+        try {
+            $transaksi = Transaksi::findOrFail($id_transaksi);
+
+            // 1. Cek apakah transaksi berasal dari member "Angel cell Jangga"
+            $isAngelCell = false;
+            if ($transaksi->jenis_transaksi == 'member' && !empty($transaksi->id_member)) {
+                $member = Data_member::where('id', $transaksi->id_member)
+                    ->orWhere('id_toko', $transaksi->id_member)
+                    ->first();
+
+                if ($member && !empty($member->nama_member)) {
+                    $namaClean = preg_replace('/\s+/', ' ', strtolower(trim($member->nama_member)));
+                    if ($namaClean === 'angel cell jangga' || str_contains($namaClean, 'angel cell')) {
+                        $isAngelCell = true;
+                    }
+                }
+            }
+
+            // 2. Loop Keranjang & Simpan Detail Transaksi
+            foreach ($keranjang as $item) {
+                DetailTransaksi::create([
+                    'id_transaksi' => $id_transaksi,
+                    'id_barang'    => $item->id_barang,
+                    'nama_barang'  => $item->nama,
+                    'harga_jual'   => $item->harga_jual,
+                    'harga_modal'  => $item->harga_modal,
+                    'qty'          => $item->qty,
+                ]);
+
+                // 3. SKENARIO KHUSUS: Pindahkan Stok ke Kategori Umum Jika Member "Angel cell Jangga"
+                if ($isAngelCell && !is_null($item->id_barang)) {
+                    $barangMember = Data_barang::find($item->id_barang);
+
+                    if ($barangMember) {
+                        $namaBarangCari = trim($item->nama);
+
+                        // Hanya cari ke kolom 'nama'
+                        $barangUmum = Data_barang::where('id', '!=', $barangMember->id)
+                            ->whereRaw('LOWER(TRIM(nama)) = ?', [strtolower($namaBarangCari)])
+                            ->whereRaw('LOWER(kategori) = ?', ['umum'])
+                            ->first();
+
+                        if ($barangUmum) {
+                            // A. Tambah stok ke barang kategori UMUM
+                            $barangUmum->increment('qty', $item->qty);
+
+                            // B. Catat histori penambahan ke tabel pembelian_barang
+                            $pembelian = new PembelianBarang();
+                            $pembelian->id_supplier       = 1;
+                            $pembelian->kode_pembelian    = 'TRF-' . $id_transaksi . '-' . $barangUmum->id . '-' . time() . rand(10, 99);
+                            $pembelian->tanggal_pembelian = now()->format('Y-m-d');
+                            $pembelian->id_barang         = $barangUmum->id;
+                            $pembelian->qty               = $item->qty;
+                            $pembelian->harga_modal       = $item->harga_jual;
+                            $pembelian->save();
+                            dd($pembelian);
+                        } else {
+                            DB::rollBack();
+                            return redirect()->back()->with('error', 'Gagal: Produk UMUM dengan nama "' . $namaBarangCari . '" tidak ditemukan!');
+                        }
+                    }
+                }
+            } // <--- PENUTUP FOREACH HARUS DI SINI!
+
+            // 4. Update Status Transaksi Header (Jalan 1x setelah seluruh keranjang diproses)
+            $transaksi->update([
+                'total_belanja' => $total,
+                'bayar'         => $request->input('bayar'),
+                'kembalian'     => $request->input('kembalian'),
+                'status'        => 'selesai',
+                'kasir'         => auth()->user()->nama
             ]);
+
+            DB::commit();
+
+            $this->printNotaUmum($id_transaksi);
+            Keranjang::where('id_transaksi', $id_transaksi)->delete();
+            session()->put('transaksi_id', $id_transaksi);
+
+            return redirect('transaksi')->with('sukses', 'Transaksi Berhasil!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal Checkout: ' . $e->getMessage());
         }
-        $transaksi = Transaksi::findOrFail($id_transaksi);
-        $transaksi->update([
-            'total_belanja' => $total,
-            'bayar'         => $request->input('bayar'),
-            'kembalian'     => $request->input('kembalian'),
-            'status'        => 'selesai',
-            'kasir'         => auth()->user()->nama
-        ]);
-        $this->printNotaUmum($id_transaksi);
-        Keranjang::where('id_transaksi', $id_transaksi)->delete();
-        session()->put('transaksi_id', $id_transaksi);
-        return redirect('transaksi')->with('sukses', 'Transaksi Berhasil!');
     }
 
     private function printNotaUmum($id)

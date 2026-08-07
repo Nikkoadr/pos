@@ -64,6 +64,15 @@
                                 </tr>
                             </table>
                         </div>
+                        <div class="card-footer bg-white">
+                            <form action="{{ route('transaksi.cetak-ulang', $transaksi->id) }}" method="POST" style="display:inline;">
+                                @csrf
+                                <button type="submit" class="btn btn-warning btn-block">
+                                    <i class="fas fa-print mr-1"></i>
+                                    Cetak Ulang Nota
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 

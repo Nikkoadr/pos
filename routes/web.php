@@ -96,6 +96,8 @@ Route::get('/transaksi_servis_{id}', [ServisController::class, 'transaksiServis'
 Route::post('/servis/store/{id}', [ServisController::class, 'store_servis'])->name('servis.store');
 Route::get('/cetak_transaksi_servis/{id}', [ServisController::class, 'proses_servis'])->name('proses_servis');
 Route::get('/servis/cetak-ulang/{id}', [ServisController::class, 'cetak_ulang_servis'])->name('servis.cetak_ulang');
+Route::post('/transaksi/{id}/cetak-ulang', [TransaksiController::class, 'cetakUlang'])
+    ->name('transaksi.cetak-ulang');
 Route::post('/tambah_manual', [TransaksiController::class, 'tambah_manual'])->name('tambah_manual');
 
 Route::get('/pembayaran/servis/{id}', [ServisController::class, 'pembayaran_servis'])->name('servis.pembayaran');

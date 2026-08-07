@@ -414,6 +414,17 @@ class TransaksiController extends Controller
         }
     }
 
+    public function cetakUlang($id)
+    {
+        try {
+            $transaksi = Transaksi::findOrFail($id);
+            $this->printNotaUmum($id);
+            return redirect()->back()->with('success', 'Nota berhasil dicetak ulang.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mencetak ulang nota: ' . $e->getMessage());
+        }
+    }
+
     public function dataBarang(Request $request)
     {
         $dataBarang = Data_barang::select('*');

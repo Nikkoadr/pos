@@ -172,15 +172,24 @@ class Data_barangController extends Controller
             'harga_member' => $request->harga_member,
         ]);
 
-        // Catat sebagai pembelian stok awal
-        $kode = 'PO-' . date('Ymd') . '-' . str_pad(PembelianBarang::count() + 1, 4, '0', STR_PAD_LEFT);
+        // Generate kode pembelian dengan pengecekan
+        $tanggal = date('Ymd');
+        $urutan = 1;
+        $kode = 'PO-' . $tanggal . '-' . str_pad($urutan, 4, '0', STR_PAD_LEFT);
+
+        // Cek apakah kode sudah ada, jika ya increment
+        while (PembelianBarang::where('kode_pembelian', $kode)->exists()) {
+            $urutan++;
+            $kode = 'PO-' . $tanggal . '-' . str_pad($urutan, 4, '0', STR_PAD_LEFT);
+        }
+
         PembelianBarang::create([
-            'id_supplier'      => $request->id_supplier,
-            'kode_pembelian'   => $kode,
+            'id_supplier'       => $request->id_supplier,
+            'kode_pembelian'    => $kode,
             'tanggal_pembelian' => now(),
-            'id_barang'        => $barang->id,
-            'qty'              => $request->qty,
-            'harga_modal'      => $request->harga_modal,
+            'id_barang'         => $barang->id,
+            'qty'               => $request->qty,
+            'harga_modal'       => $request->harga_modal,
         ]);
 
         return redirect()->back()->with('success', 'Data barang berhasil ditambahkan!');
@@ -212,20 +221,37 @@ class Data_barangController extends Controller
             'harga_member' => ['required', 'numeric'],
         ]);
 
+        // Cek jika barcode berubah, pastikan unik
+        if ($request->barcode != $data->barcode) {
+            $request->validate([
+                'barcode' => ['required', 'unique:data_barang,barcode,' . $id],
+            ]);
+        }
+
         $qty_lama = $data->qty;
         $data->update($validatedData);
 
         // Jika qty berubah, catat selisihnya
         $selisih_qty = $validatedData['qty'] - $qty_lama;
         if ($selisih_qty != 0) {
-            $kode = 'ADJ-' . date('Ymd') . '-' . str_pad(PembelianBarang::count() + 1, 4, '0', STR_PAD_LEFT);
+            // Generate kode dengan pengecekan unik
+            $tanggal = date('Ymd');
+            $urutan = 1;
+            $kode = 'ADJ-' . $tanggal . '-' . str_pad($urutan, 4, '0', STR_PAD_LEFT);
+
+            // Cek apakah kode sudah ada, jika ya increment
+            while (PembelianBarang::where('kode_pembelian', $kode)->exists()) {
+                $urutan++;
+                $kode = 'ADJ-' . $tanggal . '-' . str_pad($urutan, 4, '0', STR_PAD_LEFT);
+            }
+
             PembelianBarang::create([
-                'id_supplier'      => $data->id_supplier,
-                'kode_pembelian'   => $kode,
+                'id_supplier'       => $data->id_supplier,
+                'kode_pembelian'    => $kode,
                 'tanggal_pembelian' => now(),
-                'id_barang'        => $id,
-                'qty'              => $selisih_qty,
-                'harga_modal'      => $validatedData['harga_modal'],
+                'id_barang'         => $id,
+                'qty'               => $selisih_qty,
+                'harga_modal'       => $validatedData['harga_modal'],
             ]);
         }
 
@@ -316,19 +342,16 @@ class Data_barangController extends Controller
 
         $barang = Data_barang::findOrFail($id);
 
-        $today = now()->format('Ymd');
-        $lastPembelian = PembelianBarang::whereDate('tanggal_pembelian', today())
-            ->orderByDesc('id')
-            ->first();
+        // Generate kode dengan pengecekan unik
+        $tanggal = now()->format('Ymd');
+        $urutan = 1;
+        $kode = 'PO-' . $tanggal . '-' . str_pad($urutan, 4, '0', STR_PAD_LEFT);
 
-        if ($lastPembelian) {
-            $lastNumber = (int) substr($lastPembelian->kode_pembelian, -4);
-            $nextNumber = $lastNumber + 1;
-        } else {
-            $nextNumber = 1;
+        // Cek apakah kode sudah ada, jika ya increment
+        while (PembelianBarang::where('kode_pembelian', $kode)->exists()) {
+            $urutan++;
+            $kode = 'PO-' . $tanggal . '-' . str_pad($urutan, 4, '0', STR_PAD_LEFT);
         }
-
-        $kode = 'PO-' . $today . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
         PembelianBarang::create([
             'id_supplier'       => 1,

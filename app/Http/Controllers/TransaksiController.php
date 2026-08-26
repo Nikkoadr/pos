@@ -250,7 +250,7 @@ class TransaksiController extends Controller
         try {
             $transaksi = Transaksi::findOrFail($id_transaksi);
 
-            // 1. Cek apakah transaksi berasal dari member "Angel cell Jangga"
+            // 1. Cek Angel Cell
             $isAngelCell = false;
             if ($transaksi->jenis_transaksi == 'member' && !empty($transaksi->id_member)) {
                 $member = Data_member::where('id', $transaksi->id_member)
@@ -265,7 +265,7 @@ class TransaksiController extends Controller
                 }
             }
 
-            // 2. Loop Keranjang & Simpan Detail Transaksi
+            // 2. Simpan detail transaksi
             foreach ($keranjang as $item) {
                 DetailTransaksi::create([
                     'id_transaksi' => $id_transaksi,
@@ -276,42 +276,37 @@ class TransaksiController extends Controller
                     'qty'          => $item->qty,
                 ]);
 
-                // 3. SKENARIO KHUSUS: Pindahkan Stok ke Kategori Umum Jika Member "Angel cell Jangga"
+                // 3. Skenario Angel Cell
                 if ($isAngelCell && !is_null($item->id_barang)) {
                     $barangMember = Data_barang::find($item->id_barang);
-
                     if ($barangMember) {
                         $namaBarangCari = trim($item->nama);
-
-                        // Hanya cari ke kolom 'nama'
                         $barangUmum = Data_barang::where('id', '!=', $barangMember->id)
                             ->whereRaw('LOWER(TRIM(nama)) = ?', [strtolower($namaBarangCari)])
                             ->whereRaw('LOWER(kategori) = ?', ['umum'])
                             ->first();
 
                         if ($barangUmum) {
-                            // A. Tambah stok ke barang kategori UMUM
                             $barangUmum->increment('qty', $item->qty);
 
-                            // B. Catat histori penambahan ke tabel pembelian_barang
                             $pembelian = new PembelianBarang();
                             $pembelian->id_supplier       = 1;
                             $pembelian->kode_pembelian    = 'TRF-' . $id_transaksi . '-' . $barangUmum->id . '-' . time() . rand(10, 99);
                             $pembelian->tanggal_pembelian = now()->format('Y-m-d');
                             $pembelian->id_barang         = $barangUmum->id;
                             $pembelian->qty               = $item->qty;
-                            $pembelian->harga_modal       = $item->harga_jual;
+                            $pembelian->harga_modal       = $item->harga_jual; // atau harga_modal jika mau
                             $pembelian->save();
-                            dd($pembelian);
+                            // HAPUS baris dd($pembelian) !!!
                         } else {
                             DB::rollBack();
                             return redirect()->back()->with('error', 'Gagal: Produk UMUM dengan nama "' . $namaBarangCari . '" tidak ditemukan!');
                         }
                     }
                 }
-            } // <--- PENUTUP FOREACH HARUS DI SINI!
+            }
 
-            // 4. Update Status Transaksi Header (Jalan 1x setelah seluruh keranjang diproses)
+            // 4. Update transaksi header
             $transaksi->update([
                 'total_belanja' => $total,
                 'bayar'         => $request->input('bayar'),
@@ -322,15 +317,41 @@ class TransaksiController extends Controller
 
             DB::commit();
 
-            $this->printNotaUmum($id_transaksi);
+            // Hapus keranjang
             Keranjang::where('id_transaksi', $id_transaksi)->delete();
             session()->put('transaksi_id', $id_transaksi);
+
+            // --- OPSI CETAK ---
+            $cetakNota = $request->input('cetak_nota', 0);
+            $printerType = $request->input('printer_type', 'server');
+
+            if ($cetakNota == 1) {
+                if ($printerType == 'server') {
+                    // Cetak melalui printer server (seperti sebelumnya)
+                    $this->printNotaUmum($id_transaksi);
+                } else {
+                    // Cetak melalui browser (lokal) -> redirect ke halaman HTML nota
+                    return redirect()->route('cetak.nota.html', $id_transaksi);
+                }
+            }
 
             return redirect('transaksi')->with('sukses', 'Transaksi Berhasil!');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal Checkout: ' . $e->getMessage());
         }
+    }
+
+    public function cetakNotaHtml($id)
+    {
+        $transaksi = Transaksi::findOrFail($id);
+        $details = DetailTransaksi::where('id_transaksi', $id)->get();
+        $nama_member = "Umum";
+        if ($transaksi->id_member) {
+            $m = Data_member::find($transaksi->id_member);
+            $nama_member = $m ? $m->nama_member : "Umum";
+        }
+        return view('cetak.nota_html', compact('transaksi', 'details', 'nama_member'));
     }
 
     private function printNotaUmum($id)

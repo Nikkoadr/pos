@@ -64,9 +64,6 @@ Route::get('/export_data_barang', [Data_barangController::class, 'export_data_ba
 // Tambah Stok
 Route::post('/barang/tambah-stok/{id}', [Data_barangController::class, 'tambahStok'])->name('barang.tambah_stok');
 
-// Cetak Barcode
-Route::get('/data_barang/cetak-barcode', [Data_barangController::class, 'cetakBarcode'])->name('barang.cetak_barcode');
-
 Route::get('/data_member', [MemberController::class, 'data_member'])->name('data_member');
 Route::get('/search/member', [MemberController::class, 'search'])->name('member.search');
 Route::post('/tambah_data_member', [MemberController::class, 'tambah_data_member'])->name('tambah_data_member');
@@ -94,10 +91,6 @@ Route::get('/servis', [ServisController::class, 'index'])->name('servis');
 Route::post('/update_status_servis', [ServisController::class, 'updateStatusServis'])->name('updateStatusServis');
 Route::get('/transaksi_servis_{id}', [ServisController::class, 'transaksiServis'])->name('transaksi_servis');
 Route::post('/servis/store/{id}', [ServisController::class, 'store_servis'])->name('servis.store');
-Route::get('/cetak_transaksi_servis/{id}', [ServisController::class, 'proses_servis'])->name('proses_servis');
-Route::get('/servis/cetak-ulang/{id}', [ServisController::class, 'cetak_ulang_servis'])->name('servis.cetak_ulang');
-Route::post('/transaksi/{id}/cetak-ulang', [TransaksiController::class, 'cetakUlang'])
-    ->name('transaksi.cetak-ulang');
 Route::post('/tambah_manual', [TransaksiController::class, 'tambah_manual'])->name('tambah_manual');
 
 Route::get('/pembayaran/servis/{id}', [ServisController::class, 'pembayaran_servis'])->name('servis.pembayaran');
@@ -108,6 +101,12 @@ Route::prefix('arsip')->group(function () {
     Route::get('/data', [ArsipController::class, 'data_arsip'])->name('arsip.data');
     Route::get('/detail/{id}', [ArsipController::class, 'show'])->name('arsip.show');
 });
+
+Route::get('/cetak_transaksi_servis/{id}', [ServisController::class, 'proses_servis'])->name('proses_servis');
+Route::get('/servis/cetak-ulang/{id}', [ServisController::class, 'cetak_ulang_servis'])->name('servis.cetak_ulang');
+Route::get('/data_barang/cetak-barcode', [Data_barangController::class, 'cetakBarcode'])->name('barang.cetak_barcode');
+Route::post('/transaksi/{id}/cetak-ulang', [TransaksiController::class, 'cetakUlang'])->name('transaksi.cetak-ulang');
+Route::get('/cetak-nota/{id}', [TransaksiController::class, 'cetakNotaHtml'])->name('cetak.nota.html');
 
 Route::get('/laporan/penjualan-umum', [App\Http\Controllers\LaporanController::class, 'penjualanUmum'])->name('laporan.penjualan_umum');
 Route::get('/laporan/penjualan-member', [App\Http\Controllers\LaporanController::class, 'penjualanMember'])->name('laporan.penjualan_member');

@@ -95,6 +95,29 @@
                                         @endif
                                         <input type="hidden" name="bayar" id="inputBayar">
                                         <input type="hidden" name="kembalian" id="inputKembalian">
+
+                                        <!-- ====== TAMBAHAN OPSI CETAK ====== -->
+                                        <div class="row mt-2">
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="cetakNota" name="cetak_nota" value="1" checked>
+                                                    <label class="form-check-label" for="cetakNota">Cetak Nota</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" id="pilihanPrinter">
+                                                <label>Pilih Printer:</label>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="printer_type" id="printerServer" value="server" checked>
+                                                    <label class="form-check-label" for="printerServer">Server</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="printer_type" id="printerLokal" value="lokal">
+                                                    <label class="form-check-label" for="printerLokal">Lokal</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- ====== END TAMBAHAN ====== -->
+
                                         <button class="btn btn-success float-right konfirmasi" type="submit">
                                             Checkout
                                         </button>
@@ -241,6 +264,21 @@
 <script src="{{ asset('assets/plugins/datatables-buttons/js/buttons.print.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables-buttons/js/buttons.colVis.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/sweetalert2/sweetalert2.all.min.js') }}"></script>
+
+<!-- ====== TAMBAHAN SCRIPT UNTUK TOGGLE PILIHAN PRINTER ====== -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cbCetak = document.getElementById('cetakNota');
+    const divPrinter = document.getElementById('pilihanPrinter');
+    function togglePrinter() {
+        divPrinter.style.display = cbCetak.checked ? 'block' : 'none';
+    }
+    togglePrinter();
+    cbCetak.addEventListener('change', togglePrinter);
+});
+</script>
+<!-- ====== END TAMBAHAN ====== -->
+
 <script>
 $('#scanner').on('keydown', function(e) {
     if (e.key === 'Enter') {

@@ -13,6 +13,7 @@
             padding: 5mm;
             background: #fff;
             color: #000;
+            font-weight: bold; /* Agar teks lebih tebal seperti di struk thermal */
         }
         .text-center { text-align: center; }
         .text-left { text-align: left; }
@@ -20,11 +21,35 @@
         .header { margin-bottom: 5px; }
         .divider { border-top: 1px dashed #000; margin: 8px 0; }
         .divider-double { border-top: 2px solid #000; margin: 8px 0; }
-        .item-line { display: flex; justify-content: space-between; }
-        .item-name { font-weight: normal; }
-        .total { font-weight: bold; font-size: 1.2em; }
-        .footer { text-align: center; margin-top: 15px; }
+        
+        /* Gaya untuk item */
+        .item-name { 
+            font-weight: bold; 
+            margin-top: 4px;
+        }
+        .item-line { 
+            display: flex; 
+            justify-content: space-between; 
+            font-weight: bold;
+        }
+        
+        /* Gaya untuk total */
+        .total { 
+            font-weight: bold; 
+            font-size: 1.4em; 
+        }
+        .bayar-kembali {
+            font-size: 1em;
+            font-weight: bold;
+        }
+        
+        .footer { 
+            text-align: center; 
+            margin-top: 15px; 
+            font-weight: bold;
+        }
         .no-print { display: block; text-align: center; margin-top: 20px; }
+        
         /* Sembunyikan tombol saat print */
         @media print {
             body { width: 100%; margin: 0; padding: 3mm; }
@@ -67,9 +92,11 @@
 
     <div class="divider"></div>
     <div class="text-right">
-        <p style="margin:2px 0; font-size:1.2em; font-weight:bold;">TOTAL: Rp {{ number_format($transaksi->total_belanja, 0, '.', '.') }}</p>
-        <p style="margin:2px 0;">BAYAR: Rp {{ number_format($transaksi->bayar, 0, '.', '.') }}</p>
-        <p style="margin:2px 0;">KEMBALI: Rp {{ number_format($transaksi->kembalian, 0, '.', '.') }}</p>
+        {{-- TOTAL dibuat besar dan tebal --}}
+        <p style="margin:2px 0; font-size:1.4em; font-weight:bold;">TOTAL: Rp {{ number_format($transaksi->total_belanja, 0, '.', '.') }}</p>
+        {{-- BAYAR dan KEMBALI dibuat lebih kecil --}}
+        <p style="margin:2px 0; font-size:1em; font-weight:bold;">BAYAR: Rp {{ number_format($transaksi->bayar, 0, '.', '.') }}</p>
+        <p style="margin:2px 0; font-size:1em; font-weight:bold;">KEMBALI: Rp {{ number_format($transaksi->kembalian, 0, '.', '.') }}</p>
     </div>
     <div class="divider"></div>
     <div class="footer">

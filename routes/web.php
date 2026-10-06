@@ -36,6 +36,7 @@ Route::get('/home',     [HomeController::class, 'index'])->name('home');
 
 Route::get('/data_karyawan', [UsersController::class, 'index'])->name('karyawan.index');
 Route::post('/data_karyawan/store', [UsersController::class, 'store'])->name('karyawan.store');
+Route::get('/aktivitas', [App\Http\Controllers\AktivitasController::class, 'index'])->name('aktivitas.index');
 Route::delete('/data_karyawan/delete/{id}', [UsersController::class, 'destroy'])->name('karyawan.destroy');
 Route::get('/data_karyawan/edit/{id}', [UsersController::class, 'edit'])->name('karyawan.edit');
 Route::put('/data_karyawan/update/{id}', [UsersController::class, 'update'])->name('karyawan.update');
@@ -52,7 +53,7 @@ Route::get('/data_barang/json', [Data_barangController::class, 'data_barang_json
 Route::put('/tambah_data_barang', [Data_barangController::class, 'tambah_data_barang'])->name('tambah_data_barang');
 Route::get('/view_edit_data_barang_{id}', [Data_barangController::class, 'view_edit_data_barang'])->name('edit_data_barang');
 Route::put('/update_data_barang_{id}', [Data_barangController::class, 'update_data_barang'])->name('update_data_barang');
-Route::get('/hapus_data_barang_{id}', [Data_barangController::class, 'hapus_data_barang'])->name('hapus_data_barang');
+Route::delete('/hapus_data_barang_{id}', [Data_barangController::class, 'hapus_data_barang'])->name('hapus_data_barang');
 
 // Multiple delete
 Route::delete('/hapus-barang-multiple', [Data_barangController::class, 'hapusMultiple'])->name('barang.hapus_multiple');
@@ -69,7 +70,7 @@ Route::get('/search/member', [MemberController::class, 'search'])->name('member.
 Route::post('/tambah_data_member', [MemberController::class, 'tambah_data_member'])->name('tambah_data_member');
 Route::get('/view_edit_data_member_{id}', [MemberController::class, 'view_edit_data_member'])->name('view_edit_data_member');
 Route::put('/update_data_member_{id}', [MemberController::class, 'update_data_member'])->name('update_data_member');
-Route::get('/hapus_data_member_{id}', [MemberController::class, 'hapus_data_member'])->name('hapus_data_member');
+Route::delete('/hapus_data_member_{id}', [MemberController::class, 'hapus_data_member'])->name('hapus_data_member');
 Route::post('/edit_data_member_{id}', [MemberController::class, 'edit_data_member'])->name('edit_data_member');
 
 Route::get('/transaksi', [TransaksiController::class, 'transaksi'])->name('transaksi');

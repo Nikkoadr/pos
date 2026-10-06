@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\Import_data_barang;
 use App\Exports\Export_data_barang;
 use App\Models\Supplier;
+use App\Models\LogAktivitas;
 use Illuminate\Support\Facades\Gate;
 
 class Data_barangController extends Controller
@@ -123,9 +124,13 @@ class Data_barangController extends Controller
                 <a href="' . route('edit_data_barang', $item->id) . '" class="btn btn-sm btn-primary">
                     <i class="fa-solid fa-pen-to-square"></i>
                 </a>
-                <a href="' . route('hapus_data_barang', $item->id) . '" class="btn btn-sm btn-danger konfirmasi">
-                    <i class="far fa-trash-alt"></i>
-                </a>';
+                <form method="POST" action="' . route('hapus_data_barang', $item->id) . '" class="d-inline form-hapus">
+                    <input type="hidden" name="_token" value="' . csrf_token() . '">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-sm btn-danger konfirmasi">
+                        <i class="far fa-trash-alt"></i>
+                    </button>
+                </form>';
 
                 $row['harga_modal']  = 'Rp ' . number_format($item->harga_modal, 0, ',', '.');
                 $row['harga_member'] = 'Rp ' . number_format($item->harga_member, 0, ',', '.');
@@ -192,6 +197,8 @@ class Data_barangController extends Controller
             'harga_modal'       => $request->harga_modal,
         ]);
 
+        LogAktivitas::catat('tambah', 'barang', $barang->id, "Tambah barang {$barang->nama} (stok {$barang->qty})");
+
         return redirect()->back()->with('success', 'Data barang berhasil ditambahkan!');
     }
 
@@ -200,6 +207,7 @@ class Data_barangController extends Controller
      */
     public function view_edit_data_barang($id)
     {
+        Gate::authorize('isAdmin');
         $data = Data_barang::findOrFail($id);
         return view('layouts.component.view_edit_data_barang', compact('data'));
     }
@@ -209,6 +217,7 @@ class Data_barangController extends Controller
      */
     public function update_data_barang(Request $request, $id)
     {
+        Gate::authorize('isAdmin');
         $data = Data_barang::findOrFail($id);
 
         $validatedData = $request->validate([
@@ -230,6 +239,9 @@ class Data_barangController extends Controller
 
         $qty_lama = $data->qty;
         $data->update($validatedData);
+        $berubah = $data->getChanges();
+        unset($berubah['updated_at']);
+        LogAktivitas::catat('ubah', 'barang', $data->id, "Ubah barang {$data->nama}", $berubah);
 
         // Jika qty berubah, catat selisihnya
         $selisih_qty = $validatedData['qty'] - $qty_lama;
@@ -263,7 +275,9 @@ class Data_barangController extends Controller
      */
     public function hapus_data_barang($id)
     {
+        Gate::authorize('isAdmin');
         $data = Data_barang::findOrFail($id);
+        LogAktivitas::catat('hapus', 'barang', $data->id, "Hapus barang {$data->nama} (stok {$data->qty})");
         $data->pembelian()->delete();
         $data->delete();
 
@@ -275,11 +289,14 @@ class Data_barangController extends Controller
      */
     public function hapusMultiple(Request $request)
     {
+        Gate::authorize('isAdmin');
         $ids = $request->ids;
         $idArray = explode(",", $ids);
 
         // Ambil data barang berdasarkan ID yang dipilih
         $dataBarang = Data_barang::whereIn('id', $idArray)->get();
+
+        LogAktivitas::catat('hapus', 'barang', null, 'Hapus ' . $dataBarang->count() . ' barang sekaligus: ' . $dataBarang->pluck('nama')->implode(', '));
 
         foreach ($dataBarang as $barang) {
             // Hapus relasi pembelian terlebih dahulu
@@ -335,6 +352,7 @@ class Data_barangController extends Controller
      */
     public function tambahStok(Request $request, $id)
     {
+        Gate::authorize('isAdmin');
         $request->validate([
             'qty'         => 'required|integer|min:1',
             'harga_modal' => 'required|numeric|min:0',
@@ -365,6 +383,8 @@ class Data_barangController extends Controller
         $barang->qty += $request->qty;
         $barang->harga_modal = $request->harga_modal;
         $barang->save();
+
+        LogAktivitas::catat('tambah-stok', 'barang', $barang->id, "Tambah stok {$barang->nama} +{$request->qty} (modal {$request->harga_modal})");
 
         return redirect()->back()->with('success', "Stok barang '{$barang->nama}' berhasil ditambahkan!");
     }

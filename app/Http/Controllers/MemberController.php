@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Data_member;
+use App\Models\LogAktivitas;
 
 class MemberController extends Controller
 {
@@ -31,13 +32,14 @@ class MemberController extends Controller
                 'nomor_hp' => ['required', 'string'],
                 'alamat' => ['required'],
             ]);
-            Data_member::create([
+            $m = Data_member::create([
                 'id_toko'   => $request->id_toko,
                 'nama_member'   => $request->nama_member,
                 'nomor_hp'   => $request->nomor_hp,
                 'alamat'   => $request->alamat,
 
             ]);
+            LogAktivitas::catat('tambah', 'member', $m->id, "Tambah member {$m->nama_member}");
             return redirect()->back()->with(['success' => 'Data berhasil ditambahkan!']);
         }
 
@@ -56,12 +58,16 @@ class MemberController extends Controller
                 'alamat' => ['required'],
             ]);
             $data->update($validatedData);
+            $berubah = $data->getChanges();
+            unset($berubah['updated_at']);
+            LogAktivitas::catat('ubah', 'member', $data->id, "Ubah member {$data->nama_member}", $berubah);
             return redirect('/data_member')->with(['success' => 'Data Member Berhasil Di Update']);
         }
 
     public function hapus_data_member($id)
     {
         $data = Data_member::findOrFail($id);
+        LogAktivitas::catat('hapus', 'member', $data->id, "Hapus member {$data->nama_member}");
         $data->delete();
         return redirect()->back()->with(['success' => 'Data Member Berhasil di Hapus']);
     }

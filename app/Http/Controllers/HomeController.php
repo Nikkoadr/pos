@@ -112,16 +112,14 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
-        // Transaksi terbaru + totalnya
-        $transaksi_terbaru = Transaksi::where('status', 'selesai')
-            ->orderByDesc('tanggal_transaksi')
+        // Transaksi terbaru + totalnya (1 query, tanpa N+1)
+        $transaksi_terbaru = Transaksi::where('transaksi.status', 'selesai')
+            ->leftJoin('detail_transaksi', 'detail_transaksi.id_transaksi', '=', 'transaksi.id')
+            ->orderByDesc('transaksi.tanggal_transaksi')
+            ->groupBy('transaksi.id', 'transaksi.jenis_transaksi', 'transaksi.kasir', 'transaksi.tanggal_transaksi')
+            ->selectRaw('transaksi.id, transaksi.jenis_transaksi, transaksi.kasir, transaksi.tanggal_transaksi, COALESCE(SUM(detail_transaksi.harga_jual * detail_transaksi.qty), 0) as total')
             ->take(6)
-            ->get()
-            ->map(function ($t) {
-                $t->total = DetailTransaksi::where('id_transaksi', $t->id)
-                    ->selectRaw('COALESCE(SUM(harga_jual * qty), 0) as total')->value('total') ?? 0;
-                return $t;
-            });
+            ->get();
 
         $servis_masuk = DetailTransaksiServis::where('status_servis', 'masuk')->count();
         $servis_proses = DetailTransaksiServis::whereIn('status_servis', ['masuk', 'proses'])->count();

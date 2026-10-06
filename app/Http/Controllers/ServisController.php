@@ -15,9 +15,15 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Data_member;
 use App\Models\DetailTransaksi;
 use App\Models\Setting;
+use App\Models\LogAktivitas;
 
 class ServisController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
         $data_servis = DetailTransaksiServis::orderBy('created_at', 'DESC')->get();
@@ -68,6 +74,7 @@ class ServisController extends Controller
             $servis->updated_at = now();
             $servis->save();
             DB::commit();
+            LogAktivitas::catat('status', 'servis', $servis->id_transaksi, "Ubah status servis {$servis->kode_servis} menjadi " . strtoupper($request->status));
             return redirect()->back()->with(
                 'success',
                 'Status servis berhasil diubah menjadi ' . strtoupper($request->status)
@@ -383,6 +390,7 @@ private function printServis($id)
         }
         $this->printServisDiambil($transaksi->id);
         Keranjang::where('id_transaksi', $transaksi->id)->delete();
+        LogAktivitas::catat('checkout', 'servis', $transaksi->id, "Selesaikan servis #{$transaksi->id} total {$total}");
         return redirect('/transaksi')->with('sukses', 'Servis selesai dan nota dicetak!');
     }
 

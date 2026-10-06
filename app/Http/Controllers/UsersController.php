@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\LogAktivitas;
 use Illuminate\Support\Facades\Hash;
 
 class UsersController extends Controller
@@ -15,7 +16,7 @@ class UsersController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', 'can:isAdmin']);
     }
 
     public function index()
@@ -40,6 +41,7 @@ class UsersController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+        LogAktivitas::catat('tambah', 'user', null, "Tambah karyawan {$request->nama} ({$request->role})");
         return back()->with('success', 'Karyawan berhasil ditambahkan');
     }
 
@@ -67,12 +69,16 @@ class UsersController extends Controller
             $karyawan->password = Hash::make($request->password);
         }
         $karyawan->save();
+        $berubah = $karyawan->getChanges();
+        unset($berubah['updated_at'], $berubah['password']);
+        LogAktivitas::catat('ubah', 'user', $karyawan->id, "Ubah karyawan {$karyawan->nama}", $berubah);
         return redirect('/data_karyawan')->with('success', 'Data berhasil diupdate');
     }
 
     public function destroy($id)
     {
         $karyawan = User::findOrFail($id);
+        LogAktivitas::catat('hapus', 'user', $karyawan->id, "Hapus karyawan {$karyawan->nama} ({$karyawan->role})");
         $karyawan->delete();
         return back()->with('success', 'Karyawan berhasil dihapus');
     }

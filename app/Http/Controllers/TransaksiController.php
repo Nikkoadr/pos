@@ -17,6 +17,7 @@ use Mike42\Escpos\EscposImage;
 use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
 use App\Models\PembelianBarang;
+use App\Models\LogAktivitas;
 
 class TransaksiController extends Controller
 {
@@ -32,13 +33,12 @@ class TransaksiController extends Controller
 
     public function transaksi(Request $request)
     {
-        $transaksi = Transaksi::where('status', 'aktif')->latest()->get();
+        $transaksi = Transaksi::with('member')->where('status', 'aktif')->latest()->get();
 
         $member = Data_member::all();
 
         foreach ($transaksi as $data) {
-            $nama_member = Data_member::find($data->id_member);
-            $data->nama_member = $nama_member ? $nama_member->nama_member : "Tidak ada Member";
+            $data->nama_member = $data->member->nama_member ?? "Tidak ada Member";
         }
 
         return view('transaksi.buat_transaksi', compact('transaksi', 'member'));
@@ -319,6 +319,7 @@ class TransaksiController extends Controller
 
             // Hapus keranjang
             Keranjang::where('id_transaksi', $id_transaksi)->delete();
+            LogAktivitas::catat('checkout', 'transaksi', $id_transaksi, "Checkout transaksi #{$id_transaksi} ({$transaksi->jenis_transaksi}) total {$total}");
             session()->put('transaksi_id', $id_transaksi);
 
             // --- OPSI CETAK ---
@@ -491,6 +492,7 @@ class TransaksiController extends Controller
     public function hapus_transaksi($id)
     {
         $transaksi = Transaksi::findOrFail($id);
+        LogAktivitas::catat('hapus', 'transaksi', $transaksi->id, "Hapus transaksi #{$transaksi->id} ({$transaksi->jenis_transaksi}, {$transaksi->status})");
         $keranjang = Keranjang::where('id_transaksi', $transaksi->id)->get();
         foreach ($keranjang as $item) {
             if (!$item->id_barang) continue;

@@ -303,10 +303,11 @@ $(document).ready(function () {
         $('#form_tambah_stok').attr('action', "{{ url('barang/tambah-stok') }}/" + id);
     });
 
-    // Konfirmasi hapus per item (delegasi)
+    // Konfirmasi hapus per item (delegasi, mendukung form DELETE)
     $(document).on('click', '.konfirmasi', function(event) {
         event.preventDefault();
-        const url = $(this).attr('href');
+        var form = $(this).closest('form');
+        var url = $(this).attr('href');
         Swal.fire({
             text: "Anda yakin ingin menghapus data ini?",
             icon: 'warning',
@@ -316,7 +317,11 @@ $(document).ready(function () {
             confirmButtonText: 'Ya, Hapus!'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = url;
+                if (form.length) {
+                    form.submit();
+                } else if (url) {
+                    window.location.href = url;
+                }
             }
         });
     });

@@ -48,7 +48,11 @@
                     <td>{{ $data -> alamat }}</td>
                     <td style="text-align: center">
                         <a href="view_edit_data_member_{{ $data->id }}" class="btn btn-primary"><i class="fa-solid fa-pen-to-square"></i></i></a>
-                        <a href="hapus_data_member_{{ $data->id }}" class="btn btn-danger konfirmasi m-1"><i class="far fa-trash-alt"></i></a>
+                        <form method="POST" action="hapus_data_member_{{ $data->id }}" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger konfirmasi m-1"><i class="far fa-trash-alt"></i></button>
+                        </form>
                     </td>
                 </tr>
                 @endforeach
@@ -106,7 +110,8 @@ var Toast = Swal.mixin({
 document.querySelectorAll('.konfirmasi').forEach(function(element) {
     element.addEventListener('click', function (event) {
         event.preventDefault();
-        const url = this.getAttribute('href');
+        var form = this.closest('form');
+        var url = this.getAttribute('href');
         Swal.fire({
             text: "Anda yakin ingin menghapus data ini?",
             icon: 'warning',
@@ -116,7 +121,11 @@ document.querySelectorAll('.konfirmasi').forEach(function(element) {
             confirmButtonText: 'Ya, Hapus!'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = url;
+                if (form) {
+                    form.submit();
+                } else if (url) {
+                    window.location.href = url;
+                }
             }
         });
     });

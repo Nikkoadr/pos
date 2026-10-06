@@ -44,6 +44,12 @@
                                     <p>Data Karyawan</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('aktivitas.index') }}" class="nav-link {{ request()->routeIs('aktivitas.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fa-solid fa-clock-rotate-left text-sm"></i>
+                                    <p>Jejak Aktivitas</p>
+                                </a>
+                            </li>
                         @endcan
                         <li class="nav-item">
                             <a href="{{ url('/data_member') }}" class="nav-link {{ request()->is('data_member*') ? 'active' : '' }}">

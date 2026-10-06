@@ -123,14 +123,10 @@ class ArsipController extends Controller
                     $jenis = '-';
             }
 
-            // Total
-            if ($row->jenis_transaksi == 'servis') {
-                $total = optional($row->detailTransaksiServis)->harga_jual ?? 0;
-            } else {
-                $total = $row->detail_transaksi->sum(function ($item) {
-                    return $item->harga_jual * $item->qty;
-                });
-            }
+            // Total: jumlah semua baris detail (sparepart + jasa)
+            $total = $row->detail_transaksi->sum(function ($item) {
+                return $item->harga_jual * $item->qty;
+            });
 
             $result[] = [
                 'DT_RowIndex' => $counter++,
@@ -159,18 +155,15 @@ class ArsipController extends Controller
         $grandTotal = 0;
 
         if ($transaksi->jenis_transaksi == 'servis') {
-            $servis = DetailTransaksiServis::where('id_transaksi', $id)->first();
-            if ($servis) {
-                $item = (object) [
-                    'nama_barang' => 'Jasa Servis',
-                    'harga_jual'  => $servis->harga_jual,
-                    'qty'         => 1,
-                    'subtotal'    => $servis->harga_jual
-                ];
-                $detailItems->push($item);
-                $grandTotal = $servis->harga_jual;
-                $servisData = $servis;
-            }
+            $servisData = DetailTransaksiServis::where('id_transaksi', $id)->first();
+            $detail = DetailTransaksi::where('id_transaksi', $id)->get();
+            $detailItems = $detail->map(function ($item) {
+                $item->subtotal = $item->harga_jual * $item->qty;
+                return $item;
+            });
+            $grandTotal = $detail->sum(function ($item) {
+                return $item->harga_jual * $item->qty;
+            });
         } else {
             $detail = DetailTransaksi::where('id_transaksi', $id)->get();
             $detailItems = $detail->map(function ($item) {

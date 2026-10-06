@@ -124,25 +124,28 @@ class LaporanController extends Controller
 
         $laporan = $transaksi->map(function ($t) {
             $omzet = 0;
-            $servis = DetailTransaksi::where('id_transaksi', $t->id)->first();
-            if ($servis) {
-                $omzet = $servis->harga_jual;
+            $hpp = 0;
+            foreach ($t->detail_transaksi as $item) {
+                $omzet += $item->harga_jual * $item->qty;
+                $hpp += ($item->harga_modal ?? 0) * $item->qty;
             }
             return (object) [
                 'id' => $t->id,
                 'tanggal' => $t->created_at,
                 'omzet' => $omzet,
-                'hpp' => 0,
-                'laba_bersih' => $omzet,
+                'hpp' => $hpp,
+                'laba_bersih' => $omzet - $hpp,
             ];
         });
 
         $total_pendapatan = $laporan->sum('omzet');
+        $total_hpp = $laporan->sum('hpp');
         $total_laba_bersih = $laporan->sum('laba_bersih');
 
         return view('laporan.servis', compact(
             'laporan',
             'total_pendapatan',
+            'total_hpp',
             'total_laba_bersih',
             'tanggal_awal',
             'tanggal_akhir'

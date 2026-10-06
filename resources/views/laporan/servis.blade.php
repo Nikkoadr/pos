@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('link')
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap4.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="{{ asset('assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
 @endsection
 
 @section('content')
@@ -43,9 +43,9 @@
                 </div>
             </div>
 
-            {{-- SUMMARY (2 Box) --}}
+            {{-- SUMMARY (3 Box) --}}
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="small-box bg-success">
                         <div class="inner">
                             <p>Total Pendapatan Servis</p>
@@ -54,7 +54,16 @@
                         <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <p>Total HPP</p>
+                            <h3>Rp {{ number_format($total_hpp, 0, ',', '.') }}</h3>
+                        </div>
+                        <div class="icon"><i class="fas fa-box-open"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
                     <div class="small-box bg-primary">
                         <div class="inner">
                             <p>Total Laba Bersih</p>
@@ -79,6 +88,7 @@
                                     <th>Tanggal</th>
                                     <th>Kode</th>
                                     <th>Omzet</th>
+                                    <th>HPP</th>
                                     <th>Laba Bersih</th>
                                 </tr>
                             </thead>
@@ -89,11 +99,12 @@
                                     <td>{{ date('d/m/Y H:i', strtotime($data->tanggal)) }}</td>
                                     <td><span class="badge badge-info">{{ $data->id }}</span></td>
                                     <td>Rp {{ number_format($data->omzet, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($data->hpp, 0, ',', '.') }}</td>
                                     <td class="text-success font-weight-bold">Rp {{ number_format($data->laba_bersih, 0, ',', '.') }}</td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">Tidak ada data.</td>
+                                    <td colspan="6" class="text-center">Tidak ada data.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -102,6 +113,7 @@
                                 <tr>
                                     <td colspan="3" class="text-right">TOTAL:</td>
                                     <td>Rp {{ number_format($total_pendapatan, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($total_hpp, 0, ',', '.') }}</td>
                                     <td class="text-primary">Rp {{ number_format($total_laba_bersih, 0, ',', '.') }}</td>
                                 </tr>
                             </tfoot>
@@ -116,10 +128,10 @@
 @endsection
 
 @section('script')
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap4.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap4.min.js"></script>
+<script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
 
 <script>
     jQuery(document).ready(function($) {
